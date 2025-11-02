@@ -463,18 +463,14 @@ const useMiniKit = () => {
             setIsConnected(true);
             setUserInfo(null); // MiniKit API doesn't provide name/username
             
-            // Get chain ID from sessionStorage (set by SIWE verification)
-            const chainIdStr = typeof window !== 'undefined' ? sessionStorage.getItem('chainId') : null;
-            const chainId = chainIdStr ? parseInt(chainIdStr, 10) : null;
-            const rpcUrl = getRpcUrlForChainId(chainId);
+            // Always use Worldchain for World App MiniKit
+            console.log('🔗 Using Worldchain RPC URL:', WALLET_RPC_URL);
             
-            console.log('🔗 Using RPC URL:', rpcUrl, 'for chain ID:', chainId);
-            
-            // Create provider for reading blockchain data
-            const rpcProvider = new ethers.JsonRpcProvider(rpcUrl);
+            // Create provider for reading blockchain data from Worldchain
+            const rpcProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
             setProvider(rpcProvider);
             
-            console.log('✅ Connected to wallet:', walletData.address, 'on chain:', chainId);
+            console.log('✅ Connected to wallet:', walletData.address, 'on Worldchain');
           } else {
             console.warn('⚠️ MiniKit walletAuth returned no address');
           }
@@ -910,17 +906,12 @@ const LuminexApp = () => {
     return typeof totalEarnings === 'number' && !isNaN(totalEarnings) ? totalEarnings : 0;
   }, [totalEarnings]);
 
-  // Fetch real balance from blockchain
+  // Fetch WLD balance from World App (Worldchain only)
   const fetchBalance = useCallback(async () => {
     const addressToUse = actualAddress;
     
-    if (!provider || !addressToUse || !LUX_TOKEN_ADDRESS) {
-      console.log('⚠️ Missing requirements for balance fetch:', { 
-        provider: !!provider, 
-        address: addressToUse,
-        tokenAddress: LUX_TOKEN_ADDRESS 
-      });
-      // Reset to 0 if requirements not met (not mock data)
+    if (!addressToUse) {
+      console.log('⚠️ No address available for balance fetch');
       setBalance(0);
       setWldBalance(0);
       return;
@@ -935,72 +926,59 @@ const LuminexApp = () => {
     try {
       balanceFetchInProgress.current = true;
       setIsLoadingBalance(true);
-      console.log('🔄 Fetching balance from blockchain for:', addressToUse);
+      console.log('🔄 Fetching WLD balance from Worldchain for:', addressToUse);
+      console.log('🔍 Config:', { 
+        RPC_URL: WALLET_RPC_URL, 
+        WLD_ADDRESS: WLD_TOKEN_ADDRESS,
+        USER_ADDRESS: addressToUse 
+      });
       
-      const tokenContract = new ethers.Contract(LUX_TOKEN_ADDRESS, ERC20_ABI, provider);
-      const balance = await tokenContract.balanceOf(addressToUse);
-      const decimals = await tokenContract.decimals();
+      // Check if running in browser (web) or World App
+      const isWebBrowser = typeof window !== 'undefined' && !(window as any).MiniKit;
       
-      const balanceFormatted = parseFloat(ethers.formatUnits(balance, decimals));
-      setBalance(balanceFormatted);
-      
-      console.log('✅ Balance fetched:', balanceFormatted, TOKEN_NAME);
-      
-      // Fetch WLD balance from Worldchain (WLD is on Worldchain, not Optimism)
-      try {
-        console.log('🔄 Fetching WLD balance from Worldchain...');
-        console.log('🔍 Config:', { 
-          RPC_URL: WALLET_RPC_URL, 
-          WLD_ADDRESS: WLD_TOKEN_ADDRESS,
-          USER_ADDRESS: addressToUse 
-        });
-        
-        // Check if running in browser (web) or World App
-        const isWebBrowser = typeof window !== 'undefined' && !(window as any).MiniKit;
-        
-        if (isWebBrowser) {
-          // For web browsers: show mock balance for testing
-          console.log('🌐 Running in web browser, using mock WLD balance for testing');
-          const mockWldBalance = 10.5; // Mock balance for testing
-          setWldBalance(mockWldBalance);
-          console.log('✅ Mock WLD Balance (web):', mockWldBalance);
-        } else {
-          // For World App: fetch real balance from Worldchain
-          console.log('📱 Running in World App, fetching real WLD balance from Worldchain');
-          const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
-          const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
-          console.log('🔍 Calling balanceOf on WLD contract...');
-          const wldBalanceBN = await wldContract.balanceOf(addressToUse);
-          console.log('🔍 Raw WLD balance (wei):', wldBalanceBN.toString());
-          let wldDecimals = 18; // Default to 18 decimals for WLD
-          try {
-            wldDecimals = await wldContract.decimals();
-            console.log('🔍 WLD decimals:', wldDecimals);
-          } catch (e) {
-            console.warn('⚠️ Could not fetch WLD decimals, using default 18');
-          }
-          const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, wldDecimals));
-          setWldBalance(wldBalanceFormatted);
-          console.log('✅ WLD Balance fetched from Worldchain:', wldBalanceFormatted, 'with decimals:', wldDecimals);
+      if (isWebBrowser) {
+        // For web browsers: show mock balance for testing
+        console.log('🌐 Running in web browser, using mock WLD balance for testing');
+        const mockWldBalance = 10.5; // Mock balance for testing
+        setWldBalance(mockWldBalance);
+        setBalance(0); // LUX balance not used, set to 0
+        console.log('✅ Mock WLD Balance (web):', mockWldBalance);
+      } else {
+        // For World App: fetch real balance from Worldchain
+        console.log('📱 Running in World App, fetching real WLD balance from Worldchain');
+        const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
+        const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
+        console.log('🔍 Calling balanceOf on WLD contract...');
+        const wldBalanceBN = await wldContract.balanceOf(addressToUse);
+        console.log('🔍 Raw WLD balance (wei):', wldBalanceBN.toString());
+        let wldDecimals = 18; // Default to 18 decimals for WLD
+        try {
+          wldDecimals = await wldContract.decimals();
+          console.log('🔍 WLD decimals:', wldDecimals);
+        } catch (e) {
+          console.warn('⚠️ Could not fetch WLD decimals, using default 18');
         }
-      } catch (error: any) {
-        console.error('❌ Error fetching WLD balance from Worldchain:', error);
-        console.error('❌ Error details:', { 
-          message: error?.message, 
-          code: error?.code,
-          data: error?.data 
-        });
-        setWldBalance(0);
+        const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, wldDecimals));
+        setWldBalance(wldBalanceFormatted);
+        setBalance(0); // LUX balance not used, set to 0
+        console.log('✅ WLD Balance fetched from Worldchain:', wldBalanceFormatted, 'with decimals:', wldDecimals);
       }
       
       setIsLoadingBalance(false);
       balanceFetchInProgress.current = false;
-    } catch (error) {
-      console.error('❌ Error fetching balance:', error);
+    } catch (error: any) {
+      console.error('❌ Error fetching WLD balance:', error);
+      console.error('❌ Error details:', { 
+        message: error?.message, 
+        code: error?.code,
+        data: error?.data 
+      });
+      setWldBalance(0);
+      setBalance(0);
       setIsLoadingBalance(false);
       balanceFetchInProgress.current = false;
     }
-  }, [provider, actualAddress]); // Removed isLoadingBalance from deps, using ref instead
+  }, [actualAddress]); // Removed provider and isLoadingBalance from deps
 
   // Fetch staking data from blockchain
   const fetchStakingData = useCallback(async () => {
@@ -1172,7 +1150,7 @@ const LuminexApp = () => {
 
   // Fetch balance when address is available
   useEffect(() => {
-    if (!actualAddress || !provider) return;
+    if (!actualAddress) return;
     
     // Initial fetch immediately
     fetchBalance();
@@ -1183,7 +1161,7 @@ const LuminexApp = () => {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [actualAddress, provider, fetchBalance, debouncedFetchBalance]);
+  }, [actualAddress, fetchBalance, debouncedFetchBalance]);
 
   // Close language menu when clicking outside
   useEffect(() => {
