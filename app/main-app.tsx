@@ -655,33 +655,43 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
     try {
       console.log('🔄 Starting wallet authentication...', { miniKitReady, hasWindowMiniKit: !!(typeof window !== 'undefined' && (window as any).MiniKit) });
       
-      // Use MiniKit walletAuth (SIWE - Sign-In With Ethereum) for authentication
-      if (miniKitReady) {
+      // Check if running in World App with MiniKit
+      const hasWindowMiniKit = typeof window !== 'undefined' && (window as any).MiniKit;
+      if (hasWindowMiniKit) {
         console.log('✅ Using MiniKit wallet auth for verification');
+        const MiniKit = (window as any).MiniKit;
         
-        const result = await walletAuth();
-        console.log('✅ Wallet auth payload received:', result);
-        
-        // Send to backend for SIWE verification
-        const res = await fetch('/api/complete-siwe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ payload: result })
-        });
-        
-        const data = await res.json();
-        console.log('✅ SIWE verification response:', data);
-        
-        if (data.status === 'ok' && data.isValid) {
-          console.log('✅ Wallet authenticated successfully');
-          onVerify();
+        // Use MiniKit.commandsAsync.walletAuth (new API)
+        if (MiniKit.commandsAsync?.walletAuth) {
+          const nonce = crypto.randomUUID().replace(/-/g, '');
+          const result = await MiniKit.commandsAsync.walletAuth({ nonce });
+          const walletData = result.finalPayload;
+          console.log('✅ Wallet auth payload received:', walletData);
+          
+          // Send to backend for SIWE verification
+          const res = await fetch('/api/complete-siwe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payload: walletData })
+          });
+          
+          const data = await res.json();
+          console.log('✅ SIWE verification response:', data);
+          
+          if (data.status === 'ok' && data.isValid) {
+            console.log('✅ Wallet authenticated successfully');
+            onVerify();
+          } else {
+            const errorMsg = data.message || 'Wallet authentication failed';
+            throw new Error(errorMsg);
+          }
         } else {
-          const errorMsg = data.message || 'Wallet authentication failed';
-          throw new Error(errorMsg);
+          console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available');
+          throw new Error('Wallet auth not available');
         }
       } else {
         // Fallback: Skip verification or show error
-        console.warn('⚠️ MiniKit not ready, skipping authentication');
+        console.warn('⚠️ MiniKit not available, skipping authentication');
         // For now, just proceed without verification
         onVerify();
       }
