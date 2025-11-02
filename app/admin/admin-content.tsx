@@ -11,20 +11,23 @@ import {
 import { ethers } from "ethers";
 import { TREASURY_ADDRESS, TOKEN_NAME, POOLS, MEMBERSHIP_TIERS } from '@/lib/utils/constants';
 import { formatNumber } from '@/lib/utils/helpers';
+import { MiniKit, MiniAppWalletAuthSuccessPayload } from '@worldcoin/minikit-js';
 // Admin wallet address - configure this in .env.local as ADMIN_WALLET_ADDRESS
 const ADMIN_WALLET_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || TREASURY_ADDRESS;
 
-// Simple useMiniKit for admin page
-const useMiniKit = () => {
+// Simple useMiniKit for admin page - uses direct MiniKit API
+const useMiniKitForAdmin = () => {
   const [wallet, setWallet] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userInfo, setUserInfo] = useState<{ name?: string; username?: string } | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Check if MiniKit is available
-    if (typeof window !== 'undefined' && (window as any).MiniKit) {
-      setReady(true);
+    // Check if MiniKit is available using official API
+    try {
+      setReady(MiniKit.isInstalled());
+    } catch (e: any) {
+      setReady(false);
     }
   }, []);
 
@@ -33,12 +36,14 @@ const useMiniKit = () => {
     
     const connectWallet = async () => {
       try {
-        if (typeof window !== 'undefined' && (window as any).MiniKit?.walletAuth) {
-          const walletData = await (window as any).MiniKit.walletAuth();
+        if (MiniKit.isInstalled() && MiniKit.commandsAsync?.walletAuth) {
+          const nonce = crypto.randomUUID().replace(/-/g, '');
+          const result = await MiniKit.commandsAsync.walletAuth({ nonce });
+          const walletData = result.finalPayload as MiniAppWalletAuthSuccessPayload;
           if (walletData?.address) {
-            setWallet({ address: walletData.address, name: walletData.name, username: walletData.username });
+            setWallet({ address: walletData.address });
             setIsConnected(true);
-            setUserInfo({ name: walletData.name, username: walletData.username });
+            setUserInfo(null); // MiniKit API doesn't provide name/username
           }
         }
       } catch (error) {
@@ -59,7 +64,7 @@ const useMiniKit = () => {
 };
 
 const AdminPage = () => {
-  const { miniKitReady, getWalletInfo } = useMiniKit();
+  const { miniKitReady, getWalletInfo } = useMiniKitForAdmin();
   const walletInfo = useMemo(() => getWalletInfo(), [getWalletInfo]);
   const walletAddress = walletInfo.address;
   const isConnected = walletInfo.isConnected;
