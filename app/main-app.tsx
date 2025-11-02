@@ -644,57 +644,50 @@ const WorldAppRequired = () => (
 );
 
 const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
-  const { verify: verifyFunc, ready: miniKitReady } = useMiniKitVerify();
+  const { walletAuth, ready: miniKitReady } = useMiniKitVerify();
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
-  const action = (process.env.WORLD_ACTION || WORLD_ACTION) as string;
 
   const handleVerify = async () => {
     setIsVerifying(true);
     setVerifyError(null);
     
     try {
-      console.log('🔄 Starting verification...', { miniKitReady, hasWindowMiniKit: !!(typeof window !== 'undefined' && (window as any).MiniKit) });
+      console.log('🔄 Starting wallet authentication...', { miniKitReady, hasWindowMiniKit: !!(typeof window !== 'undefined' && (window as any).MiniKit) });
       
-      // Use MiniKit verify if available (inside World App)
+      // Use MiniKit walletAuth (SIWE - Sign-In With Ethereum) for authentication
       if (miniKitReady) {
-        console.log('✅ Using MiniKit for verification');
+        console.log('✅ Using MiniKit wallet auth for verification');
         
-        const result = await verifyFunc(action);
-        console.log('✅ Verification payload received:', result);
+        const result = await walletAuth();
+        console.log('✅ Wallet auth payload received:', result);
         
-        // Send to backend for verification
-        const res = await fetch('/api/verify', {
+        // Send to backend for SIWE verification
+        const res = await fetch('/api/complete-siwe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ payload: result, action })
+          body: JSON.stringify({ payload: result })
         });
         
         const data = await res.json();
-        console.log('✅ Backend verification response:', data);
+        console.log('✅ SIWE verification response:', data);
         
-        // Check if already verified (max_verifications_reached)
-        if (data.detail?.code === 'max_verifications_reached') {
-          console.log('✅ User already verified, proceeding...');
-          onVerify();
-          return;
-        }
-        
-        if (data.success) {
+        if (data.status === 'ok' && data.isValid) {
+          console.log('✅ Wallet authenticated successfully');
           onVerify();
         } else {
-          const errorMsg = data.error || data.detail?.detail || data.detail?.code || 'Verification failed';
+          const errorMsg = data.message || 'Wallet authentication failed';
           throw new Error(errorMsg);
         }
       } else {
         // Fallback: Skip verification or show error
-        console.warn('⚠️ MiniKit not ready, skipping verification');
+        console.warn('⚠️ MiniKit not ready, skipping authentication');
         // For now, just proceed without verification
         onVerify();
       }
     } catch (error: any) {
-      console.error('❌ Verification error:', error);
-      setVerifyError(error.message || 'Verification failed');
+      console.error('❌ Authentication error:', error);
+      setVerifyError(error.message || 'Authentication failed');
     } finally {
       setIsVerifying(false);
     }
