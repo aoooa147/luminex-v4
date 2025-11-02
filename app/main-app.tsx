@@ -644,7 +644,6 @@ const WorldAppRequired = () => (
 );
 
 const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
-  const { walletAuth, ready: miniKitReady } = useMiniKitVerify();
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
@@ -653,10 +652,10 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
     setVerifyError(null);
     
     try {
-      console.log('🔄 Starting wallet authentication...', { miniKitReady, hasWindowMiniKit: !!(typeof window !== 'undefined' && (window as any).MiniKit) });
-      
       // Check if running in World App with MiniKit
       const hasWindowMiniKit = typeof window !== 'undefined' && (window as any).MiniKit;
+      console.log('🔄 Starting wallet authentication...', { hasWindowMiniKit });
+      
       if (hasWindowMiniKit) {
         console.log('✅ Using MiniKit wallet auth for verification');
         const MiniKit = (window as any).MiniKit;
