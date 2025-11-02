@@ -11,7 +11,7 @@ const MiniKitPanel = dynamic(() => import('@/components/MiniKitPanel'), { ssr: f
 import { 
   Wallet, Shield, Coins, TrendingUp, Settings, Gift, Users, Zap, Lock, Unlock, 
   AlertTriangle, ExternalLink, Copy, Check, Loader2, Clock, Star, Droplet,
-  DollarSign, Eye, BarChart3, Flame, Trophy, Award, TrendingDown, Globe, 
+  DollarSign, Eye, BarChart3, Flame, Trophy, Award, TrendingDown, Globe,
   PiggyBank, CreditCard, Gem, Sparkles, Crown, Rocket, DollarSign as DollarIcon,
   Calendar, Timer, TrendingUp as TrendingIcon, Share2, UserPlus, QrCode
 } from "lucide-react";
@@ -481,52 +481,9 @@ const useMiniKit = () => {
         } else {
           console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available');
         }
-      } else if (typeof window !== 'undefined' && (window as any).ethereum) {
-        // Fallback to MetaMask or other Web3 wallets
-        // Check if it's actually MetaMask (not other providers like TronLink/Bybit)
-        try {
-          const ethereum = (window as any).ethereum;
-          // Only proceed if it's MetaMask or has isMetaMask property
-          if (ethereum.isMetaMask || (ethereum.providers && ethereum.providers.find((p: any) => p.isMetaMask))) {
-            console.log('🔗 Connecting to MetaMask...');
-            const metaMaskProvider = ethereum.isMetaMask 
-              ? ethereum 
-              : ethereum.providers.find((p: any) => p.isMetaMask);
-            
-            try {
-              const accounts = await metaMaskProvider.request({ method: 'eth_requestAccounts' });
-              if (accounts && accounts.length > 0 && typeof accounts[0] === 'string') {
-                setWallet({ address: accounts[0] });
-                setIsConnected(true);
-                
-                const rpcProvider = new ethers.BrowserProvider(metaMaskProvider);
-                setProvider(rpcProvider);
-                
-                console.log('✅ Connected to wallet:', accounts[0]);
-              } else {
-                console.warn('⚠️ No accounts returned from MetaMask');
-              }
-            } catch (error: any) {
-              // Silent fail for MetaMask - it's optional fallback
-              if (error.code === 4001) {
-                console.log('ℹ️ User rejected MetaMask connection');
-              } else if (error.message?.includes('extension not found') || error.code === 'NO_METAMASK') {
-                // MetaMask not installed - silent fail
-                console.log('ℹ️ MetaMask extension not found');
-              } else {
-                console.warn('⚠️ MetaMask connection error (non-critical):', error.message || error);
-              }
-            }
-          } else {
-            console.log('ℹ️ Other wallet provider detected, skipping (using World App MiniKit)');
-          }
-        } catch (error: any) {
-          // Catch any errors during provider detection
-          console.log('ℹ️ Error detecting wallet provider:', error.message || error);
-        }
       } else {
-        // No wallet provider - this is fine if using World App MiniKit
-        console.log('ℹ️ No external wallet provider (using World App MiniKit)');
+        // Not in World App - this is fine for web browser testing
+        console.log('ℹ️ Not running in World App (web browser mode)');
       }
     } catch (error) {
       console.error('❌ Error connecting wallet:', error);
@@ -643,35 +600,6 @@ const isWorldApp = () => {
   const envOverride = (process.env.NEXT_PUBLIC_FORCE_INAPP || '').toString() === 'true';
   return hasMiniKit || looksLikeWorldApp || queryOverride || envOverride;
 };
-
-const WorldAppRequired = () => (
-  <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full text-center border border-white/20"
-    >
-      <Globe className="w-16 h-16 text-white mx-auto mb-6" />
-      <h1 className="text-2xl font-bold text-white mb-4">World App Required</h1>
-      <p className="text-white/80 mb-6">
-        This Mini App can only be used within the World App. Please open it in World App to continue.
-      </p>
-      <div className="bg-white/10 rounded-xl p-4 mb-6">
-        <p className="text-sm text-white/70">
-          Download World App from your app store and search for "Luminex" to find this Mini App.
-        </p>
-      </div>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-xl"
-        onClick={() => window.open('https://world.org', '_blank')}
-      >
-        Download World App
-      </motion.button>
-    </motion.div>
-  </div>
-);
 
 const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
   const [isVerifying, setIsVerifying] = useState(false);
@@ -1503,8 +1431,7 @@ const LuminexApp = () => {
     }
   };
 
-  // Allow web browser access for testing (World App check removed temporarily)
-  // if (!isWorldApp()) return <WorldAppRequired />;
+  // Skip World App requirement check to allow web browser testing
   if (!verified && isWorldApp()) return <WorldIDVerification onVerify={() => setVerified(true)} />;
   
   // For web browsers, skip verification and allow mock balance
