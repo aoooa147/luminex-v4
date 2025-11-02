@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
 
 const InviteContent = dynamic(() => import('./invite-content'), {
   ssr: false,
@@ -16,8 +15,5 @@ const InviteContent = dynamic(() => import('./invite-content'), {
 });
 
 export default function InvitePage() {
-  const params = useParams();
-  const code = params?.code as string;
-  
-  return <InviteContent referralCode={code} />;
+  return <InviteContent />;
 }

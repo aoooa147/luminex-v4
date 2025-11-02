@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Loader2 } from 'lucide-react';
-import { WORLD_APP_ID } from '../utils/constants';
+import { WORLD_APP_ID } from '@/lib/utils/constants';
 
 export default function InvitePage() {
   const router = useRouter();

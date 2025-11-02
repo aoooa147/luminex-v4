@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Shield, Users, DollarSign, TrendingUp, BarChart3, Settings, 
@@ -11,10 +11,52 @@ import {
 import { ethers } from "ethers";
 import { TREASURY_ADDRESS, TOKEN_NAME, POOLS, MEMBERSHIP_TIERS } from '@/lib/utils/constants';
 import { formatNumber } from '@/lib/utils/helpers';
-import { useMiniKit } from '@/hooks/useMiniKit';
-
 // Admin wallet address - configure this in .env.local as ADMIN_WALLET_ADDRESS
 const ADMIN_WALLET_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || TREASURY_ADDRESS;
+
+// Simple useMiniKit for admin page
+const useMiniKit = () => {
+  const [wallet, setWallet] = useState<any>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ name?: string; username?: string } | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Check if MiniKit is available
+    if (typeof window !== 'undefined' && (window as any).MiniKit) {
+      setReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    
+    const connectWallet = async () => {
+      try {
+        if (typeof window !== 'undefined' && (window as any).MiniKit?.walletAuth) {
+          const walletData = await (window as any).MiniKit.walletAuth();
+          if (walletData?.address) {
+            setWallet({ address: walletData.address, name: walletData.name, username: walletData.username });
+            setIsConnected(true);
+            setUserInfo({ name: walletData.name, username: walletData.username });
+          }
+        }
+      } catch (error) {
+        console.error('Error connecting wallet:', error);
+      }
+    };
+    
+    connectWallet();
+  }, [ready]);
+
+  const getWalletInfo = useCallback(() => ({
+    address: wallet?.address,
+    isConnected,
+    user: userInfo
+  }), [wallet, isConnected, userInfo]);
+
+  return { miniKitReady: ready, getWalletInfo };
+};
 
 const AdminPage = () => {
   const { miniKitReady, getWalletInfo } = useMiniKit();
@@ -92,8 +134,8 @@ const AdminPage = () => {
       await loadAdminStats();
       
       // Haptic feedback
-      if (window.MiniKit?.commandsAsync?.sendHapticFeedback) {
-        await window.MiniKit.commandsAsync.sendHapticFeedback({ type: 'success' });
+      if ((window as any).MiniKit?.commandsAsync?.sendHapticFeedback) {
+        await (window as any).MiniKit.commandsAsync.sendHapticFeedback({ type: 'success' });
       }
     } catch (error) {
       console.error('Error refreshing stats:', error);

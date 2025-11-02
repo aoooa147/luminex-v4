@@ -3,9 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { MiniKitProvider } from '@worldcoin/minikit-js/minikit-provider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import dynamic from 'next/dynamic';
-
-const BrandStyle = dynamic(() => import('@/components/BrandStyle'), { ssr: false });
+import BrandStyle from '@/components/BrandStyle';
 
 const inter = Inter({ subsets: ['latin'] });
 
