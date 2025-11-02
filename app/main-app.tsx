@@ -1103,9 +1103,7 @@ const LuminexApp = () => {
   }, [actualAddress, provider, selectedPool, fetchStakingData, debouncedFetchStakingData]);
 
   useEffect(() => {
-    if (!isWorldApp()) return;
-    
-    // Get verified status and address from sessionStorage
+    // Get verified status and address from sessionStorage (for both World App and web)
     if (typeof window !== 'undefined') {
       const verifiedFromStorage = sessionStorage.getItem('verified');
       if (verifiedFromStorage === 'true') {
