@@ -673,10 +673,18 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
         const data = await res.json();
         console.log('✅ Backend verification response:', data);
         
+        // Check if already verified (max_verifications_reached)
+        if (data.detail?.code === 'max_verifications_reached') {
+          console.log('✅ User already verified, proceeding...');
+          onVerify();
+          return;
+        }
+        
         if (data.success) {
           onVerify();
         } else {
-          throw new Error(data.error || 'Verification failed');
+          const errorMsg = data.error || data.detail?.detail || data.detail?.code || 'Verification failed';
+          throw new Error(errorMsg);
         }
       } else {
         // Fallback: Skip verification or show error
