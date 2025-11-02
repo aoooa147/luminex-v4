@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Credit both referrer and new user with rewards
 
-import { NextRequest, NextResponse } from 'next/server';
-
 interface ProcessReferralRequest {
   newUserId: string; // Wallet address of new user
   referrerCode: string; // Referral code of referrer

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from "next/headers";
 
 // The nonce must be at least 8 alphanumeric characters and created in backend
-
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {

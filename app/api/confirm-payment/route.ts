@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { z } from 'zod';
-import { takeToken } from '../../utils/rateLimit';
-import { env } from '../../utils/env';
-import { requestId } from '../../utils/requestId';
+import { takeToken } from '@/lib/utils/rateLimit';
+import { env } from '@/lib/utils/env';
+import { requestId } from '@/lib/utils/requestId';
 
 const BodySchema = z.object({ payload: z.object({ transaction_id: z.string(), reference: z.string() }) });
 
-export async function POST(request: NextRequest, ) {
+export async function POST(request: NextRequest) {
   const rid = requestId();
-  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed', rid });
-  const ip = (req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'anon').split(',')[0].trim();
-  if (!takeToken(ip)) return res.status(429).json({ success: false, error: 'Too many requests', rid });
+  const ip = (request.headers.get('x-forwarded-for') || 'anon').split(',')[0].trim();
+  if (!takeToken(ip)) {
+    return NextResponse.json({ success: false, error: 'Too many requests', rid }, { status: 429 });
+  }
 
   try {
-    const { payload } = BodySchema.parse(req.body || {});
+    const body = await request.json();
+    const { payload } = BodySchema.parse(body);
     if (!env.WORLD_API_KEY || !env.NEXT_PUBLIC_WORLD_APP_ID) {
-      return res.status(500).json({ success: false, error: 'Server missing WORLD_API_KEY or NEXT_PUBLIC_WORLD_APP_ID', rid });
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Server missing WORLD_API_KEY or NEXT_PUBLIC_WORLD_APP_ID', 
+        rid 
+      }, { status: 500 });
     }
 
     const url = `https://developer.worldcoin.org/api/v2/minikit/transaction/${payload.transaction_id}?app_id=${encodeURIComponent(env.NEXT_PUBLIC_WORLD_APP_ID)}&type=miniapp`;
@@ -39,11 +45,17 @@ export async function POST(request: NextRequest, ) {
         if (r.ok) {
           const data = await r.json();
           console.log(`[confirm-payment] rid=%s ip=%s tx=%s ref=%s status=%s attempt=%d`, rid, ip, payload.transaction_id, payload.reference, data?.transaction_status || data?.status, attempt);
-          return res.status(200).json({ success: true, transaction: data, rid });
+          return NextResponse.json({ success: true, transaction: data, rid });
         } else if (r.status >= 400 && r.status < 500) {
           const text = await r.text();
           console.warn(`[confirm-payment] client_error rid=%s status=%d body=%s`, rid, r.status, text);
-          return res.status(r.status).json({ success: false, error: 'Developer API 4xx', status: r.status, body: text, rid });
+          return NextResponse.json({ 
+            success: false, 
+            error: 'Developer API 4xx', 
+            status: r.status, 
+            body: text, 
+            rid 
+          }, { status: r.status });
         } else {
           lastErr = new Error(`Developer API ${r.status}`);
         }
@@ -54,9 +66,9 @@ export async function POST(request: NextRequest, ) {
       await new Promise(r => setTimeout(r, attempt * 500));
     }
     console.error(`[confirm-payment] failed rid=%s tx=%s ref=%s err=%s`, rid, payload.transaction_id, payload.reference, lastErr?.message);
-    return res.status(502).json({ success: false, error: 'Developer API error or timeout', rid });
+    return NextResponse.json({ success: false, error: 'Developer API error or timeout', rid }, { status: 502 });
   } catch (e: any) {
     console.error(`[confirm-payment] bad_request rid=%s err=%s`, rid, e?.message);
-    return res.status(400).json({ success: false, error: e?.message || 'Bad request', rid });
+    return NextResponse.json({ success: false, error: e?.message || 'Bad request', rid }, { status: 400 });
   }
 }
