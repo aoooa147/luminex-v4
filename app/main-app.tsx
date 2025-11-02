@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
-import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION } from '@/lib/utils/constants';
+import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS } from '@/lib/utils/constants';
 import { useMiniKit as useMiniKitVerify } from '@/hooks/useMiniKit';
 const MiniKitPanel = dynamic(() => import('@/components/MiniKitPanel'), { ssr: false });
 import { 
@@ -26,11 +26,34 @@ const WORLD_APP_ID /* original: app_0ebc1640de72f393da01afc094665266 */ = (ENV_W
 const WORLD_ACTION /* original: luminexstaking */ = (ENV_WORLD_ACTION || "luminexstaking");
 
 // Contract addresses - Update these with your deployed contract addresses
-const LUX_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_LUX_TOKEN_ADDRESS || "0x6289D5B756982bbc2535f345D9D68Cb50c853F35";
-const STAKING_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_STAKING_ADDRESS || "";
-const WLD_TOKEN_ADDRESS = "0x163f8C2467924Be0aE7B5347228CABF260318753";
+const LUX_TOKEN_ADDRESS = LUX_TOKEN_ADDRESS_FROM_CONSTANTS;
+const STAKING_CONTRACT_ADDRESS = STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS;
+const WLD_TOKEN_ADDRESS = WLD_TOKEN_ADDRESS_FROM_CONSTANTS;
 
-// Optimism Sepolia testnet RPC
+// Helper function to get RPC URL based on chain ID
+const getRpcUrlForChainId = (chainId: number | null): string => {
+  if (!chainId) {
+    // Default to Worldchain mainnet for WLD
+    return WALLET_RPC_URL;
+  }
+  
+  // Map chain IDs to RPC URLs
+  switch (chainId) {
+    case 480: // Worldchain mainnet
+      return WALLET_RPC_URL;
+    case 10: // Optimism mainnet
+      return CONTRACT_RPC_URL;
+    case 11155420: // Optimism Sepolia
+      return "https://sepolia.optimism.io";
+    case 1: // Ethereum mainnet
+      return "https://eth.llamarpc.com";
+    default:
+      console.warn(`⚠️ Unknown chain ID: ${chainId}, using Worldchain`);
+      return WALLET_RPC_URL;
+  }
+};
+
+// Optimism Sepolia testnet RPC (legacy)
 const RPC_URL = "https://sepolia.optimism.io";
 
 // ERC20 ABI for balance checking and approvals
@@ -440,11 +463,18 @@ const useMiniKit = () => {
             setIsConnected(true);
             setUserInfo(null); // MiniKit API doesn't provide name/username
             
+            // Get chain ID from sessionStorage (set by SIWE verification)
+            const chainIdStr = typeof window !== 'undefined' ? sessionStorage.getItem('chainId') : null;
+            const chainId = chainIdStr ? parseInt(chainIdStr, 10) : null;
+            const rpcUrl = getRpcUrlForChainId(chainId);
+            
+            console.log('🔗 Using RPC URL:', rpcUrl, 'for chain ID:', chainId);
+            
             // Create provider for reading blockchain data
-            const rpcProvider = new ethers.JsonRpcProvider(RPC_URL);
+            const rpcProvider = new ethers.JsonRpcProvider(rpcUrl);
             setProvider(rpcProvider);
             
-            console.log('✅ Connected to wallet:', walletData.address);
+            console.log('✅ Connected to wallet:', walletData.address, 'on chain:', chainId);
           } else {
             console.warn('⚠️ MiniKit walletAuth returned no address');
           }
@@ -680,12 +710,17 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           
         if (data.status === 'ok' && data.isValid) {
           console.log('✅ Wallet authenticated successfully');
+          console.log('✅ SIWE message data:', data.siweMessageData);
           
           // Store verification status in sessionStorage
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('verified', 'true');
             if (walletData.address) {
               sessionStorage.setItem('verifiedAddress', walletData.address);
+            }
+            // Store chain ID if available
+            if (data.siweMessageData?.chain_id) {
+              sessionStorage.setItem('chainId', String(data.siweMessageData.chain_id));
             }
           }
           
