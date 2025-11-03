@@ -460,6 +460,7 @@ const useMiniKit = () => {
           const walletData = result.finalPayload;
           
           console.log('🔍 Wallet auth result:', { result, finalPayload: walletData });
+          console.log('🔍 Full walletData object keys:', walletData ? Object.keys(walletData) : 'no data');
           
           if (walletData?.address) {
             console.log('🔍 Setting wallet state with address:', walletData.address);
@@ -476,6 +477,7 @@ const useMiniKit = () => {
             } else {
               setUserInfo(null); // MiniKit API doesn't provide name/username
               console.log('⚠️ No user info found in walletData');
+              console.log('⚠️ walletData contents:', JSON.stringify(walletData, null, 2));
             }
             
             // Always use Worldchain for World App MiniKit
