@@ -2,6 +2,7 @@
 
 /// <reference path="../luminex-unified-app.ts" />
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
@@ -851,6 +852,8 @@ const LuminexApp = () => {
   const [language, setLanguage] = useState('en');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [languageButtonRect, setLanguageButtonRect] = useState<DOMRect | null>(null);
+  const languageButtonRef = React.useRef<HTMLDivElement>(null);
 
   // Memoize translation function to avoid recreating on every render
   const t = useMemo(() => {
@@ -1226,6 +1229,16 @@ const LuminexApp = () => {
     return () => clearInterval(interval);
   }, [actualAddress, fetchBalance, debouncedFetchBalance]);
 
+  // Calculate language button position when menu opens
+  useEffect(() => {
+    if (showLanguageMenu && languageButtonRef.current) {
+      const rect = languageButtonRef.current.getBoundingClientRect();
+      setLanguageButtonRect(rect);
+    } else {
+      setLanguageButtonRect(null);
+    }
+  }, [showLanguageMenu]);
+
   // Close language menu when clicking outside
   useEffect(() => {
     if (!showLanguageMenu) return;
@@ -1536,7 +1549,7 @@ const LuminexApp = () => {
                   })()}
                   </span>
                 </div>
-              <div className="relative language-menu z-[9999]">
+              <div ref={languageButtonRef} className="relative language-menu z-[9999]">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -1558,34 +1571,39 @@ const LuminexApp = () => {
                 
                 {/* Language Dropdown */}
                 <AnimatePresence>
-                  {showLanguageMenu && (
+                  {showLanguageMenu && typeof window !== 'undefined' && languageButtonRect && createPortal(
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-[9999]"
+                      className="fixed w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-[9999]"
+                      style={{ 
+                        top: `${languageButtonRect.bottom + 4}px`,
+                        right: `${window.innerWidth - languageButtonRect.right}px`
+                      }}
                     >
                       {LANGUAGES.map((lang) => (
-                  <button
-                          type="button"
-                          key={lang.code}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('Language selected:', lang.code);
-                            setLanguage(lang.code);
-                            setShowLanguageMenu(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
-                            language === lang.code ? 'bg-purple-500/20 text-purple-300' : 'text-white'
-                          }`}
-                        >
-                          <span className="text-lg">{lang.flag}</span>
-                          <span className="text-sm font-medium">{lang.name}</span>
-                  </button>
-                      ))}
-                    </motion.div>
-                )}
+                <button
+                        type="button"
+                        key={lang.code}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Language selected:', lang.code);
+                          setLanguage(lang.code);
+                          setShowLanguageMenu(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
+                          language === lang.code ? 'bg-purple-500/20 text-purple-300' : 'text-white'
+                        }`}
+                      >
+                        <span className="text-lg">{lang.flag}</span>
+                        <span className="text-sm font-medium">{lang.name}</span>
+                </button>
+                    ))}
+                    </motion.div>,
+                    document.body
+                  )}
                 </AnimatePresence>
               </div>
             </div>
