@@ -1536,7 +1536,7 @@ const LuminexApp = () => {
                   })()}
                   </span>
                 </div>
-              <div className="relative language-menu">
+              <div className="relative language-menu z-50">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -1563,7 +1563,7 @@ const LuminexApp = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-50"
+                      className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-[60]"
                     >
                       {LANGUAGES.map((lang) => (
                   <button
@@ -1590,7 +1590,7 @@ const LuminexApp = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between bg-black/40 rounded-xl px-3 py-2.5 backdrop-blur-lg border border-white/10">
+            <div className="relative z-40 flex items-center justify-between bg-black/40 rounded-xl px-3 py-2.5 backdrop-blur-lg border border-white/10">
               <div className="flex items-center text-white">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-2">
                   <Wallet className="w-4 h-4" />
