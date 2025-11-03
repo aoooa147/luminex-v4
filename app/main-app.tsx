@@ -465,7 +465,18 @@ const useMiniKit = () => {
             console.log('🔍 Setting wallet state with address:', walletData.address);
             setWallet({ address: walletData.address });
             setIsConnected(true);
-            setUserInfo(null); // MiniKit API doesn't provide name/username
+            
+            // Try to extract user info from walletData if available
+            if (walletData?.name || walletData?.username) {
+              setUserInfo({ 
+                name: walletData.name, 
+                username: walletData.username 
+              });
+              console.log('✅ Found user info:', { name: walletData.name, username: walletData.username });
+            } else {
+              setUserInfo(null); // MiniKit API doesn't provide name/username
+              console.log('⚠️ No user info found in walletData');
+            }
             
             // Always use Worldchain for World App MiniKit
             console.log('🔗 Using Worldchain RPC URL:', WALLET_RPC_URL);
