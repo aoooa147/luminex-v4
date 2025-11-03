@@ -1103,18 +1103,27 @@ const LuminexApp = () => {
   }, [actualAddress, provider, selectedPool, fetchStakingData, debouncedFetchStakingData]);
 
   useEffect(() => {
-    // Get verified status and address from sessionStorage (for both World App and web)
+    // Get verified status and address from sessionStorage
     if (typeof window !== 'undefined') {
-      const verifiedFromStorage = sessionStorage.getItem('verified');
-      if (verifiedFromStorage === 'true') {
-        setVerified(true);
-        console.log('✅ Loaded verified status from session');
-      }
-      
-      const verifiedAddr = sessionStorage.getItem('verifiedAddress');
-      if (verifiedAddr) {
-        setVerifiedAddress(verifiedAddr);
-        console.log('✅ Loaded verified address from session:', verifiedAddr);
+      // For World App: load verified status and address
+      if (isWorldApp()) {
+        const verifiedFromStorage = sessionStorage.getItem('verified');
+        if (verifiedFromStorage === 'true') {
+          setVerified(true);
+          console.log('✅ Loaded verified status from session (World App)');
+        }
+        
+        const verifiedAddr = sessionStorage.getItem('verifiedAddress');
+        if (verifiedAddr) {
+          setVerifiedAddress(verifiedAddr);
+          console.log('✅ Loaded verified address from session:', verifiedAddr);
+        }
+      } else {
+        // For web browsers: use mock address for testing
+        const mockAddress = '0x1234567890123456789012345678901234567890';
+        setVerifiedAddress(mockAddress);
+        setVerified(true); // Auto-verify for web testing
+        console.log('🌐 Running in web browser, using mock address for testing');
       }
       
       const userName = sessionStorage.getItem('userName');
