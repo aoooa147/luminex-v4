@@ -458,7 +458,10 @@ const useMiniKit = () => {
           const result = await MiniKit.commandsAsync.walletAuth({ nonce });
           const walletData = result.finalPayload;
           
+          console.log('🔍 Wallet auth result:', { result, finalPayload: walletData });
+          
           if (walletData?.address) {
+            console.log('🔍 Setting wallet state with address:', walletData.address);
             setWallet({ address: walletData.address });
             setIsConnected(true);
             setUserInfo(null); // MiniKit API doesn't provide name/username
@@ -471,8 +474,10 @@ const useMiniKit = () => {
             setProvider(rpcProvider);
             
             console.log('✅ Connected to wallet:', walletData.address, 'on Worldchain');
+            console.log('✅ Wallet state will be updated. actualAddress should be:', walletData.address);
           } else {
             console.warn('⚠️ MiniKit walletAuth returned no address');
+            console.warn('⚠️ Wallet data:', walletData);
           }
         } else {
           console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available');
@@ -862,7 +867,16 @@ const LuminexApp = () => {
 
   // Get the actual address to use (prioritize wallet, then verified address)
   const actualAddress = useMemo(
-    () => wallet?.address || verifiedAddress || userAddress || null,
+    () => {
+      const addr = wallet?.address || verifiedAddress || userAddress || null;
+      console.log('🔍 actualAddress calculated:', { 
+        fromWallet: wallet?.address, 
+        fromVerified: verifiedAddress, 
+        fromUser: userAddress, 
+        final: addr 
+      });
+      return addr;
+    },
     [wallet?.address, verifiedAddress, userAddress]
   );
 
