@@ -1,7 +1,8 @@
 'use client';
 
 /// <reference path="../luminex-unified-app.ts" />
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
@@ -1533,7 +1534,7 @@ const LuminexApp = () => {
             
           {/* User ID & Balance */}
           <div className="mt-3 space-y-2 overflow-visible">
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl px-3 py-2 flex items-center justify-between backdrop-blur-lg border border-purple-400/30 relative isolate overflow-visible">
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl px-3 py-2 flex items-center justify-between backdrop-blur-lg border border-purple-400/30 relative overflow-visible">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">U</span>
