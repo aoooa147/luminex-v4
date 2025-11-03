@@ -966,17 +966,25 @@ const LuminexApp = () => {
           const response = await fetch('/api/wld-balance', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: addressToUse })
+            body: JSON.stringify({ address: addressToUse }),
+            cache: 'no-store' // Disable fetch caching for fresh balance data
           });
           
           const data = await response.json();
           console.log('🔍 API response:', data);
           
           if (data.success) {
-            setWldBalance(data.balance);
+            // Normalize the API response (handles both old and new formats)
+            const balance = data.balance ?? data.formatted ?? 0;
+            const rawBalance = data.rawBalance ?? data.raw ?? '0';
+            const decimals = data.decimals ?? 18;
+            
+            console.log('🔍 Normalized API data:', { balance, rawBalance, decimals });
+            
+            setWldBalance(balance);
             setBalance(0); // LUX balance not used, set to 0
-            console.log('✅ WLD Balance fetched via API:', data.balance, 'WLD');
-            console.log('🔍 Raw balance (wei):', data.rawBalance, 'decimals:', data.decimals);
+            console.log('✅ WLD Balance fetched via API:', balance, 'WLD');
+            console.log('🔍 Raw balance (wei):', rawBalance, 'decimals:', decimals);
           } else {
             console.error('❌ API returned error:', data.error);
             // Fallback to direct RPC call

@@ -4,6 +4,9 @@ import { takeToken } from '@/lib/utils/rateLimit';
 import { WALLET_RPC_URL, WLD_TOKEN_ADDRESS } from '@/lib/utils/constants';
 import { ethers } from 'ethers';
 
+// Force Node.js runtime for this API route
+export const runtime = 'nodejs';
+
 const BodySchema = z.object({ 
   address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address')
 });
@@ -24,10 +27,31 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Validate that token address is configured
+    if (!WLD_TOKEN_ADDRESS || WLD_TOKEN_ADDRESS === '') {
+      console.error('[wld-balance] WLD_TOKEN_ADDRESS is not configured');
+      return NextResponse.json({ 
+        success: false,
+        error: 'WLD token address not configured',
+        balance: 0
+      }, { status: 500 });
+    }
+    
+    // Validate RPC URL is configured
+    if (!WALLET_RPC_URL || WALLET_RPC_URL === '') {
+      console.error('[wld-balance] WALLET_RPC_URL is not configured');
+      return NextResponse.json({ 
+        success: false,
+        error: 'Worldchain RPC URL not configured',
+        balance: 0
+      }, { status: 500 });
+    }
+    
     const body = await request.json();
     const { address } = BodySchema.parse(body);
     
     console.log('[wld-balance] Fetching balance for:', address);
+    console.log('[wld-balance] Config:', { WLD_TOKEN_ADDRESS, WALLET_RPC_URL });
     
     // Create provider for Worldchain
     const provider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
