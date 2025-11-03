@@ -613,7 +613,7 @@ const useMiniKit = () => {
     return null;
   };
 
-  return { wallet, isConnected, connectWallet, requestPayment, provider, userInfo, getSigner };
+  return { wallet, isConnected, connectWallet, requestPayment, provider, userInfo, setUserInfo, getSigner };
 };
 
 // Optimized formatNumber function with validation
@@ -870,7 +870,7 @@ const LuminexApp = () => {
   const [verified, setVerified] = useState(false);
   const [verifiedAddress, setVerifiedAddress] = useState<string | null>(null);
   const { userAddress } = useWorldID();
-  const { wallet, isConnected, connectWallet, requestPayment, provider, userInfo, getSigner } = useMiniKit();
+  const { wallet, isConnected, connectWallet, requestPayment, provider, userInfo, setUserInfo, getSigner } = useMiniKit();
   const [activeTab, setActiveTab] = useState<'staking' | 'membership' | 'referral'>('staking');
   const [selectedPool, setSelectedPool] = useState(0);
   const [stakeAmount, setStakeAmount] = useState('');
