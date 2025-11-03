@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         username = names[0];
         console.log('[user-profile] Resolved ENS name:', username);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log('[user-profile] ENS resolution failed or not on mainnet:', e?.message);
     }
     
