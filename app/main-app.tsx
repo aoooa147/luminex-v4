@@ -958,48 +958,57 @@ const LuminexApp = () => {
         setBalance(0); // LUX balance not used, set to 0
         console.log('✅ Mock WLD Balance (web):', mockWldBalance);
       } else {
-        // For World App: fetch real balance from Worldchain
-        console.log('📱 Running in World App, fetching real WLD balance from Worldchain');
-        console.log('🔍 Worldchain config:', { WALLET_RPC_URL, WLD_TOKEN_ADDRESS, addressToUse });
-        const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
-        console.log('🔍 Provider created, getting WLD contract...');
-        const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
-        console.log('🔍 Calling balanceOf on WLD contract for address:', addressToUse);
+        // For World App: fetch real balance using server-side API
+        console.log('📱 Running in World App, fetching WLD balance via API');
+        console.log('🔍 Using API route for balance fetch');
         
         try {
-          const wldBalanceBN = await wldContract.balanceOf(addressToUse);
-          console.log('🔍 Raw WLD balance (wei):', wldBalanceBN.toString());
-          console.log('🔍 Is zero?', wldBalanceBN.toString() === '0');
-          
-          let wldDecimals = 18; // Default to 18 decimals for WLD
-          try {
-            wldDecimals = await wldContract.decimals();
-            console.log('🔍 WLD decimals:', wldDecimals);
-          } catch (e) {
-            console.warn('⚠️ Could not fetch WLD decimals, using default 18:', e);
-          }
-          
-          const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, wldDecimals));
-          console.log('🔍 Formatted WLD balance:', wldBalanceFormatted);
-          
-          setWldBalance(wldBalanceFormatted);
-          setBalance(0); // LUX balance not used, set to 0
-          console.log('✅ WLD Balance fetched from Worldchain:', wldBalanceFormatted, 'with decimals:', wldDecimals);
-          
-          // Additional check: Verify the address is valid
-          if (!ethers.isAddress(addressToUse)) {
-            console.error('❌ Invalid wallet address:', addressToUse);
-          } else {
-            console.log('✅ Wallet address is valid:', addressToUse);
-          }
-        } catch (balanceError: any) {
-          console.error('❌ Error calling balanceOf:', balanceError);
-          console.error('❌ BalanceOf error details:', { 
-            message: balanceError?.message, 
-            code: balanceError?.code,
-            data: balanceError?.data 
+          const response = await fetch('/api/wld-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: addressToUse })
           });
-          throw balanceError;
+          
+          const data = await response.json();
+          console.log('🔍 API response:', data);
+          
+          if (data.success) {
+            setWldBalance(data.balance);
+            setBalance(0); // LUX balance not used, set to 0
+            console.log('✅ WLD Balance fetched via API:', data.balance, 'WLD');
+            console.log('🔍 Raw balance (wei):', data.rawBalance, 'decimals:', data.decimals);
+          } else {
+            console.error('❌ API returned error:', data.error);
+            // Fallback to direct RPC call
+            console.log('🔄 Falling back to direct RPC call...');
+            const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
+            const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
+            const wldBalanceBN = await wldContract.balanceOf(addressToUse);
+            const decimals = await wldContract.decimals().catch(() => 18);
+            const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, decimals));
+            setWldBalance(wldBalanceFormatted);
+            setBalance(0);
+            console.log('✅ WLD Balance fetched via fallback RPC:', wldBalanceFormatted);
+          }
+        } catch (apiError: any) {
+          console.error('❌ Error calling API:', apiError);
+          console.log('🔄 Falling back to direct RPC call...');
+          
+          try {
+            // Fallback to direct RPC call
+            const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
+            const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
+            const wldBalanceBN = await wldContract.balanceOf(addressToUse);
+            const decimals = await wldContract.decimals().catch(() => 18);
+            const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, decimals));
+            setWldBalance(wldBalanceFormatted);
+            setBalance(0);
+            console.log('✅ WLD Balance fetched via fallback RPC:', wldBalanceFormatted);
+          } catch (fallbackError: any) {
+            console.error('❌ Fallback RPC also failed:', fallbackError);
+            setWldBalance(0);
+            setBalance(0);
+          }
         }
       }
       
