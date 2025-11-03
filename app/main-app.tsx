@@ -865,6 +865,11 @@ const LuminexApp = () => {
     };
   }, [language]);
 
+  // Memoize active language metadata
+  const activeLanguage = useMemo(() => {
+    return LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+  }, [language]);
+
   // Get the actual address to use (prioritize wallet, then verified address)
   const actualAddress = useMemo(
     () => {
@@ -1186,12 +1191,20 @@ const LuminexApp = () => {
       if (userName) {
         console.log('✅ Loaded user name from session:', userName);
       }
-    }
-    
-    // Detect user's preferred language from browser
-    const browserLang = navigator.language.slice(0, 2);
-    if (translations[browserLang]) {
-      setLanguage(browserLang);
+      
+      // Load saved language preference from localStorage
+      const savedLanguage = localStorage.getItem('preferredLanguage');
+      if (savedLanguage && translations[savedLanguage]) {
+        setLanguage(savedLanguage);
+        console.log('✅ Loaded language from localStorage:', savedLanguage);
+      } else {
+        // Detect user's preferred language from browser
+        const browserLang = navigator.language.slice(0, 2);
+        if (translations[browserLang]) {
+          setLanguage(browserLang);
+          console.log('✅ Using browser language:', browserLang);
+        }
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1549,7 +1562,7 @@ const LuminexApp = () => {
                   style={{ userSelect: 'none', pointerEvents: 'auto' }}
                 >
                   <span className="text-white text-xs font-semibold whitespace-nowrap">
-                    {LANGUAGES.find(l => l.code === language)?.flag || '🏳️'} {language.toUpperCase()}
+                    {activeLanguage.flag} {activeLanguage.code.toUpperCase()}
                   </span>
                   <svg className={`w-3 h-3 text-white/70 transition-transform ${showLanguageMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1574,6 +1587,8 @@ const LuminexApp = () => {
                           e.stopPropagation();
                           console.log('Language selected:', lang.code);
                           setLanguage(lang.code);
+                          // Save language preference to localStorage
+                          localStorage.setItem('preferredLanguage', lang.code);
                           setShowLanguageMenu(false);
                         }}
                         className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
