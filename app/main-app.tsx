@@ -546,10 +546,18 @@ const useMiniKit = () => {
 
   const requestPayment = async (params: { amount: string; currency: string; description: string }) => {
     console.log("💳 Payment request:", params);
+    console.log("🔍 DEBUG → params.amount:", params.amount, "type:", typeof params.amount);
     
     try {
-      const amount = parseFloat(params.amount);
-      if (!amount || amount <= 0) {
+      // Ensure amount is a valid string first
+      const amountStr = String(params.amount || '0').trim();
+      console.log("🔍 DEBUG → amountStr after String():", amountStr);
+      
+      const amount = parseFloat(amountStr);
+      console.log("🔍 DEBUG → amount after parseFloat():", amount);
+      
+      if (!amount || amount <= 0 || isNaN(amount)) {
+        console.error("❌ Invalid amount:", { amount, amountStr, original: params.amount });
         return { success: false, error: 'Invalid amount' };
       }
 
@@ -586,8 +594,8 @@ const useMiniKit = () => {
           if (!treasuryAddr || !treasuryAddr.startsWith('0x') || treasuryAddr.length !== 42) {
             console.error('❌ Invalid TREASURY_ADDRESS:', treasuryAddr);
             return { success: false, error: 'Invalid treasury address configuration' };
-          }
-
+      }
+      
           // Check for zero address (runtime check)
           const zeroAddress = '0x0000000000000000000000000000000000000000';
           if (treasuryAddr.toLowerCase() === zeroAddress.toLowerCase()) {
@@ -608,27 +616,31 @@ const useMiniKit = () => {
           // Validate tokenType
           if (tokenType !== 'WLD' && tokenType !== 'USDC') {
             return { success: false, error: `Unsupported token: ${tokenType}. Only WLD and USDC are supported.` };
-          }
+      }
 
-          // Validate amount string
-          const amountStr = amount.toString();
-          if (!amountStr || isNaN(parseFloat(amountStr)) || parseFloat(amountStr) <= 0) {
+                    // Use amountStr that was validated earlier, but ensure it's a string
+          const finalAmountStr = amount.toString();
+          console.log("🔍 DEBUG → finalAmountStr for MiniKit pay:", finalAmountStr, "original amount:", amount);
+          
+          if (!finalAmountStr || isNaN(parseFloat(finalAmountStr)) || parseFloat(finalAmountStr) <= 0) {
+            console.error("❌ Invalid finalAmountStr:", finalAmountStr);
             return { success: false, error: 'Invalid amount format' };
           }
 
-                      // MiniKit v1.9.8+ requires tokens as TokensPayload array with symbol and token_amount
-            const payPayload = {
-              reference: referenceId,
-              to: treasuryAddr, // Use validated address
-              tokens: [{
-                symbol: tokenType, // 'WLD' or 'USDC'
-                token_amount: amountStr // Amount as string
-              }],
-              description: params.description || `Payment of ${amountStr} ${tokenType}`, // Required in v1.9.8+
-            };
+          // MiniKit v1.9.8+ requires tokens as TokensPayload array with symbol and token_amount
+          const payPayload = {
+            reference: referenceId,
+            to: treasuryAddr, // Use validated address
+            tokens: [{
+              symbol: tokenType, // 'WLD' or 'USDC'
+              token_amount: finalAmountStr // Amount as string
+            }],
+            description: params.description || `Payment of ${finalAmountStr} ${tokenType}`, // Required in v1.9.8+
+          };
 
-            console.log(`💳 Calling MiniKit pay:`, JSON.stringify(payPayload, null, 2));
-
+          console.log(`💳 Calling MiniKit pay:`, JSON.stringify(payPayload, null, 2));
+          console.log(`🔍 DEBUG → amount about to pay:`, finalAmountStr, "in tokens:", payPayload.tokens[0].token_amount);
+      
             // Call MiniKit pay API - v1.9.8+ requires TokensPayload format
             let payResult;
             try {
@@ -2117,13 +2129,27 @@ const LuminexApp = () => {
       return;
     }
 
+    // Extract amount from tier.price (e.g., "1 WLD" -> "1")
+    const priceAmount = tier.price.split(' ')[0];
+    if (!priceAmount || isNaN(parseFloat(priceAmount))) {
+      showToast('Invalid membership price', 'error');
+      return;
+    }
+
+    console.log('🛒 Purchase Membership:', {
+      tier: tier.name,
+      price: tier.price,
+      extractedAmount: priceAmount,
+      description: `Purchase ${tier.name} Membership`
+    });
+
     setIsClaimingInterest(true);
     try {
-    const payment = await requestPayment({
-        amount: tier.price.split(' ')[0],
-      currency: 'WLD',
+      const payment = await requestPayment({
+        amount: priceAmount, // Already a string like "1", "5", "10"
+        currency: 'WLD',
         description: `Purchase ${tier.name} Membership`
-    });
+      });
     
       if (payment.success && payment.transactionHash) {
         // Record membership purchase on server
