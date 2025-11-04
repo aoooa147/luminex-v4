@@ -1963,30 +1963,27 @@ const LuminexApp = () => {
 
   // Initial loading screen - show before verification
   useEffect(() => {
-    // Wait for page to fully load and ensure smooth transition
-    const checkLoaded = () => {
-      if (document.readyState === 'complete') {
-        // Add minimum display time for smooth UX (1.5 seconds minimum)
-        const timer = setTimeout(() => {
-          setIsInitialLoading(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
-    };
-
-    if (document.readyState === 'complete') {
-      const timer = setTimeout(() => {
+    let timer: NodeJS.Timeout;
+    
+    const hideLoading = () => {
+      // Wait minimum 1.5 seconds for smooth UX
+      timer = setTimeout(() => {
         setIsInitialLoading(false);
       }, 1500);
-      return () => clearTimeout(timer);
+    };
+
+    // Check if page is already loaded
+    if (document.readyState === 'complete') {
+      hideLoading();
     } else {
-      window.addEventListener('load', () => {
-        const timer = setTimeout(() => {
-          setIsInitialLoading(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-      });
+      // Wait for page to fully load
+      window.addEventListener('load', hideLoading, { once: true });
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('load', hideLoading);
+    };
   }, []);
 
   // Show loading screen first
