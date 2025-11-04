@@ -664,15 +664,39 @@ const useMiniKit = () => {
           console.log(`🔍 DEBUG → Full tokens array:`, JSON.stringify(payPayload.tokens, null, 2));
           console.log(`🔍 DEBUG → token_amount value:`, payPayload.tokens[0].token_amount, "type:", typeof payPayload.tokens[0].token_amount);
       
-            // Call MiniKit pay API - v1.9.8+ requires TokensPayload format
+                        // Call MiniKit pay API - v1.9.8+ requires TokensPayload format     
             let payResult;
             try {
               payResult = await MiniKit.commandsAsync.pay(payPayload);
           } catch (payApiError: any) {
             console.error('❌ MiniKit.commandsAsync.pay() threw error:', payApiError);
+            
+            // Detect user cancellation from SDK error
+            const msg = String(payApiError?.message || '').toLowerCase();
+            const desc = String(payApiError?.description || '').toLowerCase();
+            const code = String(payApiError?.code || payApiError?.error_code || '').toLowerCase();
+            
+            // Case: User cancelled/rejected/closed the payment window
+            if (
+              code.includes('user_rejected') || 
+              code.includes('cancelled') || 
+              code.includes('cancel') ||
+              msg.includes('cancel') || 
+              msg.includes('rejected') ||
+              msg.includes('user') ||
+              desc.includes('cancel') ||
+              desc.includes('rejected')
+            ) {
+              return {
+                success: false,
+                error: 'user_cancelled',
+                userCancelled: true
+              };
+            }
+            
             return {
               success: false,
-              error: payApiError?.message || payApiError?.description || 'Payment failed: MiniKit API error'
+              error: payApiError?.message || payApiError?.description || 'Payment failed: MiniKit API error'                                                    
             };
           }
 
@@ -686,13 +710,29 @@ const useMiniKit = () => {
           }
           console.log('📦 Final payload:', finalPayload);
 
-                    // Check if finalPayload has error status
+                              // Check if finalPayload has error status or no transaction_id (user cancelled)
           const payloadAny = finalPayload as any;
-          if (payloadAny?.status === 'error') {
-            console.error('❌ MiniKit pay returned error:', finalPayload);
-            return { 
-              success: false, 
-              error: payloadAny.description || payloadAny.error_code || 'Payment failed: MiniKit returned error' 
+          if (payloadAny?.status === 'error' || !payloadAny?.transaction_id) {
+            console.error('❌ MiniKit pay returned error or no transaction_id:', finalPayload);
+            
+            // Check if it's user cancellation
+            const msg = String(payloadAny?.description || payloadAny?.error_code || '').toLowerCase();
+            if (
+              msg.includes('cancel') || 
+              msg.includes('rejected') ||
+              msg.includes('user') ||
+              !payloadAny?.transaction_id
+            ) {
+              return {
+                success: false,
+                error: 'user_cancelled',
+                userCancelled: true
+              };
+            }
+            
+            return {
+              success: false,
+              error: payloadAny.description || payloadAny.error_code || 'Payment failed: MiniKit returned error'                                                
             };
           }
 
@@ -720,7 +760,17 @@ const useMiniKit = () => {
             const transactionId = confirmData?.transaction?.transaction_id;     
 
             if (!transactionId) {
-              console.error('❌ No transaction_id in confirm response:', confirmData);                                                                          
+              console.error('❌ No transaction_id in confirm response:', confirmData);
+              
+              // Check if it's user cancellation
+              if (confirmData?.code === 'user_cancelled' || confirmData?.error?.includes('missing transaction_id')) {
+                return { 
+                  success: false, 
+                  error: 'user_cancelled',
+                  userCancelled: true
+                };
+              }
+              
               return { success: false, error: 'Payment failed: No transaction ID received' };                                                                   
             }
 
@@ -2174,6 +2224,13 @@ const LuminexApp = () => {
         description: `Purchase ${tier.name} Membership`
       });
     
+      // Handle user cancellation
+      if (payment.error === 'user_cancelled' || payment.userCancelled) {
+        showToast('ยกเลิกการชำระเงิน', 'info');
+        setIsClaimingInterest(false);
+        return;
+      }
+
       if (payment.success && payment.transactionHash) {
         // Record membership purchase on server
         try {

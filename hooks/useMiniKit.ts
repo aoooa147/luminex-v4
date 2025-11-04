@@ -96,19 +96,43 @@ export const useMiniKit = () => {
         hasPay: !!MiniKit.commandsAsync?.pay,
       });
 
-      try {
-        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
-        console.log('✅ MiniKit pay succeeded, finalPayload:', finalPayload);
+            try {
+        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);                                                                               
+        console.log('✅ MiniKit pay succeeded, finalPayload:', finalPayload);  
         return finalPayload; // { transaction_id, reference, ... }
       } catch (err: any) {
         console.error('❌ MiniKit pay full error →', {
           message: err?.message,
           description: err?.description,
           error_code: err?.error_code,
+          code: err?.code,
           stack: err?.stack,
           fullError: err,
         });
-        throw new Error('Payment failed: ' + (err?.message || err?.description || 'unknown'));
+        
+        // Detect user cancellation from SDK error
+        const msg = String(err?.message || '').toLowerCase();
+        const desc = String(err?.description || '').toLowerCase();
+        const code = String(err?.code || err?.error_code || '').toLowerCase();
+        
+        // Case: User cancelled/rejected/closed the payment window
+        if (
+          code.includes('user_rejected') || 
+          code.includes('cancelled') || 
+          code.includes('cancel') ||
+          msg.includes('cancel') || 
+          msg.includes('rejected') ||
+          msg.includes('user') ||
+          desc.includes('cancel') ||
+          desc.includes('rejected')
+        ) {
+          const e = new Error('user_cancelled');
+          (e as any).type = 'user_cancelled';
+          (e as any).originalError = err;
+          throw e;
+        }
+        
+        throw err;
       }
     },
     []

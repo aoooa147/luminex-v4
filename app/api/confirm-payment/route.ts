@@ -28,11 +28,12 @@ export async function POST(request: NextRequest) {
     const payloadAny = parsed.payload as any;
     const transactionId = payloadAny.transaction_id || payloadAny.transactionId;
     
-        if (!transactionId) {
+    if (!transactionId) {
       console.warn(`[confirm-payment] missing_transaction_id rid=%s payload=%s`, rid, JSON.stringify(payloadAny));
       return NextResponse.json({
         success: false,
         error: 'Missing transaction_id in payload',
+        code: 'user_cancelled', // Clear error code for client to handle
         rid
       }, { status: 400 });
     }

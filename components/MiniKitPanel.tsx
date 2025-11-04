@@ -18,7 +18,7 @@ export default function MiniKitPanel() {
   const [busy, setBusy] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [result, setResult] = useState<any>(null);
-  const [step, setStep] = useState<'idle' | 'initiated' | 'pending' | 'confirmed' | 'failed'>('idle');
+  const [step, setStep] = useState<'idle' | 'initiated' | 'pending' | 'confirmed' | 'failed' | 'cancelled'>('idle');
   const [isPolling, setIsPolling] = useState(false);
   const [pollDone, setPollDone] = useState(false);
   const [pollSuccess, setPollSuccess] = useState(false);
@@ -106,16 +106,64 @@ export default function MiniKitPanel() {
       }
       
       log('Using reference: ' + ref);
-      const payload = await pay(ref, (TREASURY_ADDRESS as `0x${string}`) || '0x0000000000000000000000000000000000000000', amount, 'WLD');
-      const r = await fetch('/api/confirm-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload }) });
+      
+      let payload: any = null;
+      try {
+        payload = await pay(ref, (TREASURY_ADDRESS as `0x${string}`) || '0x0000000000000000000000000000000000000000', amount, 'WLD');
+      } catch (e: any) {
+        // Handle user cancellation - don't proceed to confirm-payment
+        if (e?.type === 'user_cancelled') {
+          log('User cancelled payment');
+          setStep('cancelled');
+          return; // ❌ Don't send to confirm-payment
+        }
+        throw e;
+      }
+
+      // Guard: No transaction_id = user cancelled/didn't confirm
+      if (!payload?.transaction_id) {
+        log('Payment not confirmed - no transaction_id');
+        setStep('failed');
+        return;
+      }
+
+      const r = await fetch('/api/confirm-payment', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ payload }) 
+      });
       const j = await r.json();
       setResult(j);
       log('Confirm-payment response: ' + JSON.stringify(j));
-      if (j?.transaction?.transaction_id) {
-        await pollConfirm(j.transaction.transaction_id, ref); // ✅ Use same reference that was used for payment
+
+      if (r.ok && j?.transaction?.transaction_id) {
+        await pollConfirm(j.transaction.transaction_id, ref);
+      } else {
+        // Map backend error messages correctly
+        const msg = (j?.error || '').toString().toLowerCase();
+        const code = (j?.code || '').toString().toLowerCase();
+        
+        if (code === 'user_cancelled' || msg.includes('missing transaction_id')) {
+          log('Payment cancelled by user');
+          setStep('cancelled');
+        } else if (msg.includes('insufficient_balance') || msg.includes('insufficient')) {
+          log('Insufficient balance');
+          setStep('failed');
+        } else {
+          log('Payment failed: ' + (j?.error || 'unknown'));
+          setStep('failed');
+        }
       }
-    } catch (e: any) { log('Pay error: ' + e?.message); }
-    finally { setBusy(false); }
+    } catch (e: any) {
+      log('Pay error: ' + e?.message);
+      if (e?.type === 'user_cancelled') {
+        setStep('cancelled');
+      } else {
+        setStep('failed');
+      }
+    } finally { 
+      setBusy(false); 
+    }
   };
 
   return (
