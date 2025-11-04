@@ -5,7 +5,12 @@ import { takeToken } from '@/lib/utils/rateLimit';
 import { env } from '@/lib/utils/env';
 import { requestId } from '@/lib/utils/requestId';
 
-const BodySchema = z.object({ payload: z.object({ transaction_id: z.string(), reference: z.string() }) });
+const BodySchema = z.object({ 
+  payload: z.union([
+    z.object({ transaction_id: z.string(), reference: z.string() }),
+    z.object({ transaction_id: z.string().optional(), reference: z.string().optional() }).passthrough()
+  ])
+});
 
 export async function POST(request: NextRequest) {
   const rid = requestId();
@@ -17,6 +22,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { payload } = BodySchema.parse(body);
+    
+    // Extract transaction_id from payload (could be direct or nested)
+    const transactionId = payload.transaction_id || payload.transactionId;
+    
+    if (!transactionId) {
+      console.warn(`[confirm-payment] missing_transaction_id rid=%s payload=%s`, rid, JSON.stringify(payload));
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Missing transaction_id in payload', 
+        rid 
+      }, { status: 400 });
+    }
+    
     if (!env.WORLD_API_KEY || !env.NEXT_PUBLIC_WORLD_APP_ID) {
       return NextResponse.json({ 
         success: false, 
@@ -25,7 +43,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const url = `https://developer.worldcoin.org/api/v2/minikit/transaction/${payload.transaction_id}?app_id=${encodeURIComponent(env.NEXT_PUBLIC_WORLD_APP_ID)}&type=miniapp`;
+    const url = `https://developer.worldcoin.org/api/v2/minikit/transaction/${transactionId}?app_id=${encodeURIComponent(env.NEXT_PUBLIC_WORLD_APP_ID)}&type=miniapp`;
 
     const controller = () => {
       const ac = new AbortController();
@@ -44,7 +62,8 @@ export async function POST(request: NextRequest) {
         c.cancel();
         if (r.ok) {
           const data = await r.json();
-          console.log(`[confirm-payment] rid=%s ip=%s tx=%s ref=%s status=%s attempt=%d`, rid, ip, payload.transaction_id, payload.reference, data?.transaction_status || data?.status, attempt);
+          const ref = payload.reference || payload.referenceId || 'unknown';
+          console.log(`[confirm-payment] rid=%s ip=%s tx=%s ref=%s status=%s attempt=%d`, rid, ip, transactionId, ref, data?.transaction_status || data?.status, attempt);
           return NextResponse.json({ success: true, transaction: data, rid });
         } else if (r.status >= 400 && r.status < 500) {
           const text = await r.text();
@@ -65,7 +84,8 @@ export async function POST(request: NextRequest) {
       }
       await new Promise(r => setTimeout(r, attempt * 500));
     }
-    console.error(`[confirm-payment] failed rid=%s tx=%s ref=%s err=%s`, rid, payload.transaction_id, payload.reference, lastErr?.message);
+    const ref = payload.reference || payload.referenceId || 'unknown';
+    console.error(`[confirm-payment] failed rid=%s tx=%s ref=%s err=%s`, rid, transactionId, ref, lastErr?.message);
     return NextResponse.json({ success: false, error: 'Developer API error or timeout', rid }, { status: 502 });
   } catch (e: any) {
     console.error(`[confirm-payment] bad_request rid=%s err=%s`, rid, e?.message);
