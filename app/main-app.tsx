@@ -2801,168 +2801,122 @@ const LuminexApp = () => {
                 })}
             </div>
 
-              {/* Main Staking Card */}
+                            {/* Compact Staking Card */}
               <motion.div
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
-                className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl p-6 text-white overflow-hidden border-2 border-yellow-600/30" style={{
-                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
-                }}
+                className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-3 text-white overflow-hidden border border-yellow-600/20"
               >
-                {/* Animated gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent animate-pulse"></div>
-                
-                <div className="relative z-10">
-                                    <div className="flex items-center justify-center mb-2">
-                    <h2 className="text-xl font-bold text-center">
-                      ✨ <span className="bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent">Luminex Staking</span> ✨
-              </h2>
-                  </div>
-                  
-                  {/* Current Membership */}
-                  <div className="mb-2">
-                    <p className="text-xs text-white/80 mb-1.5">{t('myCurrentMembership')}</p>
-                    <motion.div
-                      whileHover={{ scale: 1.01 }}
-                      className="bg-white/20 backdrop-blur-lg rounded-xl px-4 py-2 border border-white/30 shadow-lg"
-                      style={{ willChange: 'transform' }}
-                    >
-                                            <div className="flex items-center justify-between">       
-                        <span className="text-white font-bold text-lg">
-                          {currentPower ? (
-                            <span className="flex items-center gap-2">
-                              ⚡ {currentPower.name}
-                            </span>
-                          ) : (
-                            t('noMembership')
-                          )}
-                        </span>
-                        <span className="text-yellow-300 font-extrabold text-xl">
-                          {baseApy}% + {powerBoost}% = {totalApy}% APY
-                        </span>
-                  </div>
-                    </motion.div>
-                </div>
-
-                  {/* Staking Balance */}
-                                      <div className="mb-2">
-                      <p className="text-xs text-white/80 mb-1.5">{t('myStakingBalance')}</p>
-                      <div className="backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg relative overflow-hidden" style={{
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                      }}>
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent"></div>
-                        <div className="relative z-10">
-                      {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
-                          <div className="flex items-center justify-center py-2">
-                            <span className="text-yellow-400 text-xs text-center relative z-10">
-                            {!actualAddress ? 'Connect wallet to view staking data' : 'Staking contract not configured'}
-                          </span>
-                        </div>
-                      ) : (
-                      <div className="relative z-10">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-10 h-10 bg-yellow-400/20 rounded-lg flex items-center justify-center">
-                              <Coins className="w-5 h-5 text-yellow-300" />
-                            </div>
-                            <span className="text-2xl font-extrabold text-white">{formattedStakedAmount}</span>
-                          </div>
-                          <TrendingUp className="w-5 h-5 text-green-300" />
-                        </div>
-                        </div>
-                      )}
+                <div className="relative z-10 space-y-2">
+                  {/* Power License Status */}
+                  <div className="flex items-center justify-between p-2 bg-black/40 rounded-lg border border-white/10">
+                    <div className="flex items-center space-x-1.5">
+                      <Zap className="w-3.5 h-3.5 text-yellow-400" />
+                      <span className="text-white/80 text-[10px]">Power License:</span>
+                      <span className="text-white font-bold text-xs">
+                        {currentPower ? currentPower.name : 'None'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-yellow-300 font-bold text-xs">{totalApy}% Total APY</div>
+                      <div className="text-white/60 text-[9px]">
+                        Base {baseApy}% {powerBoost > 0 ? `+ ${powerBoost}%` : ''}
                       </div>
                     </div>
                   </div>
 
+                  {/* Staking Balance */}
+                  <div className="p-2 bg-black/40 rounded-lg border border-white/10">
+                    <p className="text-white/80 text-[10px] mb-1">{t('myStakingBalance')}</p>
+                    {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
+                      <div className="flex items-center justify-center py-1">
+                        <span className="text-yellow-400 text-[10px] text-center">
+                          {!actualAddress ? 'Connect wallet' : 'Contract not configured'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5">
+                          <Coins className="w-4 h-4 text-yellow-300" />
+                          <span className="text-lg font-extrabold text-white">{formattedStakedAmount}</span>
+                          <span className="text-white/60 text-xs">LUX</span>
+                        </div>
+                        <TrendingUp className="w-4 h-4 text-green-300" />
+                      </div>
+                    )}
+                  </div>
+
                   {/* Earned Interest */}
-                  <div className="mb-2">
-                    <p className="text-xs text-white/80 mb-1.5">{t('earnedInterest')}</p>
-                    <motion.div
-                      className="text-2xl font-extrabold text-white bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent"
-                      style={{ willChange: 'auto' }}
-                    >
-                      {formattedPendingRewards}
-                    </motion.div>
+                  <div className="p-2 bg-black/40 rounded-lg border border-white/10">
+                    <p className="text-white/80 text-[10px] mb-1">{t('earnedInterest')}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-extrabold text-yellow-300">{formattedPendingRewards}</span>
+                      <span className="text-white/60 text-xs">LUX</span>
+                    </div>
                   </div>
 
                   {/* Time Elapsed */}
-                  <div className="flex items-center space-x-2 text-sm text-white/70 bg-white/10 rounded-xl px-4 py-2 backdrop-blur-lg">
-                    <Timer className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-mono">{t('timeElapsed')}: {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m {timeElapsed.seconds}s</span>
-                  </div>
+                  {timeElapsed.days > 0 || timeElapsed.hours > 0 || timeElapsed.minutes > 0 ? (
+                    <div className="flex items-center space-x-1.5 text-[10px] text-white/70 bg-white/5 rounded-lg px-2 py-1">
+                      <Timer className="w-3 h-3 flex-shrink-0" />
+                      <span className="font-mono">
+                        {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               </motion.div>
 
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                            {/* Compact Action Buttons */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {/* STAKING Button */}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowStakeModal(true)}
-                    className="w-full text-white font-bold py-3 px-3 rounded-2xl flex flex-col items-center space-y-1.5 relative overflow-hidden group text-sm"
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3), 0 0 12px rgba(5, 150, 105, 0.2)'
-                    }}
+                    className="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 text-xs shadow-lg"
                   >
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-2xl"></div>
-                    <div className="relative z-10 flex items-center space-x-1">
-                      <BarChart3 className="w-6 h-6" />
-                      <Rocket className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm relative z-10">{t('staking')}</span>
+                    <BarChart3 className="w-4 h-4" />
+                    <span>{t('staking')}</span>
                   </motion.button>
 
                   {/* Withdraw Interest */}
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleClaimInterest}
                     disabled={isClaimingInterest || pendingRewards === 0}
-                    className="text-white font-bold py-3 px-3 rounded-2xl flex flex-col items-center space-y-1.5 disabled:opacity-50 relative overflow-hidden group text-sm"
-                    style={{
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-                      boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3), 0 0 12px rgba(6, 182, 212, 0.2)'
-                    }}
+                    className="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 disabled:opacity-50 text-xs shadow-lg"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 rounded-2xl"></div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-2xl"></div>
                     {isClaimingInterest ? (
-                      <Loader2 className="w-6 h-6 animate-spin relative z-10" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <div className="relative z-10">
-                        <DollarIcon className="w-6 h-6" />
-                      </div>
+                      <>
+                        <DollarIcon className="w-4 h-4" />
+                        <span>{t('withdrawInterest')}</span>
+                      </>
                     )}
-                    <span className="text-sm relative z-10">{t('withdrawInterest')}</span>
-                      </motion.button>
+                  </motion.button>
                 </div>
 
                 {/* Withdraw Balance */}
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleWithdrawBalance}
                   disabled={isWithdrawing || stakedAmount === 0}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-3 px-3 rounded-2xl flex flex-col items-center space-y-1.5 disabled:opacity-50 shadow-lg shadow-green-500/20 relative overflow-hidden group text-sm"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 disabled:opacity-50 text-xs shadow-lg"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"></div>
                   {isWithdrawing ? (
-                    <Loader2 className="w-6 h-6 animate-spin relative z-10" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <div className="relative z-10">
-                      <CreditCard className="w-6 h-6" />
-                    </div>
+                    <>
+                      <TrendingDown className="w-4 h-4" />
+                      <span>{t('withdrawBalance')}</span>
+                    </>
                   )}
-                  <span className="text-sm relative z-10">{t('withdrawBalance')}</span>
-                      </motion.button>
+                                </motion.button>
 
                 {/* Free Token Button */}
                 <motion.button
