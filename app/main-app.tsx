@@ -582,13 +582,13 @@ const useMiniKit = () => {
             return { success: false, error: 'MiniKit pay API not available' };
           }
 
-          const tokenType = (params.currency || 'WLD').toUpperCase();
-          
-          // Call MiniKit pay API - tokens should be string 'WLD' or 'USDC' (not array)
+                    const tokenType = (params.currency || 'WLD').toUpperCase();
+
+          // Call MiniKit pay API - tokens MUST be array based on error "e.tokens.some is not a function"                                                                         
           const payResult = await MiniKit.commandsAsync.pay({
             reference: referenceId,
             to: TREASURY_ADDRESS,
-            tokens: tokenType, // String format: 'WLD' or 'USDC'
+            tokens: [tokenType], // Array format required: ['WLD'] or ['USDC']
             amount: amount.toString()
           });
 
