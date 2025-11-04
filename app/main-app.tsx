@@ -1808,20 +1808,13 @@ const LuminexApp = () => {
         console.log('Could not fetch stake start time:', error);
       }
       
-      // Get referral count
-      const referralCountBN = await stakingContract.referralCount(addressToUse);
-      const referrals = parseFloat(referralCountBN.toString());
-      setTotalReferrals(referrals);
-      
-      // Calculate total earnings (referrals * 50 LUX)
-      const earnings = referrals * 50;
-      setTotalEarnings(earnings);
-      
-      console.log('✅ Staking data fetched:', { 
-        staked: stakedFormatted, 
+                         // Note: Referral stats are now fetched from API instead of blockchain
+       // The blockchain referralCount may differ from API stats
+       // We keep the API fetch in a separate useEffect for better separation of concerns
+
+      console.log('✅ Staking data fetched:', {
+        staked: stakedFormatted,
         rewards: rewardsFormatted,
-        referrals,
-        earnings
       });
       
       stakingDataFetchInProgress.current = false;
@@ -1949,6 +1942,94 @@ const LuminexApp = () => {
     }
   }, [actualAddress]);
 
+  // Fetch referral stats from API
+  const fetchReferralStats = useCallback(async () => {
+    if (!actualAddress) {
+      setTotalReferrals(0);
+      setTotalEarnings(0);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/referral/stats?address=${actualAddress}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store'
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.stats) {
+        setTotalReferrals(data.stats.totalReferrals || 0);
+        setTotalEarnings(data.stats.totalEarnings || 0);
+        console.log('✅ Referral stats loaded:', data.stats);
+      } else {
+        // If no stats found, set to 0
+        setTotalReferrals(0);
+        setTotalEarnings(0);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching referral stats:', error);
+      setTotalReferrals(0);
+      setTotalEarnings(0);
+    }
+  }, [actualAddress]);
+
+  // Process referral code if user came from referral link
+  const processReferralCode = useCallback(async (code: string) => {
+    if (!actualAddress || !code) return;
+
+    try {
+      const response = await fetch('/api/process-referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newUserId: actualAddress,
+          referrerCode: code
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('✅ Referral processed:', data);
+        showToast(`${translations[language].membershipActivated?.replace('{tier}', '50 LUX') || 'You received 50 LUX for using referral code!'}`, 'success');
+        // Refresh stats
+        fetchReferralStats();
+      } else {
+        // Don't show error for already_referred - it's expected
+        if (data.reason !== 'already_referred') {
+          console.warn('⚠️ Referral processing failed:', data.reason || data.message);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error processing referral:', error);
+    }
+  }, [actualAddress, language]);
+
+  // Check for referral code in URL or localStorage when user connects wallet
+  useEffect(() => {
+    if (actualAddress && verified) {
+      // Check URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get('ref');
+      
+      // Check localStorage (from invite page)
+      const storedCode = localStorage.getItem('luminex_referral_code');
+      
+      const referralCodeToProcess = refCode || storedCode;
+      
+      if (referralCodeToProcess) {
+        console.log('🔍 Found referral code:', referralCodeToProcess);
+        processReferralCode(referralCodeToProcess);
+        // Clear stored code
+        if (storedCode) {
+          localStorage.removeItem('luminex_referral_code');
+        }
+      }
+    }
+  }, [actualAddress, verified, processReferralCode]);
+
   // Set referral code from wallet address
   useEffect(() => {
     if (actualAddress && !referralCode) {
@@ -1956,6 +2037,13 @@ const LuminexApp = () => {
       console.log('✅ Generated referral code from address:', actualAddress);
     }
   }, [actualAddress, referralCode]);
+
+  // Fetch referral stats when address is available
+  useEffect(() => {
+    if (actualAddress) {
+      fetchReferralStats();
+    }
+  }, [actualAddress, fetchReferralStats]);
 
   // Fetch membership status when address is available
   useEffect(() => {
@@ -3057,23 +3145,47 @@ const LuminexApp = () => {
 
                 {/* Share Buttons */}
                 <div className="mt-4 space-y-2">
-                  <motion.button
+                                    <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/30 text-sm"
+                    onClick={async () => {
+                      try {
+                        const WORLD_APP_ID = process.env.NEXT_PUBLIC_WORLD_APP_ID || '';
+                        const inviteLink = `https://world.org/mini-app?app_id=${WORLD_APP_ID}&path=${encodeURIComponent(`/?ref=${safeReferralCode}`)}`;
+                        if (navigator.share) {
+                          await navigator.share({
+                            title: 'Join Luminex Staking!',
+                            text: `Use my referral code ${safeReferralCode} and get 50 LUX!`,
+                            url: inviteLink,
+                          });
+                        } else {
+                          await navigator.clipboard.writeText(inviteLink);
+                          setCopied(true);
+                          showToast('Link copied to clipboard!', 'success');
+                          setTimeout(() => setCopied(false), 2000);
+                        }
+                      } catch (error) {
+                        console.error('Error sharing:', error);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/30 text-sm"                                  
                   >
                     <Share2 className="w-5 h-5" />
-                    <span>Share Link</span>
+                    <span>{translations[language].shareLink || 'Share Link'}</span>
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 text-sm" style={{
+                    onClick={() => {
+                      // TODO: Show QR code modal
+                      showToast('QR Code feature coming soon!', 'success');
+                    }}
+                    className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 text-sm" style={{                                                   
                       boxShadow: '0 4px 20px rgba(234, 179, 8, 0.4)'
                     }}
                   >
                     <QrCode className="w-5 h-5" />
-                    <span>Show QR Code</span>
+                    <span>{translations[language].showQRCode || 'Show QR Code'}</span>
                   </motion.button>
                 </div>
               </div>

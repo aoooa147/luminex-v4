@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Credit both referrer and new user with rewards
+import { addReferral, hasBeenReferred, getReferrerAddressFromCode } from '@/lib/referral/storage';
 
 interface ProcessReferralRequest {
   newUserId: string; // Wallet address of new user
@@ -9,11 +8,8 @@ interface ProcessReferralRequest {
 
 /**
  * Process referral and credit rewards
- * In production, this should:
- * 1. Verify referrer exists
- * 2. Check if new user was already referred
- * 3. Credit both users
- * 4. Store referral in database
+ * Format: LUX + 6 hex characters from address (last 6 chars of address without 0x)
+ * Example: LUX123456 means address ends with ...123456...
  */
 export async function POST(req: NextRequest) {
   try {
@@ -37,28 +33,8 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Extract referrer address from referral code
-    // Format: LUX + 6 hex characters from address
-    // Example: LUX123456 means address contains 0x...123456...
-    let referrerAddress: string | null = null;
-    
-    if (referrerCode.startsWith('LUX') && referrerCode.length === 9) {
-      // Extract hex part and try to find matching address
-      // In production, you'd look up the referral code in a database
-      // For now, we'll store it for later lookup
-      const hexPart = referrerCode.slice(3);
-      console.log('🔍 Looking up referrer for code:', referrerCode, 'hex:', hexPart);
-      
-      // TODO: In production, query database to find referrer by code
-      // For now, we'll accept the referral and process it
-      referrerAddress = `0x${hexPart.toLowerCase()}0000000000000000000000000`; // Placeholder
-    }
-
     // Check if new user was already referred (prevent duplicate referrals)
-    // In production, query database
-    const alreadyReferred = false; // TODO: Check database
-
-    if (alreadyReferred) {
+    if (hasBeenReferred(newUserId)) {
       return NextResponse.json({
         success: false,
         reason: 'already_referred',
@@ -66,28 +42,61 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Reward amounts (configurable)
-    const REFERRER_REWARD = 50; // LUX tokens
-    const NEW_USER_REWARD = 50; // LUX tokens
+    // Extract referrer address from referral code
+    // Format: LUX + 6 hex characters (positions 2-8 of address)
+    let referrerAddress: string | null = null;
+    
+    if (referrerCode.startsWith('LUX') && referrerCode.length === 9) {
+      referrerAddress = getReferrerAddressFromCode(referrerCode);
+      
+      if (!referrerAddress) {
+        return NextResponse.json({
+          success: false,
+          reason: 'referrer_not_found',
+          message: 'Referrer not found for this code. The referrer may not exist yet.',
+        }, { status: 400 });
+      }
+    } else {
+      return NextResponse.json({
+        success: false,
+        reason: 'invalid_code_format',
+        message: 'Invalid referral code format. Expected: LUX + 6 hex characters',
+      }, { status: 400 });
+    }
 
-    // TODO: In production, implement actual reward crediting:
-    // 1. Credit referrer: creditUser(referrerAddress, REFERRER_REWARD, 'referral_bonus')
-    // 2. Credit new user: creditUser(newUserId, NEW_USER_REWARD, 'signup_bonus')
-    // 3. Store referral record in database
-    // 4. Emit events for tracking
+    // Prevent self-referral
+    if (newUserId.toLowerCase() === referrerAddress.toLowerCase()) {
+      return NextResponse.json({
+        success: false,
+        reason: 'self_referral',
+        message: 'Cannot refer yourself',
+      }, { status: 400 });
+    }
+
+    // Reward amount (configurable)
+    const REFERRER_REWARD = 50; // LUX tokens per referral
+
+    // Add referral (this will also check for duplicates internally)
+    const added = addReferral(referrerAddress, newUserId, REFERRER_REWARD);
+
+    if (!added) {
+      return NextResponse.json({
+        success: false,
+        reason: 'already_referred',
+        message: 'Referral already exists',
+      }, { status: 400 });
+    }
 
     console.log('✅ Referral processed:', {
       newUserId,
       referrerCode,
       referrerAddress,
       referrerReward: REFERRER_REWARD,
-      newUserReward: NEW_USER_REWARD,
     });
 
     return NextResponse.json({
       success: true,
       referrerReward: REFERRER_REWARD,
-      newUserReward: NEW_USER_REWARD,
       message: 'Referral processed successfully',
     });
   } catch (error: any) {
