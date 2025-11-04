@@ -582,18 +582,20 @@ const useMiniKit = () => {
           }
 
           // Validate TREASURY_ADDRESS
-          if (!TREASURY_ADDRESS || !TREASURY_ADDRESS.startsWith('0x') || TREASURY_ADDRESS.length !== 42) {
-            console.error('❌ Invalid TREASURY_ADDRESS:', TREASURY_ADDRESS);
+          const treasuryAddr = String(TREASURY_ADDRESS);
+          if (!treasuryAddr || !treasuryAddr.startsWith('0x') || treasuryAddr.length !== 42) {
+            console.error('❌ Invalid TREASURY_ADDRESS:', treasuryAddr);
             return { success: false, error: 'Invalid treasury address configuration' };
           }
 
-          // Check for zero address
-          if (TREASURY_ADDRESS === '0x0000000000000000000000000000000000000000') {
+          // Check for zero address (runtime check)
+          const zeroAddress = '0x0000000000000000000000000000000000000000';
+          if (treasuryAddr.toLowerCase() === zeroAddress.toLowerCase()) {
             console.error('❌ TREASURY_ADDRESS is zero address! Please configure NEXT_PUBLIC_TREASURY_ADDRESS correctly.');
             return { success: false, error: 'Treasury address not configured. Please set NEXT_PUBLIC_TREASURY_ADDRESS in environment variables.' };
           }
 
-          console.log('✅ TREASURY_ADDRESS validated:', TREASURY_ADDRESS);
+          console.log('✅ TREASURY_ADDRESS validated:', treasuryAddr);
 
           // Call MiniKit pay API directly (cannot use hooks inside functions)
           const MiniKit = (window as any).MiniKit;
@@ -626,7 +628,7 @@ const useMiniKit = () => {
           try {
             payResult = await MiniKit.commandsAsync.pay({
               reference: referenceId,
-              to: TREASURY_ADDRESS,
+              to: treasuryAddr, // Use validated address
               tokens: [tokenType], // Array format required: ['WLD'] or ['USDC']
               amount: amountStr
             });
