@@ -600,42 +600,17 @@ const useMiniKit = () => {
           const finalPayload = payResult.finalPayload;
           console.log('📦 Final payload:', finalPayload);
 
-          // Extract transaction_id from finalPayload (should be there already)
-          // The finalPayload structure from MiniKit pay should have transaction_id
-          const transactionId = finalPayload?.transaction_id || finalPayload?.transactionId;
-          
-          if (!transactionId) {
-            console.error('❌ No transaction_id in finalPayload:', finalPayload);
-            // Try to get it from confirm-payment API as fallback
-            try {
-              const confirmResponse = await fetch('/api/confirm-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: finalPayload })
-              });
-              const confirmData = await confirmResponse.json();
-              console.log('📦 Confirm response (fallback):', confirmData);
-              
-              const fallbackTxId = confirmData?.transaction?.transaction_id;
-              if (!fallbackTxId) {
-                return { success: false, error: 'Payment failed: No transaction ID received' };
-              }
-              // Use fallback transaction_id
-              const txHash = confirmData?.transaction?.transaction_hash || fallbackTxId;
-              return {
-                success: true,
-                transactionHash: txHash,
-                transaction: confirmData.transaction
-              };
-            } catch (confirmError: any) {
-              console.error('❌ Confirm-payment fallback failed:', confirmError);
-              return { success: false, error: 'Payment failed: No transaction ID received' };
-            }
+          // Check if finalPayload has error status
+          if (finalPayload?.status === 'error') {
+            console.error('❌ MiniKit pay returned error:', finalPayload);
+            return { 
+              success: false, 
+              error: finalPayload.description || finalPayload.error_code || 'Payment failed: MiniKit returned error' 
+            };
           }
 
-          console.log('🔄 Starting polling for transaction:', transactionId);
-          
-          // First confirm call - send the finalPayload to get transaction details
+          // Send finalPayload to confirm-payment API to get transaction details
+          // This is the same pattern as MiniKitPanel.tsx
           let confirmData;
           try {
             const confirmResponse = await fetch('/api/confirm-payment', {
@@ -645,16 +620,42 @@ const useMiniKit = () => {
             });
             confirmData = await confirmResponse.json();
             console.log('📦 Confirm response:', confirmData);
+
+            // Check if confirm-payment returned error
+            if (!confirmData.success) {
+              console.error('❌ Confirm-payment API error:', confirmData);
+              return { 
+                success: false, 
+                error: confirmData.error || 'Payment confirmation failed' 
+              };
+            }
+
+            // Extract transaction_id from confirm-payment response
+            const transactionId = confirmData?.transaction?.transaction_id;
+            
+            if (!transactionId) {
+              console.error('❌ No transaction_id in confirm response:', confirmData);
+              return { success: false, error: 'Payment failed: No transaction ID received' };
+            }
+
+            console.log('🔄 Starting polling for transaction:', transactionId);
+
           } catch (confirmError: any) {
-            console.warn('⚠️ First confirm call failed, will poll anyway:', confirmError);
+            console.error('❌ Confirm-payment API call failed:', confirmError);
+            return { success: false, error: 'Payment failed: Could not confirm transaction' };
           }
 
           // Poll for transaction confirmation
+          const transactionId = confirmData?.transaction?.transaction_id;
+          if (!transactionId) {
+            return { success: false, error: 'Payment failed: No transaction ID received' };
+          }
+
           let attempts = 0;
           const maxAttempts = 20;
 
           while (attempts < maxAttempts) {
-            const statusResponse = await fetch('/api/confirm-payment', {    
+            const statusResponse = await fetch('/api/confirm-payment', {        
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
