@@ -1218,13 +1218,13 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                   <>
                     <Shield className="w-5 h-5 drop-shadow-md" />
                     <span className="text-base font-extrabold tracking-wide drop-shadow-md">Verify</span>
-                    <motion.div
+                  <motion.div
                       className="w-2 h-2 bg-black/40 rounded-full shadow-lg"
                       animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    />
+                  />
                   </>
-                )}
+              )}
               </span>
             </motion.button>
           </div>
@@ -1697,6 +1697,13 @@ const LuminexApp = () => {
     }
   }, [actualAddress, referralCode]);
 
+  // Fetch membership status when address is available
+  useEffect(() => {
+    if (actualAddress) {
+      fetchMembershipStatus();
+    }
+  }, [actualAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch balance when address is available
   useEffect(() => {
     if (!actualAddress) return;
@@ -1927,6 +1934,35 @@ const LuminexApp = () => {
     await handleClaimRewards();
   };
 
+    // Fetch membership status from API
+  const fetchMembershipStatus = async () => {
+    if (!actualAddress) {
+      setCurrentMembership(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/membership/purchase?address=${actualAddress}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store'
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.membership) {
+        setCurrentMembership(data.membership.tier);
+        console.log('✅ Membership status loaded:', data.membership);
+      } else {
+        setCurrentMembership(null);
+        console.log('ℹ️ No membership found for address');
+      }
+    } catch (error: any) {
+      console.error('❌ Error fetching membership status:', error);
+      setCurrentMembership(null);
+    }
+  };
+
   const handlePurchaseMembership = async (tier: typeof MEMBERSHIP_TIERS[0]) => {
     if (!actualAddress || !provider) {
       showToast('Please connect wallet first', 'error');
@@ -1935,23 +1971,53 @@ const LuminexApp = () => {
 
     setIsClaimingInterest(true);
     try {
-    const payment = await requestPayment({
+      const payment = await requestPayment({
         amount: tier.price.split(' ')[0],
-      currency: 'WLD',
+        currency: 'WLD',
         description: `Purchase ${tier.name} Membership`
-    });
-    
-    if (payment.success) {
-        // Refresh WLD balance after payment
-        await fetchBalance();
-        
-        setCurrentMembership(tier.id);
-        showToast(`${tier.name} Membership activated!`, 'success');
+      });
+
+      if (payment.success && payment.transactionHash) {
+        // Record membership purchase on server
+        try {
+          const membershipResponse = await fetch('/api/membership/purchase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: actualAddress,
+              tier: tier.id,
+              transactionHash: payment.transactionHash,
+              amount: tier.price.split(' ')[0]
+            })
+          });
+
+          const membershipData = await membershipResponse.json();
+          
+          if (membershipData.success) {
+            // Update local state
+            setCurrentMembership(tier.id);
+            
+            // Refresh WLD balance after payment
+            await fetchBalance();
+            
+            showToast(`${tier.name} Membership activated!`, 'success');
+            console.log('✅ Membership purchase recorded:', membershipData);
+          } else {
+            console.error('❌ Failed to record membership purchase:', membershipData.error);
+            showToast('Payment successful but failed to record membership. Please contact support.', 'error');
+          }
+        } catch (apiError: any) {
+          console.error('❌ Error recording membership purchase:', apiError);
+          // Payment was successful, so still update local state
+          setCurrentMembership(tier.id);
+          await fetchBalance();
+          showToast(`${tier.name} Membership activated! (Status may not be saved)`, 'success');
+        }
       } else {
         showToast(payment.error || 'Payment failed', 'error');
       }
     } catch (error: any) {
-      console.error('Membership purchase error:', error);
+      console.error('❌ Membership purchase error:', error);
       showToast(error.message || 'Payment failed', 'error');
     } finally {
       setIsClaimingInterest(false);
