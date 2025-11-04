@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
 import { MiniKit, tokenToDecimals, Tokens } from '@worldcoin/minikit-js';
 import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS, TREASURY_ADDRESS as TREASURY_ADDRESS_FROM_CONSTANTS } from '@/lib/utils/constants';
+import { POWERS, BASE_APY, getPowerByCode, getPowerBoost, type PowerCode } from '@/lib/utils/powerConfig';
 import { useMiniKit as useMiniKitVerify } from '@/hooks/useMiniKit';
 const MiniKitPanel = dynamic(() => import('@/components/MiniKitPanel'), { ssr: false });
 const GameLauncherCard = dynamic(() => import('@/components/game/GameLauncherCard'), { ssr: false });
@@ -1546,7 +1547,8 @@ const LuminexApp = () => {
   const [wldBalance, setWldBalance] = useState(0);
   const [stakedAmount, setStakedAmount] = useState(0);
   const [pendingRewards, setPendingRewards] = useState(0);
-  const [currentMembership, setCurrentMembership] = useState<string | null>(null);
+  const [currentPower, setCurrentPower] = useState<{ code: PowerCode; name: string; totalAPY: number } | null>(null);
+  const [isPurchasingPower, setIsPurchasingPower] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [referralCode, setReferralCode] = useState('');
   const [totalReferrals, setTotalReferrals] = useState(0);
@@ -1913,15 +1915,15 @@ const LuminexApp = () => {
     }
   }, [verified]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Fetch membership status from API
-  const fetchMembershipStatus = useCallback(async () => {
+  // Fetch power status from API
+  const fetchPowerStatus = useCallback(async () => {
     if (!actualAddress) {
-      setCurrentMembership(null);
+      setCurrentPower(null);
       return;
     }
 
     try {
-      const response = await fetch(`/api/membership/purchase?address=${actualAddress}`, {
+      const response = await fetch(`/api/power/active?userId=${actualAddress}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store'
@@ -1929,16 +1931,20 @@ const LuminexApp = () => {
 
       const data = await response.json();
       
-      if (data.success && data.membership) {
-        setCurrentMembership(data.membership.tier);
-        console.log('✅ Membership status loaded:', data.membership);
+      if (data.success && data.power) {
+        setCurrentPower({
+          code: data.power.code,
+          name: data.power.name,
+          totalAPY: data.power.totalAPY,
+        });
+        console.log('✅ Power status loaded:', data.power);
       } else {
-        setCurrentMembership(null);
-        console.log('ℹ️ No membership found for address');
+        setCurrentPower(null);
+        console.log('ℹ️ No power license found for address');
       }
     } catch (error: any) {
-      console.error('❌ Error fetching membership status:', error);
-      setCurrentMembership(null);
+      console.error('❌ Error fetching power status:', error);
+      setCurrentPower(null);
     }
   }, [actualAddress]);
 
@@ -2045,12 +2051,12 @@ const LuminexApp = () => {
     }
   }, [actualAddress, fetchReferralStats]);
 
-  // Fetch membership status when address is available
+  // Fetch power status when address is available
   useEffect(() => {
     if (actualAddress) {
-      fetchMembershipStatus();
+      fetchPowerStatus();
     }
-  }, [actualAddress, fetchMembershipStatus]);
+  }, [actualAddress, fetchPowerStatus]);
 
   // Fetch balance when address is available
   useEffect(() => {
@@ -2284,85 +2290,134 @@ const LuminexApp = () => {
 
 
 
-  const handlePurchaseMembership = async (tier: typeof MEMBERSHIP_TIERS[0]) => {
-    if (!actualAddress || !provider) {
+    const handlePurchasePower = async (targetCode: PowerCode) => {
+    if (!actualAddress) {
       showToast('Please connect wallet first', 'error');
       return;
     }
 
-    // Extract amount from tier.price (e.g., "1 WLD" -> "1")
-    const priceAmount = tier.price.split(' ')[0];
-    if (!priceAmount || isNaN(parseFloat(priceAmount))) {
-      showToast('Invalid membership price', 'error');
-      return;
-    }
-
-    console.log('🛒 Purchase Membership:', {
-      tier: tier.name,
-      price: tier.price,
-      extractedAmount: priceAmount,
-      description: `Purchase ${tier.name} Membership`
-    });
-
-    setIsClaimingInterest(true);
+    setIsPurchasingPower(true);
     try {
-      const payment = await requestPayment({
-        amount: priceAmount, // Already a string like "1", "5", "10"
-        currency: 'WLD',
-        description: `Purchase ${tier.name} Membership`
+      // Step 1: Initialize power purchase
+      const initResponse = await fetch('/api/power/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetCode,
+          userId: actualAddress,
+        }),
       });
-    
-            // Handle user cancellation
-      if (payment.error === 'user_cancelled' || payment.userCancelled) {
-        // User cancelled - don't show error toast, just stop silently
-        setIsClaimingInterest(false);
+
+      const initData = await initResponse.json();
+
+      if (!initData.success) {
+        // Map error codes to user-friendly messages
+        const errorMessages: Record<string, string> = {
+          'insufficient_balance': 'Insufficient WLD balance',
+          'invalid_reference': 'Invalid reference. Please try again.',
+          'verification_failed': 'Transaction verification failed',
+        };
+        const errorMsg = errorMessages[initData.error] || initData.error || 'Failed to initialize power purchase';
+        showToast(errorMsg, 'error');
         return;
       }
 
-      if (payment.success && payment.transactionHash) {
-        // Record membership purchase on server
-        try {
-          const membershipResponse = await fetch('/api/membership/purchase', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address: actualAddress,
-              tier: tier.id,
-              transactionHash: payment.transactionHash,
-              amount: tier.price.split(' ')[0]
-            })
+      const { reference, amountWLD, to, target } = initData;
+
+      // Step 2: Pay with MiniKit
+      if (!MiniKit.isInstalled()) {
+        showToast('World App is required', 'error');
+        return;
+      }
+
+      try {
+        // Convert amount to decimals for MiniKit
+        const tokenSymbol = Tokens.WLD;
+        const amountInDecimals = tokenToDecimals(parseFloat(amountWLD), tokenSymbol);
+        const tokenAmountStr = amountInDecimals.toString();
+
+        const payPayload = {
+          reference,
+          to: to as `0x${string}`,
+          tokens: [{
+            symbol: tokenSymbol,
+            token_amount: tokenAmountStr,
+          }],
+          description: `Purchase ${target.name} Power License`,
+        };
+
+        const { finalPayload } = await MiniKit.commandsAsync.pay(payPayload as any);
+
+        // Check if user cancelled - finalPayload might not have transaction_id if cancelled
+        const payloadAny = finalPayload as any;
+        if (!payloadAny?.transaction_id) {
+          // User cancelled
+          setIsPurchasingPower(false);
+          return;
+        }
+
+        // Step 3: Confirm power purchase
+        const confirmResponse = await fetch('/api/power/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            payload: finalPayload,
+          }),
+        });
+
+        const confirmData = await confirmResponse.json();
+
+        if (confirmData.success && confirmData.power) {
+          // Update local state
+          setCurrentPower({
+            code: confirmData.power.code,
+            name: confirmData.power.name,
+            totalAPY: confirmData.power.totalAPY,
           });
 
-          const membershipData = await membershipResponse.json();
-          
-          if (membershipData.success) {
-            // Update local state
-            setCurrentMembership(tier.id);
-            
-        // Refresh WLD balance after payment
-        await fetchBalance();
-        
-        showToast(`${tier.name} Membership activated!`, 'success');
-            console.log('✅ Membership purchase recorded:', membershipData);
-          } else {
-            console.error('❌ Failed to record membership purchase:', membershipData.error);
-            showToast('Payment successful but failed to record membership. Please contact support.', 'error');
-          }
-        } catch (apiError: any) {
-          console.error('❌ Error recording membership purchase:', apiError);
-          // Payment was successful, so still update local state
-          setCurrentMembership(tier.id);
+          // Refresh balance and power status
           await fetchBalance();
-          showToast(`${tier.name} Membership activated! (Status may not be saved)`, 'success');
+          await fetchPowerStatus();
+
+          showToast(`Activated ${confirmData.power.name.toUpperCase()} Power!`, 'success');
+          console.log('✅ Power purchase confirmed:', confirmData);
+        } else {
+          // Map error codes
+          const errorMessages: Record<string, string> = {
+            'user_cancelled': 'ยกเลิกการชำระเงิน',
+            'insufficient_balance': 'ยอด WLD ไม่พอ',
+            'invalid_reference': 'รหัสอ้างอิงหมดอายุ/ไม่ถูกต้อง',
+            'verification_failed': 'ยืนยันธุรกรรมไม่สำเร็จ',
+            'draft_already_used': 'Transaction already processed',
+          };
+          const errorMsg = errorMessages[confirmData.error] || confirmData.error || 'ชำระเงินล้มเหลว';
+          showToast(errorMsg, 'error');
         }
-      } else {
-        showToast(payment.error || 'Payment failed', 'error');
+      } catch (payError: any) {
+        // Detect user cancellation
+        const msg = String(payError?.message || '').toLowerCase();
+        const code = String(payError?.code || payError?.error_code || '').toLowerCase();
+        
+        if (
+          code.includes('user_rejected') ||
+          code.includes('cancelled') ||
+          code.includes('cancel') ||
+          msg.includes('cancel') ||
+          msg.includes('rejected') ||
+          msg.includes('user')
+        ) {
+          // User cancelled - don't show error
+          setIsPurchasingPower(false);
+          return;
+        }
+
+        showToast(payError?.message || 'Payment failed', 'error');
       }
     } catch (error: any) {
-      console.error('❌ Membership purchase error:', error);
-      showToast(error.message || 'Payment failed', 'error');
+      console.error('❌ Power purchase error:', error);
+      showToast(error.message || 'Failed to purchase power', 'error');
     } finally {
-      setIsClaimingInterest(false);
+      setIsPurchasingPower(false);
     }
   };
 
@@ -2525,9 +2580,9 @@ const LuminexApp = () => {
   }
 
   const currentPool = POOLS[selectedPool];
-  const baseApy = currentPool.apy;
-  const membershipBonus = currentMembership ? MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.apy || 0 : 0;
-  const totalApy = baseApy + membershipBonus;
+  const baseApy = BASE_APY; // Base APY is now 50% (from powerConfig)
+  const powerBoost = currentPower ? getPowerBoost(getPowerByCode(currentPower.code) || null) : 0;
+  const totalApy = currentPower ? currentPower.totalAPY : baseApy;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
@@ -2772,17 +2827,19 @@ const LuminexApp = () => {
                       className="bg-white/20 backdrop-blur-lg rounded-xl px-4 py-2 border border-white/30 shadow-lg"
                       style={{ willChange: 'transform' }}
                     >
-                      <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between">       
                         <span className="text-white font-bold text-lg">
-                          {currentMembership ? (
+                          {currentPower ? (
                             <span className="flex items-center gap-2">
-                              {MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.icon} {MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.name}
+                              ⚡ {currentPower.name}
                             </span>
                           ) : (
                             t('noMembership')
                           )}
                         </span>
-                        <span className="text-yellow-300 font-extrabold text-xl">APY {totalApy}%</span>
+                        <span className="text-yellow-300 font-extrabold text-xl">
+                          {baseApy}% + {powerBoost}% = {totalApy}% APY
+                        </span>
                   </div>
                     </motion.div>
                 </div>
@@ -2969,66 +3026,89 @@ const LuminexApp = () => {
                     className="bg-white/20 backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg inline-block"
                     style={{ willChange: 'transform' }}
                   >
-                    <div className="flex items-center justify-center space-x-2">
-                      {currentMembership && (
+                                        <div className="flex items-center justify-center space-x-2">
+                      {currentPower && (
                         <span className="text-xl">
-                          {MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.icon}
+                          ⚡
                         </span>
                       )}
                       <span className="text-white font-bold text-sm">
-                        {currentMembership ? `${MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.name}` : 'No membership'}
+                        {currentPower ? `${currentPower.name} Power` : 'No Power License'}                               
                       </span>
-                      <span className="text-yellow-300 font-extrabold text-base">: APY {totalApy}%</span>
+                      <span className="text-yellow-300 font-extrabold text-base">: {baseApy}% + {powerBoost}% = {totalApy}% APY</span>
                     </div>
                   </motion.div>
                 </div>
                 </div>
 
-              {/* Membership Tiers */}
-              <div className="bg-black/40 backdrop-blur-2xl rounded-2xl p-3 border border-white/10 shadow-2xl">
+                            {/* Power Tiers */}
+              <div className="bg-black/40 backdrop-blur-2xl rounded-2xl p-3 border border-white/10 shadow-2xl">                                                 
                 <div className="flex items-center mb-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-2">
-                    <Crown className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-2">                  
+                    <Zap className="w-5 h-5 text-white" />
                   </div>
                       <div>
-                    <span className="text-yellow-400 font-bold text-lg">VIP.</span>
-                    <span className="text-white font-bold text-base ml-2">MEMBERSHIPS</span>
+                    <span className="text-yellow-400 font-bold text-lg">POWER.</span>                                                                             
+                    <span className="text-white font-bold text-base ml-2">LICENSES</span>                                                                    
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
-                  {MEMBERSHIP_TIERS.map((tier, index) => (
+                  {POWERS.map((power, index) => {
+                    const isOwned = currentPower?.code === power.code;
+                    const canUpgrade = !currentPower || (getPowerByCode(currentPower.code) && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) < parseFloat(power.priceWLD));
+                    const isLower = currentPower && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) > parseFloat(power.priceWLD);
+                    
+                    return (
                     <motion.div
-                      key={tier.id}
+                      key={power.code}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       whileHover={{ scale: 1.01 }}
-                      className={`flex items-center justify-between p-3 rounded-xl bg-gradient-to-r ${tier.color} bg-opacity-20 border-2 ${
-                        currentMembership === tier.id ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 'border-white/20'
+                      className={`flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-amber-500/20 bg-opacity-20 border-2 ${                     
+                        isOwned ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 'border-white/20'
                       } backdrop-blur-lg`}
                       style={{ willChange: 'transform, opacity' }}
                     >
-                      <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r ${tier.color} shadow-lg`}>
-                        <span className="text-xl">{tier.icon}</span>
+                                            <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-500/30 to-amber-500/30 shadow-lg">                             
+                        <span className="text-xl">⚡</span>
                         <div>
-                          <div className="text-white font-bold text-sm">{tier.name}</div>
+                          <div className="text-white font-bold text-sm">{power.name}</div>                                                                       
                           <div className="text-white font-extrabold text-base">
-                            APY {tier.apy}%{tier.sparkle && ' ✨'}
+                            Total APY {power.totalAPY}% (Base {BASE_APY}% + Power +{power.totalAPY - BASE_APY}%)
                           </div>
                         </div>
                       </div>
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => handlePurchaseMembership(tier)}
-                        className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-lg shadow-lg shadow-green-500/30 transition-all text-sm"
+                        whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.05 : 1 }}
+                        whileTap={{ scale: canUpgrade && !isPurchasingPower ? 0.97 : 1 }}
+                        onClick={() => canUpgrade && !isPurchasingPower ? handlePurchasePower(power.code) : undefined}
+                        disabled={!canUpgrade || isPurchasingPower || !!isLower}
+                        className={`px-3 py-2 font-bold rounded-lg shadow-lg transition-all text-sm ${
+                          isOwned
+                            ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-black cursor-default'
+                            : isLower || !canUpgrade
+                            ? 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white'
+                        }`}
                         style={{ willChange: 'transform' }}
                       >
-                        ${tier.price}
+                        {isPurchasingPower ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isOwned ? (
+                          'Active'
+                        ) : isLower ? (
+                          'Lower'
+                        ) : !currentPower ? (
+                          `Activate (${power.priceWLD} WLD)`
+                        ) : (
+                          `Upgrade (+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)} WLD)`
+                        )}
                       </motion.button>
                     </motion.div>
-                  ))}
+                    );
+                  })}
                     </div>
                   </div>
             </motion.div>
