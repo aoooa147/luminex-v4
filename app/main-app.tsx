@@ -573,21 +573,26 @@ const useMiniKit = () => {
             return { success: false, error: 'Failed to generate payment reference' };
           }
           
-          const referenceId = referenceData.id;
+                    const referenceId = referenceData.id;
           console.log('✅ Generated payment reference:', referenceId);
+
+          // Call MiniKit pay API directly (cannot use hooks inside functions)
+          const MiniKit = (window as any).MiniKit;
+          if (!MiniKit?.commandsAsync?.pay) {
+            return { success: false, error: 'MiniKit pay API not available' };
+          }
+
+          const tokenType = (params.currency || 'WLD').toUpperCase();
           
-                    // Use useMiniKit hook for pay (same as MiniKitPanel.tsx)
-          const { pay: miniKitPay } = useMiniKitVerify();
-          const tokenType = (params.currency || 'WLD').toUpperCase() as 'WLD' | 'USDC';
+          // Call MiniKit pay API - tokens should be string 'WLD' or 'USDC' (not array)
+          const payResult = await MiniKit.commandsAsync.pay({
+            reference: referenceId,
+            to: TREASURY_ADDRESS,
+            tokens: tokenType, // String format: 'WLD' or 'USDC'
+            amount: amount.toString()
+          });
 
-          // Call MiniKit pay API using hook (tokens should be string, not array)
-          const finalPayload = await miniKitPay(
-            referenceId,
-            TREASURY_ADDRESS as `0x${string}`,
-            amount.toString(),
-            tokenType
-          );
-
+          const finalPayload = payResult?.finalPayload;
           console.log('✅ MiniKit pay result (finalPayload):', finalPayload);
 
           // Check if finalPayload exists
