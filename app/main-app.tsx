@@ -2226,7 +2226,7 @@ const LuminexApp = () => {
     
       // Handle user cancellation
       if (payment.error === 'user_cancelled' || payment.userCancelled) {
-        showToast('ยกเลิกการชำระเงิน', 'info');
+        // User cancelled - don't show error, just stop
         setIsClaimingInterest(false);
         return;
       }
