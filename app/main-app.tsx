@@ -576,28 +576,25 @@ const useMiniKit = () => {
           const referenceId = referenceData.id;
           console.log('✅ Generated payment reference:', referenceId);
           
-          // Call MiniKit pay API
-          const MiniKit = (window as any).MiniKit;
-          const tokenType = (params.currency || 'WLD').toUpperCase();
-          
-          // MiniKit pay API requires tokens as array based on error "e.tokens.some is not a function"
-          const payResult = await MiniKit.commandsAsync.pay({
-            reference: referenceId,
-            to: TREASURY_ADDRESS,
-            tokens: [tokenType], // Array format required
-            amount: amount.toString()
-          });
-          
-                              console.log('✅ MiniKit pay result:', payResult);
+                    // Use useMiniKit hook for pay (same as MiniKitPanel.tsx)
+          const { pay: miniKitPay } = useMiniKitVerify();
+          const tokenType = (params.currency || 'WLD').toUpperCase() as 'WLD' | 'USDC';
 
-          // Get transaction hash from confirm-payment API
-          // payResult.finalPayload should contain transaction_id and reference 
-          if (!payResult?.finalPayload) {
-            console.error('❌ MiniKit pay did not return finalPayload:', payResult);
+          // Call MiniKit pay API using hook (tokens should be string, not array)
+          const finalPayload = await miniKitPay(
+            referenceId,
+            TREASURY_ADDRESS as `0x${string}`,
+            amount.toString(),
+            tokenType
+          );
+
+          console.log('✅ MiniKit pay result (finalPayload):', finalPayload);
+
+          // Check if finalPayload exists
+          if (!finalPayload) {
+            console.error('❌ MiniKit pay did not return finalPayload');
             return { success: false, error: 'Payment failed: No transaction data received' };
           }
-
-          const finalPayload = payResult.finalPayload;
           console.log('📦 Final payload:', finalPayload);
 
           // Check if finalPayload has error status
@@ -607,7 +604,7 @@ const useMiniKit = () => {
               success: false, 
               error: finalPayload.description || finalPayload.error_code || 'Payment failed: MiniKit returned error' 
             };
-          }
+      }
 
                     // Send finalPayload to confirm-payment API to get transaction details
           // This is the same pattern as MiniKitPanel.tsx
@@ -619,7 +616,7 @@ const useMiniKit = () => {
             });
             const confirmData = await confirmResponse.json();
             console.log('📦 Confirm response:', confirmData);
-
+      
             // Check if confirm-payment returned error
             if (!confirmData.success) {
               console.error('❌ Confirm-payment API error:', confirmData);      
@@ -653,7 +650,7 @@ const useMiniKit = () => {
                     reference: referenceId
                   }
                 })
-              });
+        });
 
               const statusData = await statusResponse.json();
               console.log(`🔄 Poll attempt ${attempts + 1}/${maxAttempts}:`, statusData);                                                                       
@@ -665,11 +662,11 @@ const useMiniKit = () => {
                 if (status === 'confirmed' || status === 'mined') {
                   const txHash = statusData.transaction.transaction_hash || statusData.transaction?.transaction_hash || confirmData?.transaction?.transaction_hash;                                                                               
                   console.log('✅ Payment confirmed:', txHash);
-                  return {
-                    success: true,
-                    transactionHash: txHash,
+        return { 
+          success: true, 
+          transactionHash: txHash,
                     transaction: statusData.transaction
-                  };
+        };
                 }
 
                 if (status === 'failed') {
@@ -685,8 +682,8 @@ const useMiniKit = () => {
               // If polling timed out, return the transaction_id anyway (transaction might be pending)                                                              
               console.log('⏱️ Polling timeout, returning pending transaction');   
               const txHash = confirmData?.transaction?.transaction_hash || transactionId;                                                                           
-              return {
-                success: true,
+  return {
+          success: true, 
                 transactionHash: txHash || transactionId,
                 transaction: confirmData?.transaction || { transaction_id: transactionId, status: 'pending' }                                                       
               };
@@ -1564,10 +1561,10 @@ const LuminexApp = () => {
             console.log('🔄 Falling back to direct RPC call...');
             const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
             const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
-            const wldBalanceBN = await wldContract.balanceOf(addressToUse);
+        const wldBalanceBN = await wldContract.balanceOf(addressToUse);
             const decimals = await wldContract.decimals().catch(() => 18);
             const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, decimals));
-            setWldBalance(wldBalanceFormatted);
+        setWldBalance(wldBalanceFormatted);
             setBalance(0);
             console.log('✅ WLD Balance fetched via fallback RPC:', wldBalanceFormatted);
           }
@@ -1816,7 +1813,7 @@ const LuminexApp = () => {
   useEffect(() => {
     if (actualAddress && !referralCode) {
       setReferralCode(`LUX${actualAddress.slice(2, 8).toUpperCase()}`);
-      console.log('✅ Generated referral code from address:', actualAddress);  
+      console.log('✅ Generated referral code from address:', actualAddress);
     }
   }, [actualAddress, referralCode]);
 
@@ -2067,12 +2064,12 @@ const LuminexApp = () => {
 
     setIsClaimingInterest(true);
     try {
-      const payment = await requestPayment({
+    const payment = await requestPayment({
         amount: tier.price.split(' ')[0],
-        currency: 'WLD',
+      currency: 'WLD',
         description: `Purchase ${tier.name} Membership`
-      });
-
+    });
+    
       if (payment.success && payment.transactionHash) {
         // Record membership purchase on server
         try {
@@ -2093,10 +2090,10 @@ const LuminexApp = () => {
             // Update local state
             setCurrentMembership(tier.id);
             
-            // Refresh WLD balance after payment
-            await fetchBalance();
-            
-            showToast(`${tier.name} Membership activated!`, 'success');
+        // Refresh WLD balance after payment
+        await fetchBalance();
+        
+        showToast(`${tier.name} Membership activated!`, 'success');
             console.log('✅ Membership purchase recorded:', membershipData);
           } else {
             console.error('❌ Failed to record membership purchase:', membershipData.error);
