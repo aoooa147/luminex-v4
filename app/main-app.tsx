@@ -609,36 +609,35 @@ const useMiniKit = () => {
             };
           }
 
-          // Send finalPayload to confirm-payment API to get transaction details
+                    // Send finalPayload to confirm-payment API to get transaction details
           // This is the same pattern as MiniKitPanel.tsx
-          let confirmData;
           try {
-            const confirmResponse = await fetch('/api/confirm-payment', {
+            const confirmResponse = await fetch('/api/confirm-payment', {       
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ payload: finalPayload })
             });
-            confirmData = await confirmResponse.json();
+            const confirmData = await confirmResponse.json();
             console.log('📦 Confirm response:', confirmData);
 
             // Check if confirm-payment returned error
             if (!confirmData.success) {
-              console.error('❌ Confirm-payment API error:', confirmData);
-              return { 
-                success: false, 
-                error: confirmData.error || 'Payment confirmation failed' 
+              console.error('❌ Confirm-payment API error:', confirmData);      
+              return {
+                success: false,
+                error: confirmData.error || 'Payment confirmation failed'       
               };
             }
 
             // Extract transaction_id from confirm-payment response
-            const transactionId = confirmData?.transaction?.transaction_id;
-            
+            const transactionId = confirmData?.transaction?.transaction_id;     
+
             if (!transactionId) {
-              console.error('❌ No transaction_id in confirm response:', confirmData);
-              return { success: false, error: 'Payment failed: No transaction ID received' };
+              console.error('❌ No transaction_id in confirm response:', confirmData);                                                                          
+              return { success: false, error: 'Payment failed: No transaction ID received' };                                                                   
             }
 
-            console.log('🔄 Starting polling for transaction:', transactionId);
+            console.log('🔄 Starting polling for transaction:', transactionId);                                                                               
 
             // Poll for transaction confirmation
             let attempts = 0;
@@ -683,19 +682,19 @@ const useMiniKit = () => {
             attempts++;
           }
 
-                      // If polling timed out, return the transaction_id anyway (transaction might be pending)                                                              
-            console.log('⏱️ Polling timeout, returning pending transaction');   
-            const txHash = confirmData?.transaction?.transaction_hash || transactionId;                                                                           
-            return {
-              success: true,
-              transactionHash: txHash || transactionId,
-              transaction: confirmData?.transaction || { transaction_id: transactionId, status: 'pending' }                                                       
-            };
-          } catch (confirmError: any) {
-            console.error('❌ Confirm-payment API call failed:', confirmError);
-            return { success: false, error: 'Payment failed: Could not confirm transaction' };
-          }
-        } catch (payError: any) {
+              // If polling timed out, return the transaction_id anyway (transaction might be pending)                                                              
+              console.log('⏱️ Polling timeout, returning pending transaction');   
+              const txHash = confirmData?.transaction?.transaction_hash || transactionId;                                                                           
+              return {
+                success: true,
+                transactionHash: txHash || transactionId,
+                transaction: confirmData?.transaction || { transaction_id: transactionId, status: 'pending' }                                                       
+              };
+            } catch (confirmError: any) {
+              console.error('❌ Confirm-payment API call failed:', confirmError);
+              return { success: false, error: 'Payment failed: Could not confirm transaction' };
+            }
+          } catch (payError: any) {
           console.error('❌ MiniKit pay error:', payError);
           return { success: false, error: payError.message || 'Payment failed' };
         }
