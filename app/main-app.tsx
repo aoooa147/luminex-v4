@@ -1689,11 +1689,40 @@ const LuminexApp = () => {
     }
   }, [verified]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Fetch membership status from API
+  const fetchMembershipStatus = useCallback(async () => {
+    if (!actualAddress) {
+      setCurrentMembership(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/membership/purchase?address=${actualAddress}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store'
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.membership) {
+        setCurrentMembership(data.membership.tier);
+        console.log('✅ Membership status loaded:', data.membership);
+      } else {
+        setCurrentMembership(null);
+        console.log('ℹ️ No membership found for address');
+      }
+    } catch (error: any) {
+      console.error('❌ Error fetching membership status:', error);
+      setCurrentMembership(null);
+    }
+  }, [actualAddress]);
+
   // Set referral code from wallet address
   useEffect(() => {
     if (actualAddress && !referralCode) {
       setReferralCode(`LUX${actualAddress.slice(2, 8).toUpperCase()}`);
-      console.log('✅ Generated referral code from address:', actualAddress);
+      console.log('✅ Generated referral code from address:', actualAddress);  
     }
   }, [actualAddress, referralCode]);
 
@@ -1702,7 +1731,7 @@ const LuminexApp = () => {
     if (actualAddress) {
       fetchMembershipStatus();
     }
-  }, [actualAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [actualAddress, fetchMembershipStatus]);
 
   // Fetch balance when address is available
   useEffect(() => {
@@ -1934,34 +1963,7 @@ const LuminexApp = () => {
     await handleClaimRewards();
   };
 
-    // Fetch membership status from API
-  const fetchMembershipStatus = async () => {
-    if (!actualAddress) {
-      setCurrentMembership(null);
-      return;
-    }
 
-    try {
-      const response = await fetch(`/api/membership/purchase?address=${actualAddress}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store'
-      });
-
-      const data = await response.json();
-      
-      if (data.success && data.membership) {
-        setCurrentMembership(data.membership.tier);
-        console.log('✅ Membership status loaded:', data.membership);
-      } else {
-        setCurrentMembership(null);
-        console.log('ℹ️ No membership found for address');
-      }
-    } catch (error: any) {
-      console.error('❌ Error fetching membership status:', error);
-      setCurrentMembership(null);
-    }
-  };
 
   const handlePurchaseMembership = async (tier: typeof MEMBERSHIP_TIERS[0]) => {
     if (!actualAddress || !provider) {
