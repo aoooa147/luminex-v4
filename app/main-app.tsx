@@ -1963,11 +1963,30 @@ const LuminexApp = () => {
 
   // Initial loading screen - show before verification
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 2500); // Show loading for 2.5 seconds
-    
-    return () => clearTimeout(timer);
+    // Wait for page to fully load and ensure smooth transition
+    const checkLoaded = () => {
+      if (document.readyState === 'complete') {
+        // Add minimum display time for smooth UX (1.5 seconds minimum)
+        const timer = setTimeout(() => {
+          setIsInitialLoading(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      const timer = setTimeout(() => {
+        setIsInitialLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else {
+      window.addEventListener('load', () => {
+        const timer = setTimeout(() => {
+          setIsInitialLoading(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      });
+    }
   }, []);
 
   // Show loading screen first
