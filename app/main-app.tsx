@@ -3007,110 +3007,79 @@ const LuminexApp = () => {
               style={{ willChange: 'transform, opacity' }}
             >
               {/* Boost Illustration */}
-              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-2.5 text-center overflow-hidden border-2 border-yellow-600/30" style={{
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 179, 8, 0.1)'
-              }}>
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/15 via-transparent to-transparent"></div>
-                <div className="relative z-10">
-                  <div className="text-2xl mb-1">
-                    🍙💪
+              {/* Compact Header */}
+              <div className="flex items-center justify-between mb-1.5 px-1">
+                <div className="flex items-center space-x-1.5">
+                  <Zap className="w-4 h-4 text-yellow-400" />
+                  <span className="text-yellow-400 font-bold text-xs">POWER LICENSES</span>
+                </div>
+                {currentPower && (
+                  <div className="flex items-center space-x-1 px-1.5 py-0.5 bg-yellow-500/20 rounded border border-yellow-400/30">
+                    <span className="text-xs">⚡</span>
+                    <span className="text-white font-bold text-[10px]">{currentPower.name}</span>
+                    <span className="text-yellow-300 font-bold text-[10px]">{totalApy}%</span>
                   </div>
-                                    <h1 className="text-sm font-extrabold text-white mb-0.5">     
-                    🚀 Boost your earnings! 🚀
-                  </h1>
-                  <p className="text-white/90 mb-1.5 text-xs">Activating your Power License gives you a much higher APY for your Staking ✨</p>
-                  
-                                    {/* Current Power License */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white/20 backdrop-blur-lg rounded-lg px-2 py-1 border border-white/30 shadow-lg inline-block"                                 
-                    style={{ willChange: 'transform' }}
-                  >
-                                        <div className="flex items-center justify-center space-x-1.5">
-                      {currentPower && (
-                        <span className="text-base">
-                          ⚡
-                        </span>
-                      )}
-                      <span className="text-white font-bold text-xs">
-                        {currentPower ? `${currentPower.name} Power` : 'No Power License'}                               
-                      </span>
-                      <span className="text-yellow-300 font-extrabold text-xs">: {baseApy}% + {powerBoost}% = {totalApy}% APY</span>
-                    </div>
-                  </motion.div>
-                </div>
-                </div>
+                )}
+              </div>
 
-                            {/* Power Tiers */}
-              <div className="bg-black/40 backdrop-blur-2xl rounded-xl p-2 border border-white/10 shadow-2xl">                                                 
-                <div className="flex items-center mb-1.5">
-                  <div className="w-7 h-7 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-2">                  
-                    <Zap className="w-3.5 h-3.5 text-white" />
-                  </div>
-                      <div>
-                    <span className="text-yellow-400 font-bold text-sm">POWER.</span>                                                                             
-                    <span className="text-white font-bold text-xs ml-1.5">LICENSES</span>                                                                    
-                  </div>
-                </div>
+              {/* Compact Power Tiers */}
+              <div className="space-y-1">
+                {POWERS.map((power, index) => {
+                  const isOwned = currentPower?.code === power.code;
+                  const canUpgrade = !currentPower || (getPowerByCode(currentPower.code) && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) < parseFloat(power.priceWLD));
+                  const isLower = currentPower && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) > parseFloat(power.priceWLD);
 
-                <div className="space-y-1.5">
-                  {POWERS.map((power, index) => {
-                    const isOwned = currentPower?.code === power.code;
-                    const canUpgrade = !currentPower || (getPowerByCode(currentPower.code) && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) < parseFloat(power.priceWLD));
-                    const isLower = currentPower && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) > parseFloat(power.priceWLD);
-                    
-                    return (
+                  return (
                     <motion.div
                       key={power.code}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.01 }}
-                      className={`flex items-center justify-between p-2 rounded-lg bg-gradient-to-r from-yellow-500/20 to-amber-500/20 bg-opacity-20 border-2 ${                     
-                        isOwned ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 'border-white/20'
-                      } backdrop-blur-lg`}
-                      style={{ willChange: 'transform, opacity' }}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className={`flex items-center justify-between p-1.5 rounded-lg border ${
+                        isOwned ? 'border-yellow-400 bg-yellow-500/10' : 'border-white/10 bg-black/20'
+                      }`}
                     >
-                                            <div className="flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-gradient-to-r from-yellow-500/30 to-amber-500/30 shadow-lg">                             
-                        <span className="text-base">⚡</span>
-                        <div>
-                          <div className="text-white font-bold text-xs">{power.name}</div>                                                                       
-                          <div className="text-white font-extrabold text-xs">
-                            Total APY {power.totalAPY}% (Base {BASE_APY}% + Power +{power.totalAPY - BASE_APY}%)
+                      <div className="flex items-center space-x-1.5 flex-1 min-w-0">
+                        <span className="text-xs">⚡</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-white font-bold text-[11px]">{power.name}</span>
+                            <span className="text-yellow-300 font-bold text-[10px]">{power.totalAPY}% APY</span>
+                          </div>
+                          <div className="text-white/70 text-[9px] mt-0.5">
+                            +{power.totalAPY - BASE_APY}% Power Boost
                           </div>
                         </div>
                       </div>
                       <motion.button
-                        whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.05 : 1 }}
+                        whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.03 : 1 }}
                         whileTap={{ scale: canUpgrade && !isPurchasingPower ? 0.97 : 1 }}
                         onClick={() => canUpgrade && !isPurchasingPower ? handlePurchasePower(power.code) : undefined}
                         disabled={!canUpgrade || isPurchasingPower || !!isLower}
-                        className={`px-2 py-1 font-bold rounded-lg shadow-lg transition-all text-xs ${
+                        className={`px-2 py-1 font-bold rounded text-[10px] whitespace-nowrap ml-1.5 ${
                           isOwned
-                            ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-black cursor-default'
+                            ? 'bg-yellow-400 text-black cursor-default'
                             : isLower || !canUpgrade
-                            ? 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white'
+                            ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+                            : 'bg-green-500 hover:bg-green-400 text-white'
                         }`}
-                        style={{ willChange: 'transform' }}
                       >
                         {isPurchasingPower ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
                         ) : isOwned ? (
-                          'Active'
+                          '✓'
                         ) : isLower ? (
-                          'Lower'
+                          '↓'
                         ) : !currentPower ? (
-                          `Activate (${power.priceWLD} WLD)`
+                          `${power.priceWLD} WLD`
                         ) : (
-                          `Upgrade (+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)} WLD)`
+                          `+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)}`
                         )}
                       </motion.button>
                     </motion.div>
-                    );
-                  })}
-                    </div>
-                  </div>
+                  );
+                })}
+              </div>
             </motion.div>
           )}
           
