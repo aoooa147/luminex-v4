@@ -2224,9 +2224,9 @@ const LuminexApp = () => {
         description: `Purchase ${tier.name} Membership`
       });
     
-      // Handle user cancellation
+            // Handle user cancellation
       if (payment.error === 'user_cancelled' || payment.userCancelled) {
-        // User cancelled - don't show error, just stop
+        // User cancelled - don't show error toast, just stop silently
         setIsClaimingInterest(false);
         return;
       }
