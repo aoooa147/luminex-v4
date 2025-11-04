@@ -2113,20 +2113,56 @@ const LuminexApp = () => {
   const totalApy = baseApy + membershipBonus;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-pink-950 relative overflow-hidden">
-      {/* Animated background particles */}
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
+      {/* Luxurious gold geometric background pattern */}
+      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ 
+        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(234, 179, 8, 0.08) 35px, rgba(234, 179, 8, 0.08) 70px),
+                          repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(217, 119, 6, 0.08) 35px, rgba(217, 119, 6, 0.08) 70px)`,
+        transform: 'translateZ(0)'
+      }}></div>
+      
+      {/* Elegant gold animated background particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <motion.div 
+          className="absolute top-20 left-10 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"
+          animate={{ 
+            opacity: [0.06, 0.12, 0.06],
+            scale: [1, 1.1, 1],
+            x: [0, 20, 0],
+            y: [0, 15, 0]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+        />
+        <motion.div 
+          className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-amber-500/6 rounded-full blur-3xl"
+          animate={{ 
+            opacity: [0.05, 0.1, 0.05],
+            scale: [1, 1.15, 1],
+            x: [0, -25, 0],
+            y: [0, -20, 0]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+        />
+        <motion.div 
+          className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-yellow-400/5 rounded-full blur-3xl"
+          animate={{ 
+            opacity: [0.03, 0.08, 0.03],
+            scale: [1, 1.2, 1],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+        />
       </div>
 
       {/* Header */}
       <div className="relative z-10 overflow-visible" style={{
-        background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(139, 92, 246, 0.15) 100%)',
+        background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 24, 39, 0.8) 100%)',
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(147, 51, 234, 0.3)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+        borderBottom: '1px solid rgba(234, 179, 8, 0.2)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.05), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
       }}>
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-1">
@@ -2142,9 +2178,13 @@ const LuminexApp = () => {
             
           {/* User ID & Balance */}
           <div className="mt-2 space-y-1.5 overflow-visible">
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg px-2.5 py-1.5 flex items-center justify-between backdrop-blur-lg border border-purple-400/30 relative overflow-visible">
+            <div className="bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-yellow-500/10 rounded-lg px-2.5 py-1.5 flex items-center justify-between backdrop-blur-lg border border-yellow-600/20 relative overflow-visible" style={{
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
+            }}>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-full flex items-center justify-center" style={{
+                  boxShadow: '0 0 15px rgba(234, 179, 8, 0.4)'
+                }}>
                   <span className="text-white text-xs font-bold">U</span>
                 </div>
                 <span className="text-white text-sm font-medium">
@@ -2167,7 +2207,7 @@ const LuminexApp = () => {
                     console.log('Language button clicked!');
                     setShowLanguageMenu(!showLanguageMenu);
                   }}
-                  className="flex items-center space-x-1 bg-black/40 rounded-lg px-2 py-1 border border-white/10 hover:border-purple-400/50 transition-colors cursor-pointer z-[9999] relative"
+                  className="flex items-center space-x-1 bg-black/40 rounded-lg px-2 py-1 border border-white/10 hover:border-yellow-500/50 transition-colors cursor-pointer z-[9999] relative"
                   style={{ userSelect: 'none', pointerEvents: 'auto' }}
                 >
                   <span className="text-white text-xs font-semibold whitespace-nowrap">
@@ -2185,7 +2225,7 @@ const LuminexApp = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-[9999]"
+                      className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-yellow-600/30 shadow-2xl py-2 z-[9999]"
                     >
                       {LANGUAGES.map((lang) => (
                   <button
@@ -2200,8 +2240,8 @@ const LuminexApp = () => {
                           localStorage.setItem('preferredLanguage', lang.code);
                             setShowLanguageMenu(false);
                           }}
-                          className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
-                            language === lang.code ? 'bg-purple-500/20 text-purple-300' : 'text-white'
+                          className={`w-full px-4 py-2 text-left hover:bg-yellow-500/10 transition-colors flex items-center space-x-2 cursor-pointer ${
+                            language === lang.code ? 'bg-yellow-500/15 text-yellow-400' : 'text-gray-300'
                           }`}
                         >
                           <span className="text-lg">{lang.flag}</span>
@@ -2216,7 +2256,9 @@ const LuminexApp = () => {
 
             <div className="flex items-center justify-between bg-black/40 rounded-lg px-2.5 py-1.5 backdrop-blur-lg border border-white/10 relative" style={{ zIndex: -1 }}>
               <div className="flex items-center text-white">
-                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-1.5">
+                <div className="w-7 h-7 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-lg flex items-center justify-center mr-1.5" style={{
+                  boxShadow: '0 0 10px rgba(234, 179, 8, 0.3)'
+                }}>
                   <Wallet className="w-3.5 h-3.5" />
           </div>
                 <span className="text-[10px] font-medium">{t('yourBalance')}</span>
@@ -2226,8 +2268,8 @@ const LuminexApp = () => {
                   <div className="text-yellow-400 text-xs">Connect wallet</div>
                 ) : isLoadingBalance ? (
                   <div className="flex items-center justify-end space-x-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
-                    <span className="text-purple-400 text-sm">Loading...</span>
+                    <Loader2 className="w-4 h-4 animate-spin text-yellow-400" />
+                    <span className="text-yellow-400 text-sm">Loading...</span>
       </div>
                 ) : (
                   <>
@@ -2265,7 +2307,7 @@ const LuminexApp = () => {
                       onClick={() => setSelectedPool(pool.id)}
                       className={`relative p-2 rounded-xl border-2 transition-all overflow-hidden ${                                                          
                         selectedPool === pool.id
-                          ? 'border-purple-400 bg-gradient-to-br from-purple-500/30 to-pink-500/30 shadow-lg shadow-purple-500/20'
+                          ? 'border-yellow-500 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 shadow-lg shadow-yellow-500/20'
                           : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'
                       }`}
                       style={{ willChange: 'transform' }}
@@ -2274,13 +2316,13 @@ const LuminexApp = () => {
                       <div className="relative">
                         <i
                           className={`flex justify-center mb-1 ${
-                            selectedPool === pool.id ? 'text-purple-300' : 'text-white/60'
+                            selectedPool === pool.id ? 'text-yellow-400' : 'text-white/60'
                           }`}
                         >
                           <Icon className="w-5 h-5" />
                         </i>
                         <p className="text-white font-bold text-[10px] leading-tight">{pool.name}</p>
-                        <p className={`text-[9px] font-semibold mt-0.5 ${selectedPool === pool.id ? 'text-purple-300' : 'text-white/50'}`}>{pool.apy}%</p>
+                        <p className={`text-[9px] font-semibold mt-0.5 ${selectedPool === pool.id ? 'text-yellow-400' : 'text-white/50'}`}>{pool.apy}%</p>
                       </div>
                     </motion.button>
                   );
@@ -2291,7 +2333,9 @@ const LuminexApp = () => {
               <motion.div
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
-                className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl p-6 text-white overflow-hidden"
+                className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl p-6 text-white overflow-hidden border-2 border-yellow-600/30" style={{
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
+                }}
               >
                 {/* Animated gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent animate-pulse"></div>
@@ -2333,7 +2377,7 @@ const LuminexApp = () => {
                         background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)',
                         boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                       }}>
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent"></div>
                         <div className="relative z-10">
                       {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
                           <div className="flex items-center justify-center py-2">
@@ -2468,7 +2512,7 @@ const LuminexApp = () => {
                       backgroundSize: '200% 100%'
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/50 via-amber-400/50 to-yellow-400/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-2xl"></div>
                   <Gift className="w-6 h-6 relative z-10" />
                   <span className="text-base relative z-10 font-extrabold">{t('freeToken')}</span>
@@ -2489,7 +2533,9 @@ const LuminexApp = () => {
               style={{ willChange: 'transform, opacity' }}
             >
               {/* Boost Illustration */}
-              <div className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-2xl p-4 text-center overflow-hidden">
+              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl p-4 text-center overflow-hidden border-2 border-yellow-600/30" style={{
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 179, 8, 0.1)'
+              }}>
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/15 via-transparent to-transparent"></div>
                 <div className="relative z-10">
                   <div className="text-4xl mb-2">
@@ -2582,7 +2628,9 @@ const LuminexApp = () => {
               style={{ willChange: 'transform, opacity' }}
             >
               {/* Hero Section */}
-              <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-center overflow-hidden">
+              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl p-8 text-center overflow-hidden border-2 border-yellow-600/30" style={{
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
+              }}>
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent animate-pulse"></div>
                 <div className="relative z-10">
                   <motion.div
@@ -2606,8 +2654,10 @@ const LuminexApp = () => {
                   initial={{ scale: 0.95 }}
                   animate={{ scale: 1 }}
                   whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-3 text-white"
-                  style={{ willChange: 'transform' }}
+                  className="bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl p-3 text-black font-bold" style={{
+                    boxShadow: '0 4px 15px rgba(234, 179, 8, 0.3)',
+                    willChange: 'transform'
+                  }}
                 >
                   <div className="flex items-center space-x-2 mb-1">
                     <UserPlus className="w-5 h-5" />
@@ -2645,12 +2695,12 @@ const LuminexApp = () => {
                 <div className="relative">
               <motion.div
                     whileHover={{ scale: 1.01 }}
-                    className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-3 border-2 border-purple-400/50"
+                    className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-xl p-3 border-2 border-yellow-500/40"
                     style={{ willChange: 'transform' }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                        <p className="text-purple-300 text-xs mb-1">Share this code with friends</p>
+                        <p className="text-yellow-400 text-xs mb-1">Share this code with friends</p>
                         <p className="text-2xl font-extrabold text-white font-mono tracking-wider">{safeReferralCode}</p>
                   </div>
                       <motion.button
@@ -2661,8 +2711,10 @@ const LuminexApp = () => {
                           setCopied(true);
                           setTimeout(() => setCopied(false), 2000);
                         }}
-                        className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg"
-                        style={{ willChange: 'transform' }}
+                        className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-lg flex items-center justify-center" style={{
+                          boxShadow: '0 0 15px rgba(234, 179, 8, 0.4)',
+                          willChange: 'transform'
+                        }}
                       >
                         {copied ? (
                           <Check className="w-5 h-5 text-white" />
@@ -2687,7 +2739,9 @@ const LuminexApp = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 shadow-lg shadow-purple-500/30 text-sm"
+                    className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-2.5 px-4 rounded-2xl flex items-center justify-center space-x-2 text-sm" style={{
+                      boxShadow: '0 4px 20px rgba(234, 179, 8, 0.4)'
+                    }}
                   >
                     <QrCode className="w-5 h-5" />
                     <span>Show QR Code</span>
@@ -2733,8 +2787,10 @@ const LuminexApp = () => {
               style={{ willChange: 'transform, opacity' }}
             >
               {/* Game Tab */}
-              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-center overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/20 via-transparent to-transparent animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl p-8 text-center overflow-hidden border-2 border-yellow-600/30" style={{
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(234, 179, 8, 0.1)'
+              }}>
+                                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-transparent to-transparent animate-pulse"></div>
                 <div className="relative z-10">
                   <motion.div
                     animate={{ rotate: [0, 15, -15, 0] }}
@@ -2772,7 +2828,7 @@ const LuminexApp = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-4 w-full max-w-md border border-purple-500/30 shadow-2xl"
+              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-4 w-full max-w-md border border-yellow-600/30 shadow-2xl"
               style={{ willChange: 'auto' }}
             >
               <h3 className="text-2xl font-bold text-white mb-4 text-center">Stake {TOKEN_NAME}</h3>
@@ -2785,11 +2841,13 @@ const LuminexApp = () => {
                       value={stakeAmount}
                       onChange={(e) => setStakeAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full bg-white/5 border border-purple-500/50 rounded-2xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 text-lg"
+                      className="w-full bg-white/5 border border-yellow-600/40 rounded-2xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-yellow-500 text-lg"
                     />
                     <button
                       onClick={() => setStakeAmount(balance.toString())}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-purple-500/50 text-white text-sm px-3 py-1 rounded-xl hover:bg-purple-500"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold text-sm px-3 py-1 rounded-xl hover:from-yellow-400 hover:to-amber-500" style={{
+                        boxShadow: '0 2px 10px rgba(234, 179, 8, 0.3)'
+                      }}
                     >
                       MAX
                     </button>
@@ -2828,7 +2886,9 @@ const LuminexApp = () => {
       </AnimatePresence>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-2xl border-t border-purple-500/20 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-yellow-600/20 z-40" style={{
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(234, 179, 8, 0.05)'
+      }}>
         <div className="max-w-md mx-auto px-4 py-3 flex justify-around">
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -2839,7 +2899,7 @@ const LuminexApp = () => {
             {activeTab === 'staking' && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute -inset-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl blur"
+                className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
               />
             )}
             <PiggyBank className="w-6 h-6 relative z-10" />
@@ -2854,7 +2914,7 @@ const LuminexApp = () => {
             {activeTab === 'membership' && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute -inset-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl blur"
+                className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
               />
             )}
             <Star className="w-6 h-6 relative z-10" />
@@ -2869,7 +2929,7 @@ const LuminexApp = () => {
             {activeTab === 'referral' && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute -inset-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl blur"
+                className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
               />
             )}
             <UserPlus className="w-6 h-6 relative z-10" />
@@ -2884,7 +2944,7 @@ const LuminexApp = () => {
               {activeTab === 'game' && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -inset-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl blur"
+                  className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
                 />
               )}
               <Gamepad2 className="w-6 h-6 relative z-10" />
@@ -2905,7 +2965,7 @@ const LuminexApp = () => {
             <div className={`rounded-2xl p-4 shadow-2xl backdrop-blur-xl border-2 ${
               toast.type === 'success'
                 ? 'bg-gradient-to-r from-green-500/90 to-emerald-500/90 border-green-400/50'
-                : 'bg-gradient-to-r from-red-500/90 to-pink-500/90 border-red-400/50'
+                : 'bg-gradient-to-r from-red-600/90 to-red-800/90 border-red-500/50'
             }`}>
               <div className="flex items-center space-x-3">
                 {toast.type === 'success' ? (
