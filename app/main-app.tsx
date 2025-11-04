@@ -1638,8 +1638,8 @@ const LuminexApp = () => {
             </div>
             
           {/* User ID & Balance */}
-          <div className="mt-3 space-y-2 overflow-visible">
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl px-3 py-2 flex items-center justify-between backdrop-blur-lg border border-purple-400/30 relative overflow-visible">
+          <div className="mt-2 space-y-1.5 overflow-visible">
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg px-2.5 py-1.5 flex items-center justify-between backdrop-blur-lg border border-purple-400/30 relative overflow-visible">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">U</span>
@@ -1711,12 +1711,12 @@ const LuminexApp = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between bg-black/40 rounded-xl px-3 py-2.5 backdrop-blur-lg border border-white/10 relative" style={{ zIndex: -1 }}>
+            <div className="flex items-center justify-between bg-black/40 rounded-lg px-2.5 py-1.5 backdrop-blur-lg border border-white/10 relative" style={{ zIndex: -1 }}>
               <div className="flex items-center text-white">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-2">
-                  <Wallet className="w-4 h-4" />
+                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-1.5">
+                  <Wallet className="w-3.5 h-3.5" />
           </div>
-                <span className="text-xs font-medium">{t('yourBalance')}</span>
+                <span className="text-[10px] font-medium">{t('yourBalance')}</span>
         </div>
               <div className="text-right">
                 {!actualAddress ? (
@@ -1739,7 +1739,7 @@ const LuminexApp = () => {
                   </div>
 
       {/* Main Content */}
-      <div className="relative max-w-md mx-auto px-4 py-4">
+      <div className="relative max-w-md mx-auto px-4 py-2">
         <AnimatePresence mode="wait">
           {activeTab === 'staking' && (
               <motion.div
@@ -1747,23 +1747,25 @@ const LuminexApp = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-3"
+              style={{ willChange: 'transform, opacity' }}
             >
-            {/* Pool Selection */}
-              <div className="grid grid-cols-5 gap-2">
+                        {/* Pool Selection */}
+              <div className="grid grid-cols-5 gap-1.5">
                 {POOLS.map((pool) => {
                   const Icon = pool.icon;
                   return (
                     <motion.button
                       key={pool.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => setSelectedPool(pool.id)}
-                      className={`relative p-2.5 rounded-xl border-2 transition-all overflow-hidden ${
+                      className={`relative p-2 rounded-xl border-2 transition-all overflow-hidden ${                                                          
                         selectedPool === pool.id
-                          ? 'border-purple-400 bg-gradient-to-br from-purple-500/30 to-pink-500/30 shadow-lg shadow-purple-500/20'
-                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'
+                          ? 'border-purple-400 bg-gradient-to-br from-purple-500/30 to-pink-500/30 shadow-lg shadow-purple-500/20'                              
+                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'                                                                
                       }`}
+                      style={{ willChange: 'transform' }}
                     >
                       <div className={`absolute inset-0 bg-gradient-to-br ${pool.color} opacity-10`}></div>
                       <div className="relative">
@@ -1792,18 +1794,19 @@ const LuminexApp = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent animate-pulse"></div>
                 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center mb-4">
-                    <h2 className="text-3xl font-bold text-center">
+                                    <div className="flex items-center justify-center mb-2">
+                    <h2 className="text-xl font-bold text-center">
                       ✨ <span className="bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent">Luminex Staking</span> ✨
-              </h2>
+                    </h2>
                   </div>
-                  
+
                   {/* Current Membership */}
-                  <div className="mb-4">
-                    <p className="text-sm text-white/80 mb-2">{t('myCurrentMembership')}</p>
+                  <div className="mb-2">
+                    <p className="text-xs text-white/80 mb-1.5">{t('myCurrentMembership')}</p>
                     <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white/20 backdrop-blur-lg rounded-2xl px-5 py-3 border border-white/30 shadow-lg"
+                      whileHover={{ scale: 1.01 }}
+                      className="bg-white/20 backdrop-blur-lg rounded-xl px-4 py-2 border border-white/30 shadow-lg"
+                      style={{ willChange: 'transform' }}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-white font-bold text-lg">
@@ -1821,30 +1824,30 @@ const LuminexApp = () => {
                 </div>
 
                   {/* Staking Balance */}
-                  <div className="mb-3">
-                    <p className="text-sm text-white/80 mb-2">{t('myStakingBalance')}</p>
-                    <div className="backdrop-blur-lg rounded-2xl px-4 py-3 border border-white/30 shadow-lg relative overflow-hidden" style={{
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)',
-                      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                    }}>
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
-                      <div className="relative z-10">
-                      {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
-                        <div className="flex items-center justify-center py-3">
-                          <span className="text-yellow-400 text-sm text-center relative z-10">
-                            {!actualAddress ? 'Connect wallet to view staking data' : 'Staking contract not configured'}
-                          </span>
-                        </div>
-                      ) : (
+                                      <div className="mb-2">
+                      <p className="text-xs text-white/80 mb-1.5">{t('myStakingBalance')}</p>
+                      <div className="backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg relative overflow-hidden" style={{
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                      }}>
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
+                        <div className="relative z-10">
+                        {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
+                          <div className="flex items-center justify-center py-2">
+                            <span className="text-yellow-400 text-xs text-center relative z-10">
+                              {!actualAddress ? 'Connect wallet to view staking data' : 'Staking contract not configured'}
+                            </span>
+                          </div>
+                        ) : (
                       <div className="relative z-10">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 bg-yellow-400/20 rounded-xl flex items-center justify-center">
-                              <Coins className="w-7 h-7 text-yellow-300" />
+                          <div className="flex items-center space-x-2">
+                            <div className="w-10 h-10 bg-yellow-400/20 rounded-lg flex items-center justify-center">
+                              <Coins className="w-5 h-5 text-yellow-300" />
                             </div>
-                            <span className="text-4xl font-extrabold text-white">{formattedStakedAmount}</span>
+                            <span className="text-2xl font-extrabold text-white">{formattedStakedAmount}</span>
                           </div>
-                          <TrendingUp className="w-6 h-6 text-green-300" />
+                          <TrendingUp className="w-5 h-5 text-green-300" />
                         </div>
                       </div>
                       )}
@@ -1853,12 +1856,11 @@ const LuminexApp = () => {
                   </div>
 
                   {/* Earned Interest */}
-                  <div className="mb-4">
-                    <p className="text-sm text-white/80 mb-2">{t('earnedInterest')}</p>
+                  <div className="mb-2">
+                    <p className="text-xs text-white/80 mb-1.5">{t('earnedInterest')}</p>
                     <motion.div
-                      animate={{ scale: [1, 1.02, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="text-5xl font-extrabold text-white bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent"
+                      className="text-2xl font-extrabold text-white bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent"
+                      style={{ willChange: 'auto' }}
                     >
                       {formattedPendingRewards}
                     </motion.div>
@@ -1980,82 +1982,82 @@ const LuminexApp = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-3"
+              style={{ willChange: 'transform, opacity' }}
             >
               {/* Boost Illustration */}
-              <div className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl p-8 text-center overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 via-transparent to-transparent animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-2xl p-4 text-center overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/15 via-transparent to-transparent"></div>
                 <div className="relative z-10">
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="text-7xl mb-4"
-                  >
+                  <div className="text-4xl mb-2">
                     🍙💪
-                  </motion.div>
-                  <h1 className="text-2xl font-extrabold text-white mb-2">
+                  </div>
+                  <h1 className="text-lg font-extrabold text-white mb-1">
                     🚀 Boost your earnings! 🚀
                   </h1>
-                  <p className="text-white/90 mb-4 text-sm">Upgrading your Membership gives you a much higher APY for your Staking ✨</p>
+                  <p className="text-white/90 mb-2 text-xs">Upgrading your Membership gives you a much higher APY for your Staking ✨</p>
                   
                   {/* Current Membership */}
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-white/20 backdrop-blur-lg rounded-2xl px-4 py-3 border border-white/30 shadow-xl inline-block"
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-white/20 backdrop-blur-lg rounded-xl px-3 py-2 border border-white/30 shadow-lg inline-block"
+                    style={{ willChange: 'transform' }}
                   >
-                    <div className="flex items-center justify-center space-x-3">
+                    <div className="flex items-center justify-center space-x-2">
                       {currentMembership && (
-                        <span className="text-3xl">
+                        <span className="text-xl">
                           {MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.icon}
                         </span>
                       )}
-                      <span className="text-white font-bold text-xl">
+                      <span className="text-white font-bold text-sm">
                         {currentMembership ? `${MEMBERSHIP_TIERS.find(t => t.id === currentMembership)?.name}` : 'No membership'}
                       </span>
-                      <span className="text-yellow-300 font-extrabold text-2xl">: APY {totalApy}%</span>
+                      <span className="text-yellow-300 font-extrabold text-base">: APY {totalApy}%</span>
                     </div>
                   </motion.div>
                 </div>
                 </div>
 
               {/* Membership Tiers */}
-              <div className="bg-black/40 backdrop-blur-2xl rounded-3xl p-4 border border-white/10 shadow-2xl">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mr-3">
-                    <Crown className="w-7 h-7 text-white" />
+              <div className="bg-black/40 backdrop-blur-2xl rounded-2xl p-3 border border-white/10 shadow-2xl">
+                <div className="flex items-center mb-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center mr-2">
+                    <Crown className="w-5 h-5 text-white" />
                   </div>
                       <div>
-                    <span className="text-yellow-400 font-bold text-2xl">VIP.</span>
-                    <span className="text-white font-bold text-xl ml-2">MEMBERSHIPS</span>
+                    <span className="text-yellow-400 font-bold text-lg">VIP.</span>
+                    <span className="text-white font-bold text-base ml-2">MEMBERSHIPS</span>
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {MEMBERSHIP_TIERS.map((tier, index) => (
                     <motion.div
                       key={tier.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02 }}
-                      className={`flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r ${tier.color} bg-opacity-20 border-2 ${
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ scale: 1.01 }}
+                      className={`flex items-center justify-between p-3 rounded-xl bg-gradient-to-r ${tier.color} bg-opacity-20 border-2 ${
                         currentMembership === tier.id ? 'border-yellow-400 shadow-lg shadow-yellow-400/30' : 'border-white/20'
                       } backdrop-blur-lg`}
+                      style={{ willChange: 'transform, opacity' }}
                     >
-                      <div className={`flex items-center space-x-3 px-5 py-3 rounded-xl bg-gradient-to-r ${tier.color} shadow-lg`}>
-                        <span className="text-3xl">{tier.icon}</span>
+                      <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r ${tier.color} shadow-lg`}>
+                        <span className="text-xl">{tier.icon}</span>
                         <div>
-                          <div className="text-white font-bold text-lg">{tier.name}</div>
-                          <div className="text-white font-extrabold text-xl">
+                          <div className="text-white font-bold text-sm">{tier.name}</div>
+                          <div className="text-white font-extrabold text-base">
                             APY {tier.apy}%{tier.sparkle && ' ✨'}
                           </div>
                         </div>
                       </div>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => handlePurchaseMembership(tier)}
-                        className="px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all"
+                        className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-lg shadow-lg shadow-green-500/30 transition-all text-sm"
+                        style={{ willChange: 'transform' }}
                       >
                         ${tier.price}
                       </motion.button>
@@ -2073,7 +2075,8 @@ const LuminexApp = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-3"
+              style={{ willChange: 'transform, opacity' }}
             >
               {/* Hero Section */}
               <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-center overflow-hidden">
@@ -2086,78 +2089,82 @@ const LuminexApp = () => {
                   >
                     🎁🎊
                   </motion.div>
-                  <h1 className="text-4xl font-extrabold text-white mb-3">
+                  <h1 className="text-2xl font-extrabold text-white mb-2">
                     Invite Friends!
                   </h1>
-                  <p className="text-white/90 mb-2 text-lg">Get 50 {TOKEN_NAME} for each friend you invite</p>
-                  <p className="text-yellow-300 font-bold text-xl">💰 Earn More Together! 💰</p>
+                  <p className="text-white/90 mb-1.5 text-sm">Get 50 {TOKEN_NAME} for each friend you invite</p>
+                  <p className="text-yellow-300 font-bold text-base">💰 Earn More Together! 💰</p>
                     </div>
                   </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
               <motion.div
-                  initial={{ scale: 0.9 }}
+                  initial={{ scale: 0.95 }}
                   animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-5 text-white"
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-3 text-white"
+                  style={{ willChange: 'transform' }}
                 >
-                  <div className="flex items-center space-x-3 mb-2">
-                    <UserPlus className="w-8 h-8" />
+                  <div className="flex items-center space-x-2 mb-1">
+                    <UserPlus className="w-5 h-5" />
                   <div>
-                      <p className="text-white/80 text-sm">Total Referrals</p>
-                      <p className="text-3xl font-extrabold">{safeTotalReferrals}</p>
+                      <p className="text-white/80 text-xs">Total Referrals</p>
+                      <p className="text-xl font-extrabold">{safeTotalReferrals}</p>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div
-                  initial={{ scale: 0.9 }}
+                  initial={{ scale: 0.95 }}
                   animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-5 text-white"
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-3 text-white"
+                  style={{ willChange: 'transform' }}
                 >
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Coins className="w-8 h-8" />
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Coins className="w-5 h-5" />
                   <div>
-                      <p className="text-white/80 text-sm">Total Earnings</p>
-                      <p className="text-3xl font-extrabold">{safeTotalEarnings}</p>
+                      <p className="text-white/80 text-xs">Total Earnings</p>
+                      <p className="text-xl font-extrabold">{safeTotalEarnings}</p>
                   </div>
                 </div>
               </motion.div>
               </div>
 
               {/* Referral Code */}
-              <div className="bg-black/40 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl">
-                <h2 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                  <Share2 className="w-6 h-6" />
+              <div className="bg-black/40 backdrop-blur-2xl rounded-2xl p-4 border border-white/10 shadow-2xl">
+                <h2 className="text-white font-bold text-base mb-2 flex items-center gap-2">
+                  <Share2 className="w-5 h-5" />
                   Your Referral Code
                 </h2>
                 
                 <div className="relative">
               <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl p-5 border-2 border-purple-400/50"
+                    whileHover={{ scale: 1.01 }}
+                    className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-3 border-2 border-purple-400/50"
+                    style={{ willChange: 'transform' }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                        <p className="text-purple-300 text-sm mb-1">Share this code with friends</p>
-                        <p className="text-4xl font-extrabold text-white font-mono tracking-wider">{safeReferralCode}</p>
+                        <p className="text-purple-300 text-xs mb-1">Share this code with friends</p>
+                        <p className="text-2xl font-extrabold text-white font-mono tracking-wider">{safeReferralCode}</p>
                   </div>
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => {
                           navigator.clipboard.writeText(referralCode);
                           setCopied(true);
                           setTimeout(() => setCopied(false), 2000);
                         }}
-                        className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg"
+                        className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg"
+                        style={{ willChange: 'transform' }}
                       >
                         {copied ? (
-                          <Check className="w-6 h-6 text-white" />
+                          <Check className="w-5 h-5 text-white" />
                         ) : (
-                          <Copy className="w-6 h-6 text-white" />
+                          <Copy className="w-5 h-5 text-white" />
                         )}
                       </motion.button>
                 </div>
@@ -2186,14 +2193,14 @@ const LuminexApp = () => {
               </div>
 
               {/* Rewards Info */}
-              <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-2xl p-6 border border-yellow-400/30">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-yellow-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Gift className="w-7 h-7 text-yellow-300" />
+              <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl p-3 border border-yellow-400/30">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-yellow-500/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Gift className="w-5 h-5 text-yellow-300" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg mb-2">How It Works</h3>
-                    <ul className="space-y-2 text-white/80 text-sm">
+                    <h3 className="text-white font-bold text-base mb-1.5">How It Works</h3>
+                    <ul className="space-y-1.5 text-white/80 text-xs">
                       <li className="flex items-center space-x-2">
                         <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
                         <span>Share your referral code with friends</span>
@@ -2219,7 +2226,8 @@ const LuminexApp = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-3"
+              style={{ willChange: 'transform, opacity' }}
             >
               {/* Game Tab */}
               <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-center overflow-hidden">
@@ -2232,7 +2240,7 @@ const LuminexApp = () => {
                   >
                     🎮
                   </motion.div>
-                  <h1 className="text-4xl font-extrabold text-white mb-3">
+                  <h1 className="text-2xl font-extrabold text-white mb-2">
                     Play & Earn!
                   </h1>
                   <p className="text-white/90 mb-2 text-lg">Play games and earn rewards</p>
@@ -2261,7 +2269,8 @@ const LuminexApp = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 w-full max-w-md border border-purple-500/30 shadow-2xl"
+              className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-4 w-full max-w-md border border-purple-500/30 shadow-2xl"
+              style={{ willChange: 'auto' }}
             >
               <h3 className="text-2xl font-bold text-white mb-4 text-center">Stake {TOKEN_NAME}</h3>
               {isShowInput && (
