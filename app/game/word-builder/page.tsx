@@ -38,6 +38,8 @@ export default function WordBuilderPage() {
   const [lastHintTime, setLastHintTime] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [currentTargetWord, setCurrentTargetWord] = useState<string>('');
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState({ hours: 0, minutes: 0 });
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,11 +50,30 @@ export default function WordBuilderPage() {
     setAddress(a);
     if (a) {
       loadEnergy(a);
+      checkCooldown();
       const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
       setDifficulty(randomDiff);
     }
     setSoundEnabledState(isSoundEnabled());
   }, []);
+
+  async function checkCooldown() {
+    if (!address) return;
+    try {
+      const res = await fetch('/api/game/cooldown/check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ address, gameId: GAME_ID })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsOnCooldown(data.isOnCooldown);
+        setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
+      }
+    } catch (e) {
+      console.error('Failed to check cooldown:', e);
+    }
+  }
 
   async function loadEnergy(addr: string) {
     try {
@@ -110,6 +131,17 @@ export default function WordBuilderPage() {
       alert('พลังงานไม่เพียงพอ!');
       return;
     }
+    if (isOnCooldown) {
+      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      return;
+    }
+
+    // Start cooldown
+    fetch('/api/game/cooldown/start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ address, gameId: GAME_ID })
+    });
     
     const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
     setDifficulty(randomDiff);
@@ -278,6 +310,10 @@ export default function WordBuilderPage() {
       localStorage.setItem(key, String(cur + 5)); // 5 tokens reward
       
       loadEnergy(address);
+      
+      // Update cooldown status
+      setIsOnCooldown(true);
+      await checkCooldown();
     } catch (e) {
       console.error('Failed to submit score:', e);
     }
@@ -295,6 +331,8 @@ export default function WordBuilderPage() {
     setUsedWords(new Set());
     setFeedback(null);
     setShowHint(false);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   useEffect(() => {
@@ -344,7 +382,20 @@ export default function WordBuilderPage() {
             <div className="text-xs text-white/60 mb-1">📚 Words</div>
             <div className="text-xl font-bold text-purple-400">{usedWords.size}</div>
           </div>
-        </div>
+                  </div>
+
+          {/* Cooldown Message */}
+          {isOnCooldown && gameState === 'idle' && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
+            >
+              <p className="text-red-300 font-bold">
+                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+              </p>
+            </motion.div>
+          )}
 
         {gameState === 'idle' && (
           <motion.div
@@ -365,14 +416,15 @@ export default function WordBuilderPage() {
                 <p>🔥 คำ 5 ตัวอักษร: 250 คะแนน</p>
                 <p>💡 Hint จะแสดงอัตโนมัติหลังจาก 10 วินาที</p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl shadow-2xl shadow-indigo-500/50"
-              >
-                ▶ เริ่มเล่น
-              </motion.button>
+                             <motion.button
+                 whileHover={{ scale: 1.05 }}
+                 whileTap={{ scale: 0.95 }}
+                 onClick={startGame}
+                 disabled={isOnCooldown}
+                 className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl shadow-2xl shadow-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                 ▶ เริ่มเล่น
+               </motion.button>
             </div>
           </motion.div>
         )}

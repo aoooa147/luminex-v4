@@ -37,6 +37,8 @@ export default function ColorTapPage() {
   const [gameStartTime, setGameStartTime] = useState(0);
   const [lastClickTime, setLastClickTime] = useState(0);
   const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState({ hours: 0, minutes: 0 });
   
   const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,11 +48,30 @@ export default function ColorTapPage() {
     setAddress(a);
     if (a) {
       loadEnergy(a);
+      checkCooldown();
       const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
       setDifficulty(randomDiff);
     }
     setSoundEnabledState(isSoundEnabled());
   }, []);
+
+  async function checkCooldown() {
+    if (!address) return;
+    try {
+      const res = await fetch('/api/game/cooldown/check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ address, gameId: GAME_ID })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsOnCooldown(data.isOnCooldown);
+        setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
+      }
+    } catch (e) {
+      console.error('Failed to check cooldown:', e);
+    }
+  }
 
   async function loadEnergy(addr: string) {
     try {
@@ -85,6 +106,17 @@ export default function ColorTapPage() {
       alert('พลังงานไม่เพียงพอ!');
       return;
     }
+    if (isOnCooldown) {
+      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      return;
+    }
+
+    // Start cooldown
+    fetch('/api/game/cooldown/start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ address, gameId: GAME_ID })
+    });
     
     const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
     setDifficulty(randomDiff);
@@ -250,6 +282,10 @@ export default function ColorTapPage() {
       localStorage.setItem(key, String(cur + 5)); // 5 tokens reward
       
       loadEnergy(address);
+      
+      // Update cooldown status
+      setIsOnCooldown(true);
+      await checkCooldown();
     } catch (e) {
       console.error('Failed to submit score:', e);
     }
@@ -266,6 +302,8 @@ export default function ColorTapPage() {
     setLives(3);
     setHighlightedColor(null);
     setShowFeedback(null);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   useEffect(() => {
@@ -312,7 +350,20 @@ export default function ColorTapPage() {
             <div className="text-xs text-white/60 mb-1">🎯 Score</div>
             <div className="text-xl font-bold text-green-400">{score.toLocaleString()}</div>
           </div>
-        </div>
+                  </div>
+
+          {/* Cooldown Message */}
+          {isOnCooldown && gameState === 'idle' && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
+            >
+              <p className="text-red-300 font-bold">
+                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+              </p>
+            </motion.div>
+          )}
 
         {gameState === 'idle' && (
           <motion.div
@@ -331,14 +382,15 @@ export default function ColorTapPage() {
                 <p>🔥 แต่ละเลเวลจะยาวขึ้นเรื่อยๆ</p>
                 <p>💎 คะแนนสูงขึ้นตามเลเวล!</p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50"
-              >
-                ▶ เริ่มเล่น
-              </motion.button>
+                             <motion.button
+                 whileHover={{ scale: 1.05 }}
+                 whileTap={{ scale: 0.95 }}
+                 onClick={startGame}
+                 disabled={isOnCooldown}
+                 className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                 ▶ เริ่มเล่น
+               </motion.button>
             </div>
           </motion.div>
         )}

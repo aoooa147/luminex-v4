@@ -233,6 +233,8 @@ export default function MemoryMatchPage() {
     setHighlightedColor(null);
     setLuxReward(null);
     if (showingTimeoutRef.current) clearTimeout(showingTimeoutRef.current);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   function toggleSound() {

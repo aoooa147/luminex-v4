@@ -31,6 +31,8 @@ export default function CoinFlipPage() {
   const [soundEnabled, setSoundEnabledState] = useState(true);
   const [actionsCount, setActionsCount] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(0);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState({ hours: 0, minutes: 0 });
   
   const flipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -41,6 +43,7 @@ export default function CoinFlipPage() {
     setAddress(a);
     if (a) {
       loadEnergy(a);
+      checkCooldown();
       // Initialize random difficulty for this user
       const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
       setDifficulty(randomDiff);
@@ -49,6 +52,24 @@ export default function CoinFlipPage() {
     // Check sound preference
     setSoundEnabledState(isSoundEnabled());
   }, []);
+
+  async function checkCooldown() {
+    if (!address) return;
+    try {
+      const res = await fetch('/api/game/cooldown/check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ address, gameId: GAME_ID })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsOnCooldown(data.isOnCooldown);
+        setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
+      }
+    } catch (e) {
+      console.error('Failed to check cooldown:', e);
+    }
+  }
 
   async function loadEnergy(addr: string) {
     try {
@@ -68,13 +89,25 @@ export default function CoinFlipPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อม Wallet ก่อน');
+      alert('กรุณาเชื่อมต่อ Wallet ก่อนเริ่มเกม');
       return;
     }
     if (energy <= 0) {
-      alert('พลังงานหมด');
+      alert('พลังงานไม่เพียงพอ! โปรดรอหรือเติมพลังงาน');
       return;
     }
+    if (isOnCooldown) {
+      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      return;
+    }
+
+    // Start cooldown
+    fetch('/api/game/cooldown/start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ address, gameId: GAME_ID })
+    });
+
     // Initialize random difficulty for this user
     const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
     setGameState('playing');
@@ -265,11 +298,15 @@ export default function CoinFlipPage() {
       const cur = Number(localStorage.getItem(key) || '0');
       localStorage.setItem(key, String(cur + 10)); // 10 tokens reward
       
-      loadEnergy(address);
-    } catch (e) {
-      console.error('Failed to submit score:', e);
+              loadEnergy(address);
+        
+        // Update cooldown status
+        setIsOnCooldown(true);
+        await checkCooldown();
+      } catch (e) {
+        console.error('Failed to submit score:', e);
+      }
     }
-  }
 
   function handleGameOver() {
     setGameState('gameover');
@@ -285,6 +322,8 @@ export default function CoinFlipPage() {
     setFlipRotation(0);
     if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current);
     if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   useEffect(() => {
@@ -331,15 +370,28 @@ export default function CoinFlipPage() {
             <div className="text-xs text-white/60 mb-1">🎯 Score</div>
             <div className="text-xl font-bold text-purple-400">{score.toLocaleString()}</div>
           </div>
-        </div>
+                  </div>
+
+          {/* Cooldown Message */}
+          {isOnCooldown && gameState === 'idle' && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
+            >
+              <p className="text-red-300 font-bold">
+                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+              </p>
+            </motion.div>
+          )}
 
         {gameState === 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-6"
-          >
-            <div className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-6"
+            >
+              <div className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 text-center">
               <div className="text-6xl mb-4">🪙</div>
               <h2 className="text-3xl font-bold mb-4 text-white">พร้อมท้าทายแล้ว!</h2>
               <p className="text-white/80 mb-6">
@@ -350,14 +402,15 @@ export default function CoinFlipPage() {
                 <p>🔥 ทำ Streak เพื่อคะแนนเพิ่มขึ้น</p>
                 <p>⚡ คะแนนจะเพิ่มตาม Multiplier!</p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl shadow-2xl shadow-yellow-500/50"
-              >
-                ▶ เริ่มเล่น
-              </motion.button>
+                              <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={startGame}
+                  disabled={isOnCooldown}
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl shadow-2xl shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ▶ เริ่มเล่น
+                </motion.button>
             </div>
           </motion.div>
         )}

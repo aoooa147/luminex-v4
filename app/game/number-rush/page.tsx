@@ -246,6 +246,8 @@ export default function NumberRushPage() {
     setLuxReward(null);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (waitTimeoutRef.current) clearTimeout(waitTimeoutRef.current);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   function toggleSound() {

@@ -283,6 +283,8 @@ export default function MathQuizPage() {
     setLives(3);
     setSelectedOption(null);
     setLuxReward(null);
+    // Check cooldown status after reset
+    checkCooldown();
   }
 
   function toggleSound() {
