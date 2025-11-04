@@ -580,30 +580,13 @@ const useMiniKit = () => {
           const MiniKit = (window as any).MiniKit;
           const tokenType = (params.currency || 'WLD').toUpperCase();
           
-          // MiniKit pay API expects specific format - try both string and array format
-          let payResult;
-          try {
-            // Try with string format first (for older/newer API versions)
-            payResult = await MiniKit.commandsAsync.pay({
-              reference: referenceId,
-              to: TREASURY_ADDRESS,
-              tokens: tokenType,
-              amount: amount.toString()
-            });
-          } catch (firstError: any) {
-            // If string format fails, try with array format
-            console.log('⚠️ String format failed, trying array format:', firstError);
-            try {
-              payResult = await MiniKit.commandsAsync.pay({
-                reference: referenceId,
-                to: TREASURY_ADDRESS,
-                tokens: [tokenType], // Array format
-                amount: amount.toString()
-              });
-            } catch (secondError: any) {
-              throw new Error(`Pay API failed: ${secondError.message || firstError.message}`);
-            }
-          }
+          // MiniKit pay API requires tokens as array based on error "e.tokens.some is not a function"
+          const payResult = await MiniKit.commandsAsync.pay({
+            reference: referenceId,
+            to: TREASURY_ADDRESS,
+            tokens: [tokenType], // Array format required
+            amount: amount.toString()
+          });
           
           console.log('✅ MiniKit pay result:', payResult);
           
