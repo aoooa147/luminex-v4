@@ -641,11 +641,10 @@ const useMiniKit = () => {
             console.log('🔄 Starting polling for transaction:', transactionId);
 
             // Poll for transaction confirmation
+            let attempts = 0;
+            const maxAttempts = 20;
 
-          let attempts = 0;
-          const maxAttempts = 20;
-
-          while (attempts < maxAttempts) {
+            while (attempts < maxAttempts) {
             const statusResponse = await fetch('/api/confirm-payment', {        
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -684,14 +683,18 @@ const useMiniKit = () => {
             attempts++;
           }
 
-          // If polling timed out, return the transaction_id anyway (transaction might be pending)
-          console.log('⏱️ Polling timeout, returning pending transaction');
-          const txHash = confirmData?.transaction?.transaction_hash || transactionId;
-          return {
-            success: true,
-            transactionHash: txHash || transactionId,
-            transaction: confirmData?.transaction || { transaction_id: transactionId, status: 'pending' }
-          };
+                      // If polling timed out, return the transaction_id anyway (transaction might be pending)                                                              
+            console.log('⏱️ Polling timeout, returning pending transaction');   
+            const txHash = confirmData?.transaction?.transaction_hash || transactionId;                                                                           
+            return {
+              success: true,
+              transactionHash: txHash || transactionId,
+              transaction: confirmData?.transaction || { transaction_id: transactionId, status: 'pending' }                                                       
+            };
+          } catch (confirmError: any) {
+            console.error('❌ Confirm-payment API call failed:', confirmError);
+            return { success: false, error: 'Payment failed: Could not confirm transaction' };
+          }
         } catch (payError: any) {
           console.error('❌ MiniKit pay error:', payError);
           return { success: false, error: payError.message || 'Payment failed' };
