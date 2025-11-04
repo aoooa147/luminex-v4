@@ -3015,15 +3015,15 @@ const LuminexApp = () => {
                   <div className="text-2xl mb-1">
                     🍙💪
                   </div>
-                  <h1 className="text-sm font-extrabold text-white mb-0.5">
+                                    <h1 className="text-sm font-extrabold text-white mb-0.5">     
                     🚀 Boost your earnings! 🚀
                   </h1>
-                  <p className="text-white/90 mb-1.5 text-xs">Upgrading your Membership gives you a much higher APY for your Staking ✨</p>
+                  <p className="text-white/90 mb-1.5 text-xs">Activating your Power License gives you a much higher APY for your Staking ✨</p>
                   
-                  {/* Current Membership */}
+                                    {/* Current Power License */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="bg-white/20 backdrop-blur-lg rounded-lg px-2 py-1 border border-white/30 shadow-lg inline-block"
+                    className="bg-white/20 backdrop-blur-lg rounded-lg px-2 py-1 border border-white/30 shadow-lg inline-block"                                 
                     style={{ willChange: 'transform' }}
                   >
                                         <div className="flex items-center justify-center space-x-1.5">
@@ -3438,8 +3438,8 @@ const LuminexApp = () => {
                 className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
               />
             )}
-            <Star className="w-6 h-6 relative z-10" />
-            <span className="text-xs font-bold relative z-10">Membership</span>
+            <Zap className="w-6 h-6 relative z-10" />
+            <span className="text-xs font-bold relative z-10">Power</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.1 }}
