@@ -1164,7 +1164,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
               whileTap={{ scale: 0.97 }}
               onClick={handleVerify}
               disabled={isVerifying}
-              className="w-full text-black font-extrabold py-5 px-8 rounded-2xl flex items-center justify-center space-x-3 relative overflow-hidden group cursor-pointer disabled:opacity-50 transition-all border-2 border-yellow-500/30"
+              className="w-full text-black font-extrabold py-4 px-6 rounded-2xl flex items-center justify-center space-x-3 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-yellow-500/30"
               style={{
                 background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
                 boxShadow: '0 15px 40px rgba(234, 179, 8, 0.5), 0 0 30px rgba(217, 119, 6, 0.4), 0 0 50px rgba(251, 191, 36, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.2)',
@@ -1172,7 +1172,16 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 transform: 'translateZ(0)'
               }}
             >
-              {/* Multi-layer animated gold gradient */}
+              {/* Background gradient layer */}
+              <div 
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
+                  zIndex: 0
+                }}
+              />
+              
+              {/* Animated shimmer layer */}
               <motion.div
                 className="absolute inset-0 rounded-2xl"
                 animate={{
@@ -1180,56 +1189,44 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                 style={{
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
-                  backgroundSize: '300% 100%'
+                  background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  zIndex: 1
                 }}
               />
-              {/* Secondary shimmer layer */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl"
-                animate={{
-                  backgroundPosition: ['100% 50%', '0% 50%', '100% 50%']
-                }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                style={{
-                  background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%)',
-                  backgroundSize: '200% 100%'
-                }}
-              />
+              
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 via-amber-300 via-yellow-300 to-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
-              {/* Multi-layer inner glow */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent rounded-2xl"></div>
-              <div className="absolute inset-0 bg-gradient-radial from-white/30 via-transparent to-transparent rounded-2xl"></div>
-              {/* Luxurious gold shine effect */}
-                  <motion.div
-                className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/50 via-white/60 via-white/50 to-transparent rounded-2xl"
-                transition={{ duration: 0.8, ease: "easeOut" }}
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-yellow-300/50 via-amber-300/50 to-yellow-300/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+                style={{ zIndex: 2 }}
               />
-              {/* Decorative top highlight */}
-              <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-2xl"></div>
-              {/* Corner decorative elements */}
-              <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-black/20"></div>
-              <div className="absolute top-2 right-2 w-2 h-2 border-t border-r border-black/20"></div>
-              <div className="absolute bottom-2 left-2 w-2 h-2 border-b border-l border-black/20"></div>
-              <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-black/20"></div>
-                            {isVerifying ? (
-                <>
-                  <Loader2 className="w-6 h-6 relative z-10 animate-spin drop-shadow-lg text-black" />
-                  <span className="text-lg relative z-10 font-extrabold tracking-wide drop-shadow-lg text-black">Verifying...</span>
-                </>
-              ) : (
-                <>
-                  <Shield className="w-6 h-6 relative z-10 drop-shadow-md text-black" />
-                  <span className="text-lg relative z-10 font-extrabold tracking-wide drop-shadow-md text-black">Verify</span>
-                  <motion.div
-                    className="w-2.5 h-2.5 bg-black/30 rounded-full relative z-10 shadow-lg"
-                    animate={{ scale: [1, 1.4, 1], opacity: [0.8, 1, 0.8] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                </>
-              )}
-        </motion.button>
+              
+              {/* Inner glow */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent rounded-2xl pointer-events-none"
+                style={{ zIndex: 3 }}
+              />
+              
+              {/* Button content - always on top */}
+              <span className="relative z-20 flex items-center justify-center space-x-3">
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin drop-shadow-lg" />
+                    <span className="text-base font-extrabold tracking-wide drop-shadow-lg">Verifying...</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-5 h-5 drop-shadow-md" />
+                    <span className="text-base font-extrabold tracking-wide drop-shadow-md">Verify</span>
+                    <motion.div
+                      className="w-2 h-2 bg-black/40 rounded-full shadow-lg"
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                  </>
+                )}
+              </span>
+            </motion.button>
           </div>
       </motion.div>
 
