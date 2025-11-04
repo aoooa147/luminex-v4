@@ -553,54 +553,138 @@ const useMiniKit = () => {
         return { success: false, error: 'Invalid amount' };
       }
 
-      // Convert amount to wei (WLD uses 18 decimals)
-      const amountWei = ethers.parseUnits(amount.toString(), 18);
+      // Check if running in World App with MiniKit
+      const hasMiniKit = typeof window !== 'undefined' && (window as any).MiniKit?.commandsAsync?.pay;
       
-      // Check balance first using provider (for reading)
-      if (!provider || !wallet.address) {
-        return { success: false, error: 'No provider or wallet address available' };
-      }
-      
-      const wldContractRead = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, provider);
-      const balance = await wldContractRead.balanceOf(wallet.address);
-      if (balance < amountWei) {
-        return { success: false, error: 'Insufficient WLD balance' };
-      }
-
-      // Get signer for writing transaction
-      const signer = await getSigner();
-      if (!signer) {
-        return { success: false, error: 'No signer available' };
-      }
-
-      // Transfer WLD tokens to treasury address
-      console.log(`🔄 Transferring ${amount} WLD to ${TREASURY_ADDRESS}...`);
-      
-      // For MiniKit, use sendTransaction directly
-      if (typeof window !== 'undefined' && (window as any).MiniKit?.commandsAsync?.sendTransaction && !('provider' in signer)) {
-        // MiniKit custom signer - use sendTransaction directly
-        const tx = await (signer as any).sendTransaction({
-          to: WLD_TOKEN_ADDRESS,
-          data: wldContractRead.interface.encodeFunctionData('transfer', [TREASURY_ADDRESS, amountWei])
-        });
-        // MiniKit returns transaction hash directly, wait for confirmation using provider
-        const receipt = await provider.waitForTransaction(tx);
-        const txHash = receipt?.hash || tx; // Use receipt.hash (ethers v6) or fallback to tx hash
-        console.log('✅ Payment successful:', txHash);
-        return { 
-          success: true, 
-          transactionHash: txHash,
-          receipt 
-        };
+      if (hasMiniKit) {
+        // Use MiniKit pay API for World App
+        console.log(`💸 Using MiniKit pay API: ${amount} ${params.currency} to ${TREASURY_ADDRESS}...`);
+        
+        try {
+          // Generate payment reference
+          const referenceResponse = await fetch('/api/initiate-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: amount.toString(), symbol: params.currency || 'WLD' })
+          });
+          
+          const referenceData = await referenceResponse.json();
+          if (!referenceData.id) {
+            return { success: false, error: 'Failed to generate payment reference' };
+          }
+          
+          const referenceId = referenceData.id;
+          console.log('✅ Generated payment reference:', referenceId);
+          
+          // Call MiniKit pay API
+          const MiniKit = (window as any).MiniKit;
+          const payResult = await MiniKit.commandsAsync.pay({
+            reference: referenceId,
+            to: TREASURY_ADDRESS,
+            tokens: params.currency || 'WLD',
+            amount: amount.toString()
+          });
+          
+          console.log('✅ MiniKit pay result:', payResult);
+          
+          // Get transaction hash from confirm-payment API
+          if (payResult?.finalPayload) {
+            const confirmResponse = await fetch('/api/confirm-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ payload: payResult.finalPayload })
+            });
+            
+            const confirmData = await confirmResponse.json();
+            
+            if (confirmData.success && confirmData.transaction) {
+              // Wait for transaction to be confirmed
+              let attempts = 0;
+              const maxAttempts = 20;
+              
+              while (attempts < maxAttempts) {
+                const statusResponse = await fetch('/api/confirm-payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    payload: { 
+                      transaction_id: confirmData.transaction.transaction_id || payResult.finalPayload.transaction_id,
+                      reference: referenceId 
+                    } 
+                  })
+                });
+                
+                const statusData = await statusResponse.json();
+                
+                if (statusData.success && statusData.transaction) {
+                  const status = statusData.transaction.transaction_status || statusData.transaction.status;
+                  
+                  if (status === 'confirmed' || status === 'mined') {
+                    const txHash = statusData.transaction.transaction_hash || confirmData.transaction.transaction_hash;
+                    console.log('✅ Payment confirmed:', txHash);
+                    return {
+                      success: true,
+                      transactionHash: txHash,
+                      transaction: statusData.transaction
+                    };
+                  }
+                  
+                  if (status === 'failed') {
+                    return { success: false, error: 'Transaction failed' };
+                  }
+                }
+                
+                // Wait before next attempt
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                attempts++;
+              }
+              
+              // Return success with pending status if not confirmed yet
+              const txHash = confirmData.transaction.transaction_hash || payResult.finalPayload.transaction_id;
+              return {
+                success: true,
+                transactionHash: txHash,
+                transaction: confirmData.transaction
+              };
+            }
+          }
+          
+          return { success: false, error: 'Payment initiated but confirmation failed' };
+        } catch (payError: any) {
+          console.error('❌ MiniKit pay error:', payError);
+          return { success: false, error: payError.message || 'Payment failed' };
+        }
       } else {
-        // Standard signer (MetaMask)
+        // Fallback: Use direct ERC20 transfer (for web browsers or non-World App)
+        console.log(`💸 Using direct ERC20 transfer: ${amount} ${params.currency} to ${TREASURY_ADDRESS}...`);
+        
+        const amountWei = ethers.parseUnits(amount.toString(), 18);
+        
+        // Check balance first using provider (for reading)
+        if (!provider || !wallet.address) {
+          return { success: false, error: 'No provider or wallet address available' };
+        }
+        
+        const wldContractRead = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, provider);
+        const balance = await wldContractRead.balanceOf(wallet.address);
+        if (balance < amountWei) {
+          return { success: false, error: 'Insufficient WLD balance' };
+        }
+
+        // Get signer for writing transaction
+        const signer = await getSigner();
+        if (!signer) {
+          return { success: false, error: 'No signer available' };
+        }
+
+        // Transfer WLD tokens to treasury address
         const wldContractWrite = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, signer as ethers.Signer);
         const transferTx = await wldContractWrite.transfer(TREASURY_ADDRESS, amountWei);
         const receipt = await transferTx.wait();
       
         const txHash = receipt?.hash || transferTx.hash;
         console.log('✅ Payment successful:', txHash);
-  return {
+        return {
           success: true, 
           transactionHash: txHash,
           receipt 
