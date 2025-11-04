@@ -574,11 +574,11 @@ const useMiniKit = () => {
         console.log(`💸 Using MiniKit pay API: ${amount} ${params.currency} to ${TREASURY_ADDRESS}...`);
         
         try {
-          // Generate payment reference
+          // Generate payment reference - use validatedAmountStr to preserve exact format
           const referenceResponse = await fetch('/api/initiate-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: amount.toString(), symbol: params.currency || 'WLD' })
+            body: JSON.stringify({ amount: validatedAmountStr, symbol: params.currency || 'WLD' })
           });
           
           const referenceData = await referenceResponse.json();
