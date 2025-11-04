@@ -639,13 +639,15 @@ const useMiniKit = () => {
             to: treasuryAddr, // Use validated address
             tokens: [{
               symbol: tokenType, // 'WLD' or 'USDC'
-              token_amount: finalAmountStr // Amount as string
+              token_amount: finalAmountStr // Amount as string - MUST be correct format for World App to display properly
             }],
             description: params.description || `Payment of ${finalAmountStr} ${tokenType}`, // Required in v1.9.8+
           };
 
           console.log(`💳 Calling MiniKit pay:`, JSON.stringify(payPayload, null, 2));
           console.log(`🔍 DEBUG → amount about to pay:`, finalAmountStr, "in tokens:", payPayload.tokens[0].token_amount);
+          console.log(`🔍 DEBUG → Full tokens array:`, JSON.stringify(payPayload.tokens, null, 2));
+          console.log(`🔍 DEBUG → token_amount value:`, payPayload.tokens[0].token_amount, "type:", typeof payPayload.tokens[0].token_amount);
       
             // Call MiniKit pay API - v1.9.8+ requires TokensPayload format
             let payResult;
