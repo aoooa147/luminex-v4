@@ -1,6 +1,9 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
+import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
+import { signMessageWithMiniKit } from '@/lib/game/auth';
 
 type CoinSide = 'heads' | 'tails';
 type GameState = 'idle' | 'playing' | 'flipping' | 'result' | 'gameover' | 'victory';
@@ -10,64 +13,7 @@ const TARGET_STREAK = 10; // Need 10 correct in a row to win
 const FLIP_ANIMATION_DURATION = 1500;
 const RESULT_SHOW_DURATION = 1500;
 const DIFFICULTY_INCREASE_AT = [3, 6, 9]; // Increase difficulty at these streaks
-
-// Sound effects using Web Audio API
-function playSound(frequency: number, duration: number, type: 'sine' | 'square' | 'sawtooth' = 'sine') {
-  if (typeof window === 'undefined') return;
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = type;
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-  } catch (e) {
-    console.error('Failed to play sound:', e);
-  }
-}
-
-function playFlipSound() {
-  // Coin flip sound: rising pitch
-  playSound(300, 0.1, 'sine');
-  setTimeout(() => playSound(400, 0.1, 'sine'), 50);
-  setTimeout(() => playSound(500, 0.1, 'sine'), 100);
-}
-
-function playCorrectSound() {
-  // Success sound: pleasant chord
-  playSound(523, 0.2, 'sine'); // C
-  setTimeout(() => playSound(659, 0.2, 'sine'), 50); // E
-  setTimeout(() => playSound(784, 0.3, 'sine'), 100); // G
-}
-
-function playWrongSound() {
-  // Error sound: low descending
-  playSound(200, 0.3, 'sawtooth');
-  setTimeout(() => playSound(150, 0.3, 'sawtooth'), 100);
-}
-
-function playVictorySound() {
-  // Victory fanfare
-  playSound(523, 0.2, 'sine');
-  setTimeout(() => playSound(659, 0.2, 'sine'), 150);
-  setTimeout(() => playSound(784, 0.2, 'sine'), 300);
-  setTimeout(() => playSound(1047, 0.5, 'sine'), 450);
-}
-
-function playGameOverSound() {
-  // Sad sound
-  playSound(200, 0.5, 'sawtooth');
-  setTimeout(() => playSound(150, 0.5, 'sawtooth'), 200);
-}
+const GAME_ID = 'coin-flip';
 
 export default function CoinFlipPage() {
   const [address, setAddress] = useState('');
@@ -82,7 +28,9 @@ export default function CoinFlipPage() {
   const [flipRotation, setFlipRotation] = useState(0);
   const [difficulty, setDifficulty] = useState(1); // 1 = normal, 2 = fast, 3 = very fast
   const [consecutiveCorrect, setConsecutiveCorrect] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+  const [actionsCount, setActionsCount] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(0);
   
   const flipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -91,13 +39,15 @@ export default function CoinFlipPage() {
   useEffect(() => {
     const a = sessionStorage.getItem('verifiedAddress') || localStorage.getItem('user_address') || '';
     setAddress(a);
-    if (a) loadEnergy(a);
+    if (a) {
+      loadEnergy(a);
+      // Initialize random difficulty for this user
+      const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
+      setDifficulty(randomDiff);
+    }
     
     // Check sound preference
-    const soundPref = localStorage.getItem('game_sound_enabled');
-    if (soundPref !== null) {
-      setSoundEnabled(soundPref === 'true');
-    }
+    setSoundEnabledState(isSoundEnabled());
   }, []);
 
   async function loadEnergy(addr: string) {
@@ -112,8 +62,8 @@ export default function CoinFlipPage() {
 
   function toggleSound() {
     const newState = !soundEnabled;
+    setSoundEnabledState(newState);
     setSoundEnabled(newState);
-    localStorage.setItem('game_sound_enabled', String(newState));
   }
 
   function startGame() {
@@ -125,12 +75,17 @@ export default function CoinFlipPage() {
       alert('พลังงานหมด');
       return;
     }
+    // Initialize random difficulty for this user
+    const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
     setGameState('playing');
     setLives(MAX_LIVES);
     setStreak(0);
     setScore(0);
     setConsecutiveCorrect(0);
-    setDifficulty(1);
+    setDifficulty(randomDiff);
+    setActionsCount(0);
+    setGameStartTime(Date.now());
+    antiCheat.clearHistory(address); // Clear previous game history
     generateNewCoin();
   }
 
@@ -143,13 +98,25 @@ export default function CoinFlipPage() {
   function guessCoin(side: CoinSide) {
     if (gameState !== 'playing') return;
     
+    // Anti-cheat: Check action speed
+    const cheatCheck = antiCheat.checkAction(address, 'guess_coin', { side });
+    if (cheatCheck.suspicious) {
+      console.warn('Suspicious activity detected:', cheatCheck.reason);
+      alert('Suspicious activity detected. Please play normally.');
+      return;
+    }
+    
+    // Record action
+    antiCheat.recordAction(address, 'guess_coin', { side, timestamp: Date.now() });
+    
     setPlayerGuess(side);
     setGameState('flipping');
     setFlipRotation(0);
+    setActionsCount(prev => prev + 1);
     
     // Play flip sound
     if (soundEnabled) {
-      playFlipSound();
+      playSound('flip');
     }
     
     // Start flip animation
@@ -178,19 +145,23 @@ export default function CoinFlipPage() {
     if (guess === result) {
       // Correct!
       if (soundEnabled) {
-        playCorrectSound();
+        playSound('correct');
       }
+      
+      // Record correct action
+      antiCheat.recordAction(address, 'correct_guess', { correct: true, isPerfect: true });
       
       const newStreak = streak + 1;
       const newConsecutive = consecutiveCorrect + 1;
       setStreak(newStreak);
       setConsecutiveCorrect(newConsecutive);
       
-      // Calculate score with multiplier
+      // Calculate score with multiplier and difficulty
+      const difficultyMultiplier = getDifficultyMultiplier(difficulty);
       const baseScore = 100;
       const streakBonus = Math.floor(newStreak / 2) * 50;
       const multiplierBonus = baseScore * (scoreMultiplier - 1);
-      const points = baseScore + streakBonus + multiplierBonus;
+      const points = Math.floor((baseScore + streakBonus + multiplierBonus) * difficultyMultiplier);
       setScore(prev => prev + points);
       
       // Increase difficulty at certain streaks
@@ -201,11 +172,8 @@ export default function CoinFlipPage() {
       // Check for victory
       if (newStreak >= TARGET_STREAK) {
         if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current);
-        resultTimeoutRef.current = setTimeout(() => {
-          if (soundEnabled) {
-            playVictorySound();
-          }
-          handleVictory();
+                  resultTimeoutRef.current = setTimeout(() => {
+            handleVictory();
         }, RESULT_SHOW_DURATION);
         return;
       }
@@ -220,8 +188,11 @@ export default function CoinFlipPage() {
     } else {
       // Wrong!
       if (soundEnabled) {
-        playWrongSound();
+        playSound('wrong');
       }
+      
+      // Record incorrect action
+      antiCheat.recordAction(address, 'wrong_guess', { correct: false });
       
       const newLives = lives - 1;
       setLives(newLives);
@@ -230,11 +201,8 @@ export default function CoinFlipPage() {
       if (newLives <= 0) {
         // Game over
         if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current);
-        resultTimeoutRef.current = setTimeout(() => {
-          if (soundEnabled) {
-            playGameOverSound();
-          }
-          handleGameOver();
+                  resultTimeoutRef.current = setTimeout(() => {
+            handleGameOver();
         }, RESULT_SHOW_DURATION);
       } else {
         // Continue with less lives
@@ -251,19 +219,45 @@ export default function CoinFlipPage() {
 
   async function handleVictory() {
     setGameState('victory');
+    if (soundEnabled) {
+      playSound('victory');
+    }
+    
     try {
-      const base = { address, score, ts: Date.now() };
+      const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
+      
+      // Anti-cheat: Validate score
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
+      if (scoreCheck.suspicious) {
+        console.warn('Suspicious score detected:', scoreCheck.reason);
+        alert('Score validation failed. Please try again.');
+        return;
+      }
+      
+      // Get nonce
       const { nonce } = await fetch('/api/game/score/nonce', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ address })
       }).then(r => r.json());
       
-      const payload = { ...base, nonce };
+      // Sign message with wallet
+      const base = { address, score, ts: Date.now(), nonce, gameId: GAME_ID, gameDuration, actionsCount };
+      const message = JSON.stringify(base);
+      let signature: string;
+      try {
+        signature = await signMessageWithMiniKit(message);
+      } catch (e: any) {
+        console.error('Failed to sign score:', e);
+        alert('Failed to sign score. Please try again.');
+        return;
+      }
+      
+      const payload = { ...base };
       await fetch('/api/game/score/submit', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ address, payload, sig: '0x' })
+        body: JSON.stringify({ address, payload, sig: signature })
       });
       
       // Reward
@@ -279,6 +273,9 @@ export default function CoinFlipPage() {
 
   function handleGameOver() {
     setGameState('gameover');
+    if (soundEnabled) {
+      playSound('gameover');
+    }
   }
 
   function resetGame() {

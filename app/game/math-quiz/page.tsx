@@ -1,278 +1,462 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
+import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
+import { signMessageWithMiniKit } from '@/lib/game/auth';
 
-type Operation = '+' | '-' | '*' | '/';
+type PatternType = 'number' | 'shape' | 'color' | 'direction';
+type GameState = 'idle' | 'playing' | 'gameover';
 
-const QUESTIONS_PER_ROUND = 10;
-const TIME_LIMIT = 30;
+type Pattern = {
+  type: PatternType;
+  value: number | string;
+  display: string;
+  emoji: string;
+};
+
+const PATTERN_TYPES: PatternType[] = ['number', 'shape', 'color', 'direction'];
+const SHAPES = ['🔵', '🔴', '🟢', '🟡', '🟣', '🟠'];
+const COLORS = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'];
+const DIRECTIONS = ['⬆️', '➡️', '⬇️', '⬅️', '↗️', '↘️', '↙️', '↖️'];
+
+const GAME_ID = 'math-quiz';
+
+function generatePattern(type: PatternType, index: number, base: number): Pattern {
+  switch (type) {
+    case 'number':
+      return {
+        type: 'number',
+        value: base + index,
+        display: String(base + index),
+        emoji: '🔢',
+      };
+    case 'shape':
+      const shapeIndex = (base + index) % SHAPES.length;
+      return {
+        type: 'shape',
+        value: shapeIndex,
+        display: SHAPES[shapeIndex],
+        emoji: SHAPES[shapeIndex],
+      };
+    case 'color':
+      const colorIndex = (base + index) % COLORS.length;
+      return {
+        type: 'color',
+        value: colorIndex,
+        display: COLORS[colorIndex],
+        emoji: COLORS[colorIndex],
+      };
+    case 'direction':
+      const dirIndex = (base + index) % DIRECTIONS.length;
+      return {
+        type: 'direction',
+        value: dirIndex,
+        display: DIRECTIONS[dirIndex],
+        emoji: DIRECTIONS[dirIndex],
+      };
+  }
+}
+
+function generateSequence(type: PatternType, length: number, base: number): Pattern[] {
+  const seq: Pattern[] = [];
+  for (let i = 0; i < length; i++) {
+    seq.push(generatePattern(type, i, base));
+  }
+  return seq;
+}
 
 export default function MathQuizPage() {
   const [address, setAddress] = useState('');
-  const [energy, setEnergy] = useState(0);
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameover'>('idle');
-  const [question, setQuestion] = useState<{ num1: number; num2: number; op: Operation; answer: number } | null>(null);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [score, setScore] = useState(0);
-  const [correct, setCorrect] = useState(0);
+  const [gameState, setGameState] = useState<GameState>('idle');
+  const [currentPatternType, setCurrentPatternType] = useState<PatternType>('number');
+  const [sequence, setSequence] = useState<Pattern[]>([]);
+  const [options, setOptions] = useState<Pattern[]>([]);
+  const [correctAnswer, setCorrectAnswer] = useState<Pattern | null>(null);
   const [level, setLevel] = useState(1);
-  const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
-  const [questionsAnswered, setQuestionsAnswered] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [difficulty, setDifficulty] = useState(1);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+  const [actionsCount, setActionsCount] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(0);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState({ hours: 0, minutes: 0 });
+  const [luxReward, setLuxReward] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = useState<Pattern | null>(null);
 
   useEffect(() => {
     const a = sessionStorage.getItem('verifiedAddress') || '';
     setAddress(a);
-    if (a) loadEnergy(a);
-  }, []);
+    if (a) {
+      checkCooldown();
+      const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
+      setDifficulty(randomDiff);
+    }
+    setSoundEnabledState(isSoundEnabled());
+  }, [address]);
 
-  async function loadEnergy(addr: string) {
+  async function checkCooldown() {
     try {
-      const r = await fetch(`/api/game/energy/get?address=${addr}`);
-      const j = await r.json();
-      if (j.ok) setEnergy(j.energy);
+      const res = await fetch('/api/game/cooldown/check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ address, gameId: GAME_ID })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsOnCooldown(data.isOnCooldown);
+        setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
+      }
     } catch (e) {
-      console.error('Failed to load energy:', e);
+      console.error('Failed to check cooldown:', e);
     }
   }
 
-  function generateQuestion(): { num1: number; num2: number; op: Operation; answer: number } {
-    const ops: Operation[] = level <= 2 ? ['+', '-'] : ['+', '-', '*', '/'];
-    const op = ops[Math.floor(Math.random() * ops.length)];
+  function generateQuestion() {
+    // Select random pattern type
+    const patternType = PATTERN_TYPES[Math.floor(Math.random() * PATTERN_TYPES.length)];
+    setCurrentPatternType(patternType);
+
+    // Generate sequence length based on level and difficulty
+    const sequenceLength = 3 + difficulty + Math.floor(level / 2);
+    const base = Math.floor(Math.random() * 10);
     
-    let num1: number, num2: number, answer: number;
+    // Generate full sequence (including answer)
+    const fullSequence = generateSequence(patternType, sequenceLength + 1, base);
     
-    if (op === '+') {
-      num1 = Math.floor(Math.random() * (10 * level)) + 1;
-      num2 = Math.floor(Math.random() * (10 * level)) + 1;
-      answer = num1 + num2;
-    } else if (op === '-') {
-      num1 = Math.floor(Math.random() * (10 * level)) + 5;
-      num2 = Math.floor(Math.random() * num1) + 1;
-      answer = num1 - num2;
-    } else if (op === '*') {
-      num1 = Math.floor(Math.random() * (5 * level)) + 1;
-      num2 = Math.floor(Math.random() * 10) + 1;
-      answer = num1 * num2;
-    } else {
-      // Division
-      num2 = Math.floor(Math.random() * 5) + 2;
-      const quotient = Math.floor(Math.random() * 10) + 1;
-      num1 = num2 * quotient;
-      answer = quotient;
+    // Show all but last (the answer)
+    const shownSequence = fullSequence.slice(0, sequenceLength);
+    setSequence(shownSequence);
+    
+    // Get correct answer
+    const correct = fullSequence[sequenceLength];
+    setCorrectAnswer(correct);
+    
+    // Generate options (1 correct + 3 wrong)
+    const wrongOptions: Pattern[] = [];
+    while (wrongOptions.length < 3) {
+      let wrong: Pattern;
+      if (patternType === 'number') {
+        wrong = generatePattern(patternType, sequenceLength + Math.floor(Math.random() * 5) + 1, base);
+      } else {
+        const wrongIndex = (correct.value as number + Math.floor(Math.random() * 5) + 1) % 
+          (patternType === 'shape' ? SHAPES.length : patternType === 'color' ? COLORS.length : DIRECTIONS.length);
+        wrong = generatePattern(patternType, wrongIndex, 0);
+      }
+      // Make sure wrong options are different from correct
+      if (wrong.display !== correct.display && !wrongOptions.some(o => o.display === wrong.display)) {
+        wrongOptions.push(wrong);
+      }
     }
     
-    return { num1, num2, op, answer };
+    // Shuffle options
+    const allOptions = [correct, ...wrongOptions].sort(() => Math.random() - 0.5);
+    setOptions(allOptions);
+    setSelectedOption(null);
   }
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อม Wallet ก่อน');
+      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
       return;
     }
-    if (energy <= 0) {
-      alert('พลังงานหมด');
+    if (isOnCooldown) {
+      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
       return;
     }
-    
+
+    // Start cooldown
+    fetch('/api/game/cooldown/start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ address, gameId: GAME_ID })
+    });
+
+    const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
+    setDifficulty(randomDiff);
     setGameState('playing');
     setLevel(1);
     setScore(0);
-    setCorrect(0);
-    setQuestionsAnswered(0);
-    setTimeLeft(TIME_LIMIT);
-    setUserAnswer('');
-    setQuestion(generateQuestion());
-    
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          handleGameOver();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    setLives(3);
+    setActionsCount(0);
+    setGameStartTime(Date.now());
+    setLuxReward(null);
+    antiCheat.clearHistory(address);
+
+    generateQuestion();
   }
 
-  function handleSubmit() {
-    if (!question || !userAnswer) return;
-    
-    const userNum = parseInt(userAnswer);
-    if (isNaN(userNum)) return;
-    
-    setQuestionsAnswered(prev => prev + 1);
-    
-    if (userNum === question.answer) {
+  function handleOptionClick(option: Pattern) {
+    if (gameState !== 'playing' || selectedOption) return;
+
+    const cheatCheck = antiCheat.checkAction(address, 'pattern_answer', { level, patternType: currentPatternType });
+    if (cheatCheck.suspicious) {
+      alert('Suspicious activity detected. Please play normally.');
+      return;
+    }
+
+    setSelectedOption(option);
+    antiCheat.recordAction(address, 'pattern_answer', { level, patternType: currentPatternType });
+    setActionsCount(prev => prev + 1);
+
+    const isCorrect = option.display === correctAnswer?.display;
+
+    if (isCorrect) {
       // Correct!
-      const timeBonus = Math.floor(timeLeft / 5) * 10;
-      const levelBonus = level * 20;
-      const points = 100 + timeBonus + levelBonus;
+      if (soundEnabled) playSound('correct');
+      antiCheat.recordAction(address, 'correct_pattern', { correct: true, level });
+
+      const difficultyMultiplier = getDifficultyMultiplier(difficulty);
+      const baseScore = level * 500;
+      const timeBonus = Math.max(0, 1000 - (Date.now() - gameStartTime) / 10);
+      const points = Math.floor((baseScore + timeBonus) * difficultyMultiplier);
       
       setScore(prev => prev + points);
-      setCorrect(prev => prev + 1);
-      
-      // Check if round complete
-      if (questionsAnswered + 1 >= QUESTIONS_PER_ROUND) {
-        setLevel(prev => prev + 1);
-        setQuestionsAnswered(0);
-        setTimeLeft(TIME_LIMIT);
-      }
+      setLevel(prev => prev + 1);
+
+      // Next question after delay
+      setTimeout(() => {
+        generateQuestion();
+        setSelectedOption(null);
+      }, 1500);
+    } else {
+      // Wrong!
+      if (soundEnabled) playSound('wrong');
+      antiCheat.recordAction(address, 'wrong_pattern', { correct: false });
+
+      const newLives = lives - 1;
+      setLives(newLives);
+
+      setTimeout(() => {
+        if (newLives <= 0) {
+          handleGameOver();
+        } else {
+          // Continue with same level
+          generateQuestion();
+          setSelectedOption(null);
+        }
+      }, 1500);
     }
-    
-    // Next question
-    setUserAnswer('');
-    setQuestion(generateQuestion());
   }
 
   async function handleGameOver() {
-    if (timerRef.current) clearInterval(timerRef.current);
     setGameState('gameover');
-    
+    if (soundEnabled) playSound('gameover');
+
     try {
-      const base = { address, score, ts: Date.now() };
-      const { nonce } = await fetch('/api/game/score/nonce', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ address })
-      }).then(r => r.json());
+      const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
       
-      await fetch('/api/game/score/submit', {
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
+      if (scoreCheck.suspicious) {
+        alert('Score validation failed.');
+        return;
+      }
+
+      // Claim LUX reward
+      const rewardRes = await fetch('/api/game/reward/lux', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ address, payload: { ...base, nonce }, sig: '0x' })
+        body: JSON.stringify({ address, gameId: GAME_ID, score })
       });
+      const rewardData = await rewardRes.json();
       
-      const key = 'luminex_tokens';
-      const cur = Number(localStorage.getItem(key) || '0');
-      localStorage.setItem(key, String(cur + 6));
-      loadEnergy(address);
+      if (rewardData.ok) {
+        setLuxReward(rewardData.luxReward);
+      }
+
+      // Update cooldown status
+      setIsOnCooldown(true);
+      await checkCooldown();
     } catch (e) {
-      console.error('Failed to submit score:', e);
+      console.error('Failed to process game over:', e);
     }
   }
 
   function resetGame() {
-    if (timerRef.current) clearInterval(timerRef.current);
     setGameState('idle');
-    setQuestion(null);
-    setUserAnswer('');
-    setScore(0);
-    setCorrect(0);
+    setSequence([]);
+    setOptions([]);
+    setCorrectAnswer(null);
     setLevel(1);
-    setTimeLeft(TIME_LIMIT);
-    setQuestionsAnswered(0);
+    setScore(0);
+    setLives(3);
+    setSelectedOption(null);
+    setLuxReward(null);
   }
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
+  function toggleSound() {
+    const newState = !soundEnabled;
+    setSoundEnabledState(newState);
+    setSoundEnabled(newState);
+  }
 
-  const getOpSymbol = (op: Operation) => {
-    switch (op) {
-      case '+': return '+';
-      case '-': return '-';
-      case '*': return '×';
-      case '/': return '÷';
-    }
-  };
+  const isCorrect = selectedOption && selectedOption.display === correctAnswer?.display;
+  const isWrong = selectedOption && selectedOption.display !== correctAnswer?.display;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-orange-950 to-zinc-950 text-white p-4 pb-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent text-center">
-          🧮 Math Quiz
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 bg-clip-text text-transparent">
+            🧩 Pattern Puzzle
+          </h1>
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3">
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⚡ Energy</div>
-            <div className="text-xl font-bold text-yellow-400">{energy}</div>
+            <div className="text-xs text-white/60 mb-1">📊 Level</div>
+            <div className="text-xl font-bold text-orange-400">{level}</div>
           </div>
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⏱️ Time</div>
-            <div className="text-xl font-bold text-red-400">{timeLeft}s</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">✅ Correct</div>
-            <div className="text-xl font-bold text-green-400">{correct}/{questionsAnswered}</div>
+            <div className="text-xs text-white/60 mb-1">❤️ Lives</div>
+            <div className="text-xl font-bold text-red-400">{lives}/3</div>
           </div>
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
             <div className="text-xs text-white/60 mb-1">🎯 Score</div>
-            <div className="text-xl font-bold text-orange-400">{score.toLocaleString()}</div>
+            <div className="text-xl font-bold text-green-400">{score.toLocaleString()}</div>
+          </div>
+          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
+            <div className="text-xs text-white/60 mb-1">🎨 Type</div>
+            <div className="text-xl font-bold text-purple-400">
+              {currentPatternType === 'number' ? '🔢' : 
+               currentPatternType === 'shape' ? '🔵' :
+               currentPatternType === 'color' ? '🎨' : '🧭'}
+            </div>
           </div>
         </div>
+
+        {/* Cooldown Message */}
+        {isOnCooldown && gameState === 'idle' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
+          >
+            <p className="text-red-300 font-bold">
+              ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+            </p>
+          </motion.div>
+        )}
 
         {gameState === 'idle' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/30 text-center"
+            className="space-y-6"
           >
-            <div className="text-6xl mb-4">🧮</div>
-            <h2 className="text-3xl font-bold mb-4 text-white">พร้อมเล่นแล้ว!</h2>
-            <p className="text-white/80 mb-6">
-              แก้โจทย์คณิตศาสตร์ให้เร็วที่สุด! ถูกมากได้คะแนนมาก
-            </p>
-            <div className="space-y-2 text-sm text-white/70 mb-6">
-              <p>✨ ตอบถูก: 100+ คะแนน</p>
-              <p>⚡ Bonus ตามเวลาที่เหลือ</p>
-              <p>📊 Level สูงขึ้น ยากขึ้น!</p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={startGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl shadow-2xl shadow-orange-500/50"
-            >
-              ▶ เริ่มเล่น
-            </motion.button>
-          </motion.div>
-        )}
-
-        {gameState === 'playing' && question && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="text-sm text-white/60 mb-2">
-                Level {level} • คำถามที่ {questionsAnswered + 1}/{QUESTIONS_PER_ROUND}
+            <div className="rounded-2xl p-8 bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/30 text-center">
+              <div className="text-6xl mb-4">🧩</div>
+              <h2 className="text-3xl font-bold mb-4 text-white">แก้ปริศนาลำดับ!</h2>
+              <p className="text-white/80 mb-6">
+                ดูรูปแบบที่ให้มา แล้วเลือกลำดับถัดไปที่ถูกต้อง
+              </p>
+              <div className="space-y-2 text-sm text-white/70 mb-6">
+                <p>✨ คุณมี 3 ชีวิต</p>
+                <p>🔥 แต่ละเลเวลจะยากขึ้นเรื่อยๆ</p>
+                <p>🧩 รูปแบบ: ตัวเลข, รูปทรง, สี, ทิศทาง</p>
+                <p>💎 รางวัล: 0-5 LUX (ยากมากที่จะได้ 5!)</p>
               </div>
-              <div className="text-6xl font-bold text-white mb-6">
-                {question.num1} {getOpSymbol(question.op)} {question.num2} = ?
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <input
-                type="number"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-                placeholder="คำตอบ..."
-                className="w-full px-6 py-4 rounded-xl bg-zinc-900/60 border-2 border-orange-500/50 text-white text-3xl text-center font-bold focus:outline-none focus:border-orange-400"
-                autoFocus
-              />
-              
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleSubmit}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl"
+                onClick={startGame}
+                disabled={isOnCooldown}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl shadow-2xl shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ✓ ส่งคำตอบ
+                ▶ เริ่มเล่น
               </motion.button>
             </div>
+          </motion.div>
+        )}
 
-            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: '100%' }}
-                animate={{ width: `${(timeLeft / TIME_LIMIT) * 100}%` }}
-                className="h-full bg-gradient-to-r from-orange-500 to-red-500"
-              />
+        {gameState === 'playing' && (
+          <div className="space-y-6">
+            {/* Sequence Display */}
+            <div className="bg-zinc-900/60 rounded-2xl p-6 border border-zinc-800">
+              <div className="text-center mb-4">
+                <p className="text-white/70 text-lg mb-2">ดูรูปแบบต่อไปนี้:</p>
+                <p className="text-white/50 text-sm">เลือกลำดับถัดไปที่ถูกต้อง</p>
+              </div>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                {sequence.map((pattern, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="w-16 h-16 bg-zinc-800 rounded-xl flex items-center justify-center text-4xl border-2 border-white/20"
+                  >
+                    {pattern.display}
+                  </motion.div>
+                ))}
+                <motion.div
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="w-16 h-16 bg-zinc-700 rounded-xl flex items-center justify-center text-4xl border-2 border-dashed border-white/30"
+                >
+                  ?
+                </motion.div>
+              </div>
             </div>
+
+            {/* Options */}
+            <div className="grid grid-cols-2 gap-4">
+              {options.map((option, index) => {
+                const isSelected = selectedOption?.display === option.display;
+                return (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: selectedOption ? 1 : 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOptionClick(option)}
+                    disabled={!!selectedOption}
+                    className={`py-6 rounded-xl border-4 flex items-center justify-center text-6xl font-bold transition-all ${
+                      isSelected && isCorrect
+                        ? 'bg-green-500/30 border-green-400 shadow-2xl shadow-green-500/50'
+                        : isSelected && isWrong
+                        ? 'bg-red-500/30 border-red-400 shadow-2xl shadow-red-500/50'
+                        : selectedOption
+                        ? 'bg-zinc-800 border-zinc-700 opacity-50 cursor-not-allowed'
+                        : 'bg-zinc-900/60 border-zinc-700 hover:border-orange-500/50 cursor-pointer'
+                    }`}
+                  >
+                    {option.display}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Feedback */}
+            <AnimatePresence>
+              {isCorrect && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-4 text-center"
+                >
+                  <p className="text-green-400 font-bold text-xl">✅ ถูกต้อง!</p>
+                </motion.div>
+              )}
+              {isWrong && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 text-center"
+                >
+                  <p className="text-red-400 font-bold text-xl">❌ ผิด! -1 ชีวิต</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -286,9 +470,12 @@ export default function MathQuizPage() {
             <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
             <div className="space-y-3 text-lg">
               <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">✅ ตอบถูก: <b className="text-green-300">{correct}/{questionsAnswered}</b></p>
-              <p className="text-white/90">📊 Level ที่ไปถึง: <b className="text-orange-300">{level}</b></p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 6 Tokens!</p>
+              <p className="text-white/90">📊 เลเวลสูงสุด: <b className="text-orange-300">{level}</b></p>
+              {luxReward !== null && (
+                <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
+                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}ได้รับ {luxReward} LUX!
+                </div>
+              )}
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -296,7 +483,7 @@ export default function MathQuizPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl"
             >
-              เล่นอีกครั้ง
+              กลับไปหน้าแรก
             </motion.button>
           </motion.div>
         )}

@@ -13,21 +13,21 @@ const GAMES = [
   },
   {
     id: 'memory-match',
-    name: '🧠 Memory Match',
-    description: 'จับคู่การ์ดให้ถูกต้อง ฝึกความจำ!',
+    name: '🧠 Color Memory Challenge',
+    description: 'จำลำดับสีที่เพิ่มขึ้นเรื่อยๆ - รางวัล 0-5 LUX (เล่นได้ 1 ครั้ง/24 ช.ม.)',
     href: '/game/memory-match',
-    color: 'from-blue-500/10 to-cyan-500/10',
-    border: 'border-blue-500/30',
-    button: 'from-blue-500 to-cyan-500',
+    color: 'from-purple-500/10 to-pink-500/10',
+    border: 'border-purple-500/30',
+    button: 'from-purple-500 to-pink-500',
   },
   {
     id: 'number-rush',
-    name: '🔢 Number Rush',
-    description: 'กดตัวเลขตามลำดับให้เร็วที่สุด!',
+    name: '⚡ Speed Reaction',
+    description: 'ทดสอบความเร็วในการตอบสนอง - รางวัล 0-5 LUX (เล่นได้ 1 ครั้ง/24 ช.ม.)',
     href: '/game/number-rush',
-    color: 'from-green-500/10 to-emerald-500/10',
-    border: 'border-green-500/30',
-    button: 'from-green-500 to-emerald-500',
+    color: 'from-blue-500/10 to-cyan-500/10',
+    border: 'border-blue-500/30',
+    button: 'from-blue-500 to-cyan-500',
   },
   {
     id: 'color-tap',
@@ -49,8 +49,8 @@ const GAMES = [
   },
   {
     id: 'math-quiz',
-    name: '🧮 Math Quiz',
-    description: 'แก้โจทย์คณิตศาสตร์ให้เร็วที่สุด!',
+    name: '🧩 Pattern Puzzle',
+    description: 'แก้ปริศนาลำดับรูปแบบ - รางวัล 0-5 LUX (เล่นได้ 1 ครั้ง/24 ช.ม.)',
     href: '/game/math-quiz',
     color: 'from-orange-500/10 to-red-500/10',
     border: 'border-orange-500/30',
@@ -63,7 +63,7 @@ export default function GameLauncherCard() {
     <div className="space-y-4">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">🎮 เลือกเกม</h2>
-        <p className="text-white/70 text-sm">เลือกเกมที่คุณชอบและเริ่มเล่นเลย!</p>
+        <p className="text-white/70 text-sm">เลือกเกมที่คุณชอบและเริ่มเล่นเลย! รางวัลพิเศษ: 0-5 LUX (ยากมากที่จะได้ 5!)</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

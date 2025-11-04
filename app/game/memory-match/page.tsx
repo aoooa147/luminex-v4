@@ -1,225 +1,299 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
+import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
+import { signMessageWithMiniKit } from '@/lib/game/auth';
 
-type Card = { id: number; emoji: string; flipped: boolean; matched: boolean };
+type Color = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
+type GameState = 'idle' | 'showing' | 'playing' | 'victory' | 'gameover';
 
-const EMOJIS = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎵', '🎶', '🎸', '🎹', '🎺', '🎻', '🥁', '🎲'];
-const GRID_SIZES = [
-  { size: 4, name: 'ง่าย', pairs: 8 },
-  { size: 6, name: 'กลาง', pairs: 18 },
-  { size: 8, name: 'ยาก', pairs: 32 },
-];
+const COLORS: Color[] = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+const COLOR_CONFIG: Record<Color, { bg: string; light: string; emoji: string }> = {
+  red: { bg: 'bg-red-500', light: 'bg-red-400', emoji: '🔴' },
+  blue: { bg: 'bg-blue-500', light: 'bg-blue-400', emoji: '🔵' },
+  green: { bg: 'bg-green-500', light: 'bg-green-400', emoji: '🟢' },
+  yellow: { bg: 'bg-yellow-500', light: 'bg-yellow-400', emoji: '🟡' },
+  purple: { bg: 'bg-purple-500', light: 'bg-purple-400', emoji: '🟣' },
+  orange: { bg: 'bg-orange-500', light: 'bg-orange-400', emoji: '🟠' },
+};
+
+const GAME_ID = 'memory-match';
 
 export default function MemoryMatchPage() {
   const [address, setAddress] = useState('');
-  const [energy, setEnergy] = useState(0);
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'victory'>('idle');
-  const [difficulty, setDifficulty] = useState(0);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [flippedCards, setFlippedCards] = useState<number[]>([]);
-  const [moves, setMoves] = useState(0);
-  const [matches, setMatches] = useState(0);
+  const [gameState, setGameState] = useState<GameState>('idle');
+  const [sequence, setSequence] = useState<Color[]>([]);
+  const [playerSequence, setPlayerSequence] = useState<Color[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
-  const [time, setTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [lives, setLives] = useState(3);
+  const [difficulty, setDifficulty] = useState(1);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+  const [actionsCount, setActionsCount] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(0);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState({ hours: 0, minutes: 0 });
+  const [highlightedColor, setHighlightedColor] = useState<Color | null>(null);
+  const [luxReward, setLuxReward] = useState<number | null>(null);
+  
+  const sequenceRef = useRef<Color[]>([]);
+  const showingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const a = sessionStorage.getItem('verifiedAddress') || '';
     setAddress(a);
-    if (a) loadEnergy(a);
-  }, []);
+    if (a) {
+      checkCooldown();
+      const randomDiff = getRandomDifficulty(a, GAME_ID, 1, 3);
+      setDifficulty(randomDiff);
+    }
+    setSoundEnabledState(isSoundEnabled());
+  }, [address]);
 
-  async function loadEnergy(addr: string) {
+  async function checkCooldown() {
     try {
-      const r = await fetch(`/api/game/energy/get?address=${addr}`);
-      const j = await r.json();
-      if (j.ok) setEnergy(j.energy);
+      const res = await fetch('/api/game/cooldown/check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ address, gameId: GAME_ID })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsOnCooldown(data.isOnCooldown);
+        setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
+      }
     } catch (e) {
-      console.error('Failed to load energy:', e);
+      console.error('Failed to check cooldown:', e);
     }
   }
 
-  function shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  function generateSequence(length: number): Color[] {
+    const seq: Color[] = [];
+    for (let i = 0; i < length; i++) {
+      seq.push(COLORS[Math.floor(Math.random() * COLORS.length)]);
     }
-    return shuffled;
-  }
-
-  function createCards(): Card[] {
-    const gridSize = GRID_SIZES[difficulty].size;
-    const pairs = GRID_SIZES[difficulty].pairs;
-    const selectedEmojis = shuffleArray(EMOJIS).slice(0, pairs);
-    const cardPairs = [...selectedEmojis, ...selectedEmojis];
-    const shuffled = shuffleArray(cardPairs);
-    
-    return shuffled.map((emoji, index) => ({
-      id: index,
-      emoji,
-      flipped: false,
-      matched: false,
-    }));
+    return seq;
   }
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อม Wallet ก่อน');
+      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
       return;
     }
-    if (energy <= 0) {
-      alert('พลังงานหมด');
+    if (isOnCooldown) {
+      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
       return;
     }
-    
-    setGameState('playing');
-    setCards(createCards());
-    setFlippedCards([]);
-    setMoves(0);
-    setMatches(0);
+
+    // Start cooldown
+    fetch('/api/game/cooldown/start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ address, gameId: GAME_ID })
+    });
+
+    const randomDiff = getRandomDifficulty(address, GAME_ID, 1, 3);
+    setDifficulty(randomDiff);
+    setGameState('showing');
+    setLevel(1);
     setScore(0);
-    setTime(0);
-    
-    // Start timer
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setTime(prev => prev + 1);
-    }, 1000);
+    setLives(3);
+    setCurrentIndex(0);
+    setPlayerSequence([]);
+    setActionsCount(0);
+    setGameStartTime(Date.now());
+    setLuxReward(null);
+    antiCheat.clearHistory(address);
+
+    const initialSeq = generateSequence(3 + randomDiff);
+    sequenceRef.current = initialSeq;
+    setSequence(initialSeq);
+    showSequence(initialSeq);
   }
 
-  function flipCard(id: number) {
+  function showSequence(seq: Color[]) {
+    let index = 0;
+    const showNext = () => {
+      if (index >= seq.length) {
+        setGameState('playing');
+        setHighlightedColor(null);
+        return;
+      }
+      setHighlightedColor(seq[index]);
+      if (soundEnabled) playSound('click');
+      index++;
+      if (showingTimeoutRef.current) clearTimeout(showingTimeoutRef.current);
+      showingTimeoutRef.current = setTimeout(showNext, 800 - (difficulty * 100));
+    };
+    showNext();
+  }
+
+  function handleColorClick(color: Color) {
     if (gameState !== 'playing') return;
-    const card = cards[id];
-    if (card.flipped || card.matched || flippedCards.length >= 2) return;
-    
-    const newCards = [...cards];
-    newCards[id].flipped = true;
-    setCards(newCards);
-    
-    const newFlipped = [...flippedCards, id];
-    setFlippedCards(newFlipped);
-    
-    if (newFlipped.length === 2) {
-      setMoves(prev => prev + 1);
-      checkMatch(newFlipped);
+
+    const cheatCheck = antiCheat.checkAction(address, 'color_click', { color, level });
+    if (cheatCheck.suspicious) {
+      alert('Suspicious activity detected. Please play normally.');
+      return;
+    }
+
+    antiCheat.recordAction(address, 'color_click', { color, level });
+    setActionsCount(prev => prev + 1);
+
+    if (soundEnabled) playSound('click');
+
+    const expectedColor = sequenceRef.current[playerSequence.length];
+    const newPlayerSeq = [...playerSequence, color];
+    setPlayerSequence(newPlayerSeq);
+
+    if (color === expectedColor) {
+      // Correct!
+      if (soundEnabled) playSound('correct');
+      antiCheat.recordAction(address, 'correct_color', { correct: true, level });
+
+      if (newPlayerSeq.length === sequenceRef.current.length) {
+        // Level complete!
+        const difficultyMultiplier = getDifficultyMultiplier(difficulty);
+        const levelScore = Math.floor((level * 1000 + (sequenceRef.current.length * 100)) * difficultyMultiplier);
+        setScore(prev => prev + levelScore);
+        setLevel(prev => prev + 1);
+        setPlayerSequence([]);
+        setCurrentIndex(0);
+
+        // Show next sequence
+        const newSeq = generateSequence(3 + difficulty + level);
+        sequenceRef.current = newSeq;
+        setSequence(newSeq);
+        setGameState('showing');
+        showSequence(newSeq);
+      }
+    } else {
+      // Wrong!
+      if (soundEnabled) playSound('wrong');
+      antiCheat.recordAction(address, 'wrong_color', { correct: false });
+
+      const newLives = lives - 1;
+      setLives(newLives);
+
+      if (newLives <= 0) {
+        handleGameOver();
+      } else {
+        // Reset current level
+        setPlayerSequence([]);
+        setCurrentIndex(0);
+        setGameState('showing');
+        showSequence(sequenceRef.current);
+      }
     }
   }
 
-  function checkMatch(flipped: number[]) {
-    setTimeout(() => {
-      const [id1, id2] = flipped;
-      const card1 = cards[id1];
-      const card2 = cards[id2];
-      
-      if (card1.emoji === card2.emoji) {
-        // Match!
-        const newCards = [...cards];
-        newCards[id1].matched = true;
-        newCards[id2].matched = true;
-        setCards(newCards);
-        setMatches(prev => {
-          const newMatches = prev + 1;
-          const pairs = GRID_SIZES[difficulty].pairs;
-          
-          // Calculate score
-          const timeBonus = Math.max(0, 1000 - time * 10);
-          const movesBonus = Math.max(0, 500 - moves * 5);
-          const matchBonus = newMatches * 100;
-          setScore(timeBonus + movesBonus + matchBonus);
-          
-          // Check victory
-          if (newMatches >= pairs) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            setGameState('victory');
-            handleVictory();
-          }
-          
-          return newMatches;
-        });
-      } else {
-        // No match, flip back
-        const newCards = [...cards];
-        newCards[id1].flipped = false;
-        newCards[id2].flipped = false;
-        setCards(newCards);
-      }
-      
-      setFlippedCards([]);
-    }, 1000);
-  }
+  async function handleGameOver() {
+    setGameState('gameover');
+    if (soundEnabled) playSound('gameover');
 
-  async function handleVictory() {
     try {
-      const base = { address, score, ts: Date.now() };
-      const { nonce } = await fetch('/api/game/score/nonce', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ address })
-      }).then(r => r.json());
+      const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
       
-      await fetch('/api/game/score/submit', {
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
+      if (scoreCheck.suspicious) {
+        alert('Score validation failed.');
+        return;
+      }
+
+      // Claim LUX reward
+      const rewardRes = await fetch('/api/game/reward/lux', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ address, payload: { ...base, nonce }, sig: '0x' })
+        body: JSON.stringify({ address, gameId: GAME_ID, score })
       });
+      const rewardData = await rewardRes.json();
       
-      const key = 'luminex_tokens';
-      const cur = Number(localStorage.getItem(key) || '0');
-      localStorage.setItem(key, String(cur + 5));
-      loadEnergy(address);
+      if (rewardData.ok) {
+        setLuxReward(rewardData.luxReward);
+      }
+
+      // Update cooldown status
+      setIsOnCooldown(true);
+      await checkCooldown();
     } catch (e) {
-      console.error('Failed to submit score:', e);
+      console.error('Failed to process game over:', e);
     }
   }
 
   function resetGame() {
-    if (timerRef.current) clearInterval(timerRef.current);
     setGameState('idle');
-    setCards([]);
-    setFlippedCards([]);
-    setMoves(0);
-    setMatches(0);
+    setSequence([]);
+    setPlayerSequence([]);
+    setCurrentIndex(0);
+    setLevel(1);
     setScore(0);
-    setTime(0);
+    setLives(3);
+    setHighlightedColor(null);
+    setLuxReward(null);
+    if (showingTimeoutRef.current) clearTimeout(showingTimeoutRef.current);
+  }
+
+  function toggleSound() {
+    const newState = !soundEnabled;
+    setSoundEnabledState(newState);
+    setSoundEnabled(newState);
   }
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (showingTimeoutRef.current) clearTimeout(showingTimeoutRef.current);
     };
   }, []);
 
-  const gridSize = GRID_SIZES[difficulty].size;
-  const pairs = GRID_SIZES[difficulty].pairs;
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-blue-950 to-zinc-950 text-white p-4 pb-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent text-center">
-          🧠 Memory Match
-        </h1>
+    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-purple-950 to-zinc-950 text-white p-4 pb-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+            🧠 Color Memory Challenge
+          </h1>
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3">
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⚡ Energy</div>
-            <div className="text-xl font-bold text-yellow-400">{energy}</div>
+            <div className="text-xs text-white/60 mb-1">📊 Level</div>
+            <div className="text-xl font-bold text-purple-400">{level}</div>
           </div>
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⏱️ Time</div>
-            <div className="text-xl font-bold text-blue-400">{time}s</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🎯 Moves</div>
-            <div className="text-xl font-bold text-purple-400">{moves}</div>
+            <div className="text-xs text-white/60 mb-1">❤️ Lives</div>
+            <div className="text-xl font-bold text-red-400">{lives}/3</div>
           </div>
           <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
             <div className="text-xs text-white/60 mb-1">🎯 Score</div>
             <div className="text-xl font-bold text-green-400">{score.toLocaleString()}</div>
           </div>
+          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
+            <div className="text-xs text-white/60 mb-1">🔢 Sequence</div>
+            <div className="text-xl font-bold text-blue-400">{sequence.length}</div>
+          </div>
         </div>
+
+        {/* Cooldown Message */}
+        {isOnCooldown && gameState === 'idle' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
+          >
+            <p className="text-red-300 font-bold">
+              ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+            </p>
+          </motion.div>
+        )}
 
         {gameState === 'idle' && (
           <motion.div
@@ -227,33 +301,23 @@ export default function MemoryMatchPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6"
           >
-            <div className="rounded-2xl p-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/30 text-center">
+            <div className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 text-center">
               <div className="text-6xl mb-4">🧠</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">เลือกความยาก</h2>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                {GRID_SIZES.map((size, idx) => (
-                  <motion.button
-                    key={idx}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setDifficulty(idx)}
-                    className={`p-4 rounded-xl border-2 ${
-                      difficulty === idx
-                        ? 'bg-blue-500/30 border-blue-400'
-                        : 'bg-zinc-900/60 border-zinc-800'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">{size.name}</div>
-                    <div className="text-sm opacity-70">{size.size}x{size.size}</div>
-                    <div className="text-xs opacity-50">{size.pairs} คู่</div>
-                  </motion.button>
-                ))}
+              <h2 className="text-3xl font-bold mb-4 text-white">จำลำดับสีให้ถูกต้อง!</h2>
+              <p className="text-white/80 mb-6">
+                ดูลำดับสีที่แสดง แล้วกดสีตามลำดับให้ถูกต้อง
+              </p>
+              <div className="space-y-2 text-sm text-white/70 mb-6">
+                <p>✨ คุณมี 3 ชีวิต</p>
+                <p>🔥 แต่ละเลเวลจะยาวขึ้นเรื่อยๆ</p>
+                <p>💎 รางวัล: 0-5 LUX (ยากมากที่จะได้ 5!)</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 font-bold text-xl shadow-2xl shadow-blue-500/50"
+                disabled={isOnCooldown}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ▶ เริ่มเล่น
               </motion.button>
@@ -261,71 +325,68 @@ export default function MemoryMatchPage() {
           </motion.div>
         )}
 
-        {gameState === 'playing' && (
-          <div className="space-y-4">
+        {(gameState === 'showing' || gameState === 'playing') && (
+          <div className="space-y-6">
             <div className="text-center">
-              <div className="text-lg font-bold text-white/80 mb-2">
-                จับคู่: {matches}/{pairs}
-              </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(matches / pairs) * 100}%` }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
-                />
-              </div>
+              <p className="text-white/70 text-lg">
+                {gameState === 'showing' ? '👀 ดูลำดับสีให้ดี...' : '🎮 กดสีตามลำดับ!'}
+              </p>
+              <p className="text-white/50 text-sm mt-2">
+                คุณกดไปแล้ว: {playerSequence.length} / {sequence.length}
+              </p>
             </div>
-            
-            <div
-              className="grid gap-3 mx-auto"
-              style={{
-                gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))`,
-                maxWidth: `${gridSize * 80}px`,
-              }}
-            >
-              {cards.map((card, idx) => (
-                <motion.button
-                  key={card.id}
-                  whileHover={{ scale: card.flipped || card.matched ? 1 : 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => flipCard(idx)}
-                  disabled={card.flipped || card.matched}
-                  className={`aspect-square rounded-xl border-2 flex items-center justify-center text-4xl transition-all ${
-                    card.matched
-                      ? 'bg-green-500/30 border-green-400'
-                      : card.flipped
-                      ? 'bg-blue-500/30 border-blue-400'
-                      : 'bg-zinc-900/60 border-zinc-800 hover:border-blue-500/50'
-                  }`}
-                >
-                  {card.flipped || card.matched ? card.emoji : '❓'}
-                </motion.button>
-              ))}
+
+            <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+              {COLORS.map((color) => {
+                const config = COLOR_CONFIG[color];
+                const isHighlighted = highlightedColor === color;
+                return (
+                  <motion.button
+                    key={color}
+                    whileHover={{ scale: gameState === 'playing' ? 1.1 : 1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleColorClick(color)}
+                    disabled={gameState === 'showing'}
+                    className={`aspect-square rounded-xl border-4 flex items-center justify-center text-6xl transition-all ${
+                      isHighlighted
+                        ? `${config.light} border-white shadow-2xl scale-110`
+                        : gameState === 'playing'
+                        ? `${config.bg} border-white/30 hover:border-white cursor-pointer`
+                        : `${config.bg} border-white/20 opacity-50 cursor-not-allowed`
+                    }`}
+                  >
+                    {config.emoji}
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {gameState === 'victory' && (
+        {gameState === 'gameover' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/50 text-center space-y-6"
+            className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/30 to-pink-500/30 border-2 border-purple-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">คุณชนะแล้ว!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนน: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">⏱️ เวลา: <b className="text-blue-300">{time} วินาที</b></p>
-              <p className="text-white/90">🎯 จำนวนการพลิก: <b className="text-purple-300">{moves}</b></p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 5 Tokens!</p>
+              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">📊 เลเวลสูงสุด: <b className="text-purple-300">{level}</b></p>
+              {luxReward !== null && (
+                <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
+                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}ได้รับ {luxReward} LUX!
+                </div>
+              )}
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={resetGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 font-bold text-xl"
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl"
             >
-              เล่นอีกครั้ง
+              กลับไปหน้าแรก
             </motion.button>
           </motion.div>
         )}

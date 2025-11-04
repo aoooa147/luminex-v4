@@ -20,12 +20,12 @@ export const createProvider = (rpcUrl: string, networkName: string): ethers.Json
   
   // Override resolveName to prevent ENS lookups
   const originalResolveName = provider.resolveName.bind(provider);
-  provider.resolveName = async (name: string) => {
-    if (ethers.isAddress(name)) {
-      return name;
-    }
-    throw new Error(`ENS not fully supported. Use address instead of: ${name}`);
-  };
+    provider.resolveName = async (name: string) => {
+      if (ethers.isAddress(name)) {
+        return name;
+      }
+      throw new Error(`ENS not fully supported. Use address instead of: ${name}`);
+    };
   
   console.log(`🔧 Created ${networkName} provider:`, { rpcUrl, networkName });
   return provider;

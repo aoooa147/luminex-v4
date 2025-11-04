@@ -15,18 +15,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { payload, nonce } = BodySchema.parse(body);
-    const { verifySiweMessage } = await import('@worldcoin/minikit-js');
+  const { verifySiweMessage } = await import('@worldcoin/minikit-js');
     const result = await verifySiweMessage(payload, nonce || '');
     return NextResponse.json({ 
       status: 'ok', 
       isValid: result.isValid,
       siweMessageData: result.siweMessageData
     });
-  } catch (e: any) {
+} catch (e: any) {
     return NextResponse.json({ 
       status: 'error', 
       isValid: false, 
       message: e?.message || 'Verification failed' 
     }, { status: 400 });
-  }
+}
 }
