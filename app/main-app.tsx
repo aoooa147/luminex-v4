@@ -13,7 +13,7 @@ const GameLauncherCard = dynamic(() => import('@/components/game/GameLauncherCar
 import { 
   Wallet, Shield, Coins, TrendingUp, Settings, Gift, Users, Zap, Lock, Unlock, 
   AlertTriangle, ExternalLink, Copy, Check, Loader2, Clock, Star, Droplet,
-  DollarSign, Eye, BarChart3, Flame, Trophy, Award, TrendingDown, Globe,
+  DollarSign, Eye, BarChart3, Flame, Trophy, Award, TrendingDown, Globe, 
   PiggyBank, CreditCard, Gem, Sparkles, Crown, Rocket, DollarSign as DollarIcon,
   Calendar, Timer, TrendingUp as TrendingIcon, Share2, UserPlus, QrCode, Gamepad2
 } from "lucide-react";
@@ -463,10 +463,10 @@ const useMiniKit = () => {
           console.log('🔍 Wallet auth result:', { result, finalPayload: walletData });
           console.log('🔍 Full walletData object keys:', walletData ? Object.keys(walletData) : 'no data');
           
-          if (walletData?.address) {
+        if (walletData?.address) {
             console.log('🔍 Setting wallet state with address:', walletData.address);
             setWallet({ address: walletData.address });
-            setIsConnected(true);
+    setIsConnected(true);
             
             // Try to get username from MiniKit.user.username first
             let foundUsername: string | null = null;
@@ -476,7 +476,7 @@ const useMiniKit = () => {
               if (MiniKit.user?.username) {
                 foundUsername = MiniKit.user.username;
                 console.log('✅ Found username from MiniKit.user.username:', foundUsername);
-              } else {
+        } else {
                 console.log('⚠️ MiniKit.user.username is empty or undefined');
               }
             } catch (e: any) {
@@ -493,10 +493,10 @@ const useMiniKit = () => {
                   if (worldIdUser?.username) {
                     foundUsername = worldIdUser.username;
                     console.log('✅ Found username from MiniKit.getUserByAddress:', foundUsername);
-                  } else {
+              } else {
                     console.log('⚠️ getUserByAddress returned no username');
                   }
-                } else {
+              } else {
                   console.log('⚠️ MiniKit.getUserByAddress method not available');
                 }
               } catch (e: any) {
@@ -514,7 +514,7 @@ const useMiniKit = () => {
             } else if (foundUsername) {
               setUserInfo({ name: foundUsername, username: foundUsername });
               console.log('✅ Using username from MiniKit:', foundUsername);
-            } else {
+          } else {
               setUserInfo(null);
               console.log('⚠️ No user info found in MiniKit');
             }
@@ -531,8 +531,8 @@ const useMiniKit = () => {
           } else {
             console.warn('⚠️ MiniKit walletAuth returned no address');
             console.warn('⚠️ Wallet data:', walletData);
-          }
-        } else {
+        }
+      } else {
           console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available');
         }
       } else {
@@ -826,7 +826,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
         >
           <div className="relative inline-block w-36 h-36" style={{ transform: 'translateZ(0)' }}>
             {/* Luxurious multi-layer gold glow effects */}
-            <motion.div 
+            <motion.div
               className="absolute inset-0 blur-3xl bg-yellow-500/25 rounded-full"
               animate={{ 
                 opacity: [0.2, 0.5, 0.2],
@@ -1008,7 +1008,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             style={{ willChange: 'opacity' }}
           >
             <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
-              LUMINEX
+            LUMINEX
             </span>
             {/* Elegant gold text glow effect */}
             <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
@@ -1027,7 +1027,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
         </motion.div>
 
                                                  {/* Luxurious Verification Card with Ornate Gold Accents */}
-                 <motion.div
+        <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
@@ -1079,9 +1079,9 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           <div className="absolute top-1/2 left-0 w-1 h-16 bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent transform -translate-y-1/2"></div>
           <div className="absolute top-1/2 right-0 w-1 h-16 bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent transform -translate-y-1/2"></div>
           
-                    <div className="relative z-10">
+          <div className="relative z-10">
             <div className="flex items-center justify-center mb-6">
-              <motion.div
+              <motion.div 
                 animate={{ 
                   rotate: [0, 5, -5, 0],
                   scale: [1, 1.08, 1],
@@ -1135,12 +1135,12 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 }} />
               </motion.div>
             </div>
-
+            
             <h2 className="text-3xl font-extrabold mb-4 text-center tracking-tight relative">
                 <span className="relative z-10 bg-gradient-to-r from-yellow-300 via-yellow-400 via-yellow-500 via-amber-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg" style={{
                   textShadow: '0 0 20px rgba(234, 179, 8, 0.3), 0 0 40px rgba(217, 119, 6, 0.2)'
                 }}>
-                    Verify Humanity
+              Verify Humanity
                 </span>
                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/50 via-amber-400/60 to-yellow-400/50 blur-xl opacity-60 -z-10"></span>
                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/30 to-amber-600/30 blur-2xl opacity-40 -z-20"></span>
@@ -1148,8 +1148,8 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             <div className="flex items-center justify-center gap-3 mb-6">
               <div className="h-px w-12 bg-gradient-to-r from-transparent to-yellow-600/40"></div>
               <p className="text-gray-300 mb-0 text-center leading-relaxed text-base font-medium">
-                  You must verify your humanity to access the application.
-              </p>
+              You must verify your humanity to access the application.
+            </p>
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-yellow-600/40"></div>
             </div>
 
@@ -1202,7 +1202,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
               <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-transparent rounded-2xl"></div>
               <div className="absolute inset-0 bg-gradient-radial from-white/30 via-transparent to-transparent rounded-2xl"></div>
               {/* Luxurious gold shine effect */}
-              <motion.div
+                  <motion.div
                 className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/50 via-white/60 via-white/50 to-transparent rounded-2xl"
                 transition={{ duration: 0.8, ease: "easeOut" }}
               />
@@ -1234,7 +1234,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
       </motion.div>
 
                                  {/* Luxurious Footer */}
-          <motion.div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
@@ -1297,6 +1297,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
 };
 
 const LuminexApp = () => {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [verifiedAddress, setVerifiedAddress] = useState<string | null>(null);
   const { userAddress } = useWorldID();
@@ -1448,7 +1449,7 @@ const LuminexApp = () => {
             body: JSON.stringify({ address: addressToUse }),
             cache: 'no-store' // Disable fetch caching for fresh balance data
           });
-          
+      
           const data = await response.json();
           console.log('🔍 API response:', data);
           
@@ -1485,15 +1486,15 @@ const LuminexApp = () => {
             // Fallback to direct RPC call
             const worldchainProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
             const wldContract = new ethers.Contract(WLD_TOKEN_ADDRESS, ERC20_ABI, worldchainProvider);
-            const wldBalanceBN = await wldContract.balanceOf(addressToUse);
+        const wldBalanceBN = await wldContract.balanceOf(addressToUse);
             const decimals = await wldContract.decimals().catch(() => 18);
             const wldBalanceFormatted = parseFloat(ethers.formatUnits(wldBalanceBN, decimals));
-            setWldBalance(wldBalanceFormatted);
+        setWldBalance(wldBalanceFormatted);
             setBalance(0);
             console.log('✅ WLD Balance fetched via fallback RPC:', wldBalanceFormatted);
           } catch (fallbackError: any) {
             console.error('❌ Fallback RPC also failed:', fallbackError);
-            setWldBalance(0);
+        setWldBalance(0);
             setBalance(0);
           }
         }
@@ -1648,11 +1649,11 @@ const LuminexApp = () => {
           console.log('✅ Loaded verified status from session (World App)');
         }
         
-        const verifiedAddr = sessionStorage.getItem('verifiedAddress');
-        if (verifiedAddr) {
-          setVerifiedAddress(verifiedAddr);
-          console.log('✅ Loaded verified address from session:', verifiedAddr);
-        }
+      const verifiedAddr = sessionStorage.getItem('verifiedAddress');
+      if (verifiedAddr) {
+        setVerifiedAddress(verifiedAddr);
+        console.log('✅ Loaded verified address from session:', verifiedAddr);
+      }
       } else {
         // For web browsers: use mock address for testing
         const mockAddress = '0x1234567890123456789012345678901234567890';
@@ -1665,18 +1666,18 @@ const LuminexApp = () => {
       if (userName) {
         console.log('✅ Loaded user name from session:', userName);
         setUserInfo({ name: userName, username: userName });
-      }
-      
+    }
+    
       // Load saved language preference from localStorage
       const savedLanguage = localStorage.getItem('preferredLanguage');
       if (savedLanguage && translations[savedLanguage]) {
         setLanguage(savedLanguage);
         console.log('✅ Loaded language from localStorage:', savedLanguage);
       } else {
-        // Detect user's preferred language from browser
-        const browserLang = navigator.language.slice(0, 2);
-        if (translations[browserLang]) {
-          setLanguage(browserLang);
+    // Detect user's preferred language from browser
+    const browserLang = navigator.language.slice(0, 2);
+    if (translations[browserLang]) {
+      setLanguage(browserLang);
           console.log('✅ Using browser language:', browserLang);
         }
       }
@@ -1960,6 +1961,131 @@ const LuminexApp = () => {
     }
   };
 
+  // Initial loading screen - show before verification
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 2500); // Show loading for 2.5 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show loading screen first
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex items-center justify-center">
+        {/* Elegant gold background particles */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <motion.div 
+            className="absolute top-20 left-10 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"
+            animate={{ 
+              opacity: [0.1, 0.2, 0.1],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-amber-500/6 rounded-full blur-3xl"
+            animate={{ 
+              opacity: [0.08, 0.15, 0.08],
+              scale: [1, 1.15, 1]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+          <motion.div 
+            className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-yellow-400/5 rounded-full blur-3xl"
+            animate={{ 
+              opacity: [0.05, 0.12, 0.05],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          />
+        </div>
+        
+        <div className="text-center relative z-10 max-w-md w-full px-4">
+          {/* Large Logo with glow */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative inline-block w-40 h-40 mb-8"
+          >
+            <motion.div 
+              className="absolute inset-0 blur-3xl bg-yellow-500/30 rounded-full"
+              animate={{ 
+                opacity: [0.2, 0.5, 0.2],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div className="relative w-full h-full rounded-full flex items-center justify-center overflow-hidden border-4 border-yellow-600/50" style={{
+              boxShadow: '0 0 60px rgba(234, 179, 8, 0.6), 0 0 100px rgba(217, 119, 6, 0.4)'
+            }}>
+              <img 
+                src={LOGO_URL} 
+                alt="Luminex Logo" 
+                className="w-full h-full object-cover rounded-full" 
+                loading="eager"
+                fetchPriority="high"
+              />
+            </div>
+          </motion.div>
+          
+          {/* Gold spinner */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="relative w-20 h-20 mx-auto mb-6"
+          >
+            <div className="absolute inset-0 border-4 border-yellow-600/30 border-t-yellow-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 border-4 border-transparent border-t-amber-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+            <div className="absolute inset-0 border-4 border-transparent border-r-yellow-400/40 rounded-full animate-spin" style={{ animationDuration: '2s' }}></div>
+          </motion.div>
+          
+          {/* Loading text */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="text-yellow-400/90 text-xl font-medium tracking-wide mb-4"
+            style={{
+              textShadow: '0 0 10px rgba(234, 179, 8, 0.5)'
+            }}
+          >
+            Loading Luminex...
+          </motion.p>
+          
+          {/* Animated dots */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="flex items-center justify-center gap-2"
+          >
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 bg-yellow-500 rounded-full"
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                  scale: [1, 1.3, 1],
+                  y: [0, -5, 0]
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   // Skip World App requirement check to allow web browser testing
   if (!verified && isWorldApp()) return <WorldIDVerification onVerify={() => setVerified(true)} />;
   
@@ -2049,26 +2175,26 @@ const LuminexApp = () => {
                       className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl py-2 z-[9999]"
                     >
                       {LANGUAGES.map((lang) => (
-                <button
-                        type="button"
-                        key={lang.code}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Language selected:', lang.code);
-                          setLanguage(lang.code);
+                  <button
+                          type="button"
+                          key={lang.code}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Language selected:', lang.code);
+                            setLanguage(lang.code);
                           // Save language preference to localStorage
                           localStorage.setItem('preferredLanguage', lang.code);
-                          setShowLanguageMenu(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
-                          language === lang.code ? 'bg-purple-500/20 text-purple-300' : 'text-white'
-                        }`}
-                      >
-                        <span className="text-lg">{lang.flag}</span>
-                        <span className="text-sm font-medium">{lang.name}</span>
-                </button>
-                    ))}
+                            setShowLanguageMenu(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left hover:bg-purple-500/20 transition-colors flex items-center space-x-2 cursor-pointer ${
+                            language === lang.code ? 'bg-purple-500/20 text-purple-300' : 'text-white'
+                          }`}
+                        >
+                          <span className="text-lg">{lang.flag}</span>
+                          <span className="text-sm font-medium">{lang.name}</span>
+                  </button>
+                      ))}
                     </motion.div>
                 )}
                 </AnimatePresence>
@@ -2114,7 +2240,7 @@ const LuminexApp = () => {
               className="space-y-3"
               style={{ willChange: 'transform, opacity' }}
             >
-                        {/* Pool Selection */}
+            {/* Pool Selection */}
               <div className="grid grid-cols-5 gap-1.5">
                 {POOLS.map((pool) => {
                   const Icon = pool.icon;
@@ -2126,8 +2252,8 @@ const LuminexApp = () => {
                       onClick={() => setSelectedPool(pool.id)}
                       className={`relative p-2 rounded-xl border-2 transition-all overflow-hidden ${                                                          
                         selectedPool === pool.id
-                          ? 'border-purple-400 bg-gradient-to-br from-purple-500/30 to-pink-500/30 shadow-lg shadow-purple-500/20'                              
-                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'                                                                
+                          ? 'border-purple-400 bg-gradient-to-br from-purple-500/30 to-pink-500/30 shadow-lg shadow-purple-500/20'
+                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'
                       }`}
                       style={{ willChange: 'transform' }}
                     >
@@ -2161,9 +2287,9 @@ const LuminexApp = () => {
                                     <div className="flex items-center justify-center mb-2">
                     <h2 className="text-xl font-bold text-center">
                       ✨ <span className="bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent">Luminex Staking</span> ✨
-                    </h2>
+              </h2>
                   </div>
-
+                  
                   {/* Current Membership */}
                   <div className="mb-2">
                     <p className="text-xs text-white/80 mb-1.5">{t('myCurrentMembership')}</p>
@@ -2196,13 +2322,13 @@ const LuminexApp = () => {
                       }}>
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
                         <div className="relative z-10">
-                        {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
+                      {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
                           <div className="flex items-center justify-center py-2">
                             <span className="text-yellow-400 text-xs text-center relative z-10">
-                              {!actualAddress ? 'Connect wallet to view staking data' : 'Staking contract not configured'}
-                            </span>
-                          </div>
-                        ) : (
+                            {!actualAddress ? 'Connect wallet to view staking data' : 'Staking contract not configured'}
+                          </span>
+                        </div>
+                      ) : (
                       <div className="relative z-10">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
@@ -2213,7 +2339,7 @@ const LuminexApp = () => {
                           </div>
                           <TrendingUp className="w-5 h-5 text-green-300" />
                         </div>
-                      </div>
+                        </div>
                       )}
                       </div>
                     </div>
@@ -2613,7 +2739,7 @@ const LuminexApp = () => {
 
               {/* Game Launcher */}
               <GameLauncherCard />
-            </motion.div>
+              </motion.div>
           )}
         </AnimatePresence>
             </div>
@@ -2733,8 +2859,8 @@ const LuminexApp = () => {
                 className="absolute -inset-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-2xl blur"
               />
             )}
-                          <UserPlus className="w-6 h-6 relative z-10" />
-              <span className="text-xs font-bold relative z-10">Referral</span>
+            <UserPlus className="w-6 h-6 relative z-10" />
+            <span className="text-xs font-bold relative z-10">Referral</span>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -2750,9 +2876,9 @@ const LuminexApp = () => {
               )}
               <Gamepad2 className="w-6 h-6 relative z-10" />
               <span className="text-xs font-bold relative z-10">Game</span>
-            </motion.button>
-                </div>
+          </motion.button>
               </div>
+            </div>
 
       {/* Toast Notification */}
       <AnimatePresence>
