@@ -48,12 +48,14 @@ export const useMiniKit = () => {
         throw new Error('MiniKit is not installed. Open inside World App.');
       }
       try {
+        // Using as any because MiniKit SDK v1.x runtime requires array tokens and string amount,
+        // but TypeScript types may not match runtime behavior
         const { finalPayload } = await MiniKit.commandsAsync.pay({
           reference: referenceId,
           to: toAddress,
-          tokens: [token] as any, // ✅ Array format required for v1.x: ['WLD'] or ['USDC'] - using as any due to type mismatch
+          tokens: [token], // ✅ Array format required for v1.x: ['WLD'] or ['USDC']
           amount: String(amount), // ✅ Ensure it's a string
-        });
+        } as any);
         return finalPayload; // { transaction_id, reference, ... }
       } catch (err: any) {
         console.error('MiniKit pay failed:', err);
