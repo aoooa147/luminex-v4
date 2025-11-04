@@ -2217,12 +2217,21 @@ const LuminexApp = () => {
     );
   }
 
-  // Skip World App requirement check to allow web browser testing
+    // Require World App verification
   if (!verified && isWorldApp()) return <WorldIDVerification onVerify={() => setVerified(true)} />;
-  
-  // For web browsers, skip verification and allow mock balance
+
+  // Only World App is supported
   if (!verified && !isWorldApp()) {
-    console.log('🌐 Running in web browser without verification, using mock balance');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-yellow-400 mb-4">World App Required</h1>
+          <p className="text-gray-300 mb-6">
+            This application only works in World App. Please open this app in World App to continue.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const currentPool = POOLS[selectedPool];
