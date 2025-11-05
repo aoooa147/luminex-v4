@@ -1291,19 +1291,18 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                   )}
                 </span>
               </motion.button>
-            </div>
           </div>
         </motion.div>
       </div>
 
       {/* Luxurious Footer */}
       <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="text-center mt-10 relative"
-          style={{ willChange: 'opacity, transform' }}
-        >
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+        className="text-center mt-10 relative"
+        style={{ willChange: 'opacity, transform' }}
+      >
           {/* Decorative top line */}
           <div className="flex items-center justify-center mb-4">
             <div className="h-px w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-transparent"></div>
@@ -1348,8 +1347,6 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             </motion.div>
           </div>
         </motion.div>
-      </div>
-      </div>
     </div>
   );
 };

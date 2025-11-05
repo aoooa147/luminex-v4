@@ -1,0 +1,385 @@
+﻿970 :       }
+971 :     } catch (error: any) {
+972 :       console.error('âŒ Authentication error:', error);
+973 :       setVerifyError(error.message || 'Authentication failed');
+974 :     } finally {
+975 :       setIsVerifying(false);
+976 :     }
+977 :   };
+978 : 
+979 :   return (
+980 :     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex items-center justify-center p-4" style={{ willChange: 'auto' }}>
+981 :       {/* Luxurious geometric background pattern */}
+982 :       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ 
+983 :         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(234, 179, 8, 0.1) 35px, rgba(234, 179, 8, 0.1) 70px),
+984 :                           repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(217, 119, 6, 0.1) 35px, rgba(217, 119, 6, 0.1) 70px)`,
+985 :         transform: 'translateZ(0)'
+986 :       }}></div>
+987 :       
+988 :       {/* Elegant gold animated background particles */}
+989 :       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ transform: 'translateZ(0)', willChange: 'auto' }}>
+990 :         <motion.div 
+991 :           className="absolute top-20 left-10 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl"
+992 :           animate={{ 
+993 :             opacity: [0.1, 0.2, 0.1],
+994 :             scale: [1, 1.1, 1],
+995 :             x: [0, 20, 0],
+996 :             y: [0, 15, 0]
+997 :           }}
+998 :           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+999 :           style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+1000 :         />
+1001 :         <motion.div 
+1002 :           className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-amber-500/8 rounded-full blur-3xl"
+1003 :           animate={{ 
+1004 :             opacity: [0.08, 0.15, 0.08],
+1005 :             scale: [1, 1.15, 1],
+1006 :             x: [0, -25, 0],
+1007 :             y: [0, -20, 0]
+1008 :           }}
+1009 :           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+1010 :           style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+1011 :         />
+1012 :         <motion.div 
+1013 :           className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-yellow-400/6 rounded-full blur-3xl"
+1014 :           animate={{ 
+1015 :             opacity: [0.05, 0.12, 0.05],
+1016 :             scale: [1, 1.2, 1],
+1017 :             rotate: [0, 180, 360]
+1018 :           }}
+1019 :           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+1020 :           style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
+1021 :         />
+1022 :         
+1023 :         {/* Floating gold particles */}
+1024 :         {[...Array(6)].map((_, i) => (
+1025 :           <motion.div
+1026 :             key={i}
+1027 :             className="absolute w-2 h-2 bg-yellow-400/30 rounded-full blur-sm"
+1028 :             style={{
+1029 :               left: `${15 + i * 15}%`,
+1030 :               top: `${20 + (i % 3) * 25}%`,
+1031 :             }}
+1032 :             animate={{
+1033 :               y: [0, -30, 0],
+1034 :               opacity: [0.2, 0.5, 0.2],
+1035 :               scale: [1, 1.5, 1],
+1036 :             }}
+1037 :             transition={{
+1038 :               duration: 4 + i * 0.5,
+1039 :               repeat: Infinity,
+1040 :               delay: i * 0.3,
+1041 :               ease: "easeInOut"
+1042 :             }}
+1043 :           />
+1044 :         ))}
+1045 :         
+1046 :         {/* Luxurious gold accent lines with ornaments */}
+1047 :         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-600/40 via-yellow-500/50 via-yellow-600/40 to-transparent"></div>
+1048 :         <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-600/40 via-yellow-500/50 via-yellow-600/40 to-transparent"></div>
+1049 :         
+1050 :         {/* Side accent lines */}
+1051 :         <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
+1052 :         <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
+1053 :             </div>
+1054 : 
+1055 :       {/* Content */}
+1056 :       <div className="relative z-10 max-w-md w-full">
+1057 :         {/* Logo - 3D */}
+1058 :         <motion.div
+1059 :           initial={{ opacity: 0, y: -50 }}
+1060 :           animate={{ opacity: 1, y: 0 }}
+1061 :           transition={{ duration: 0.6, ease: "easeOut" }}
+1062 :           className="text-center mb-6 flex justify-center"
+1063 :           style={{ willChange: 'transform, opacity' }}
+1064 :         >
+1065 :           <Logo3D size={144} interactive={true} />
+1066 :         </motion.div>
+1067 :         <motion.h1
+1068 :           initial={{ opacity: 0 }}
+1069 :           animate={{ opacity: 1 }}
+1070 :           transition={{ delay: 0.2, duration: 0.5 }}
+1071 :           className="text-5xl font-black mt-6 relative"
+1072 :           style={{ willChange: 'opacity' }}
+1073 :         >
+1074 :           <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
+1075 :             LUMINEX
+1076 :           </span>
+1077 :           {/* Elegant gold text glow effect */}
+1078 :           <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
+1079 :           {/* Gold text shadow */}
+1080 :           <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
+1081 :         </motion.h1>
+1082 :         <motion.p
+1083 :           initial={{ opacity: 0 }}
+1084 :           animate={{ opacity: 1 }}
+1085 :           transition={{ delay: 0.4, duration: 0.5 }}
+1086 :           className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
+1087 :           style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
+1088 :         >
+1089 :           STAKING PLATFORM
+1090 :         </motion.p>
+1091 : 
+1092 :         {/* Luxurious Verification Card with Ornate Gold Accents */}
+1093 :         <motion.div
+1094 :           initial={{ opacity: 0, scale: 0.95, y: 30 }}
+1095 :           animate={{ opacity: 1, scale: 1, y: 0 }}
+1096 :           transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+1097 :           className="relative rounded-3xl p-8 border-2 border-yellow-600/50 shadow-2xl overflow-hidden backdrop-blur-xl"
+1098 :           style={{
+1099 :             background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(17, 24, 39, 0.95) 25%, rgba(0, 0, 0, 0.98) 50%, rgba(17, 24, 39, 0.95) 75%, rgba(0, 0, 0, 0.98) 100%)',
+1100 :             boxShadow: '0 25px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(234, 179, 8, 0.2), 0 0 100px rgba(217, 119, 6, 0.1), inset 0 1px 0 rgba(234, 179, 8, 0.15), inset 0 -1px 0 rgba(234, 179, 8, 0.1)',
+1101 :             willChange: 'transform, opacity',
+1102 :             transform: 'translateZ(0)'
+1103 :           }}
+1104 :         >
+1105 :           {/* Luxurious multi-layer gold background effects */}
+1106 :           <motion.div 
+1107 :             className="absolute inset-0 bg-gradient-to-br from-yellow-600/15 via-amber-600/8 to-transparent"
+1108 :             animate={{ opacity: [0.1, 0.25, 0.1] }}
+1109 :             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+1110 :           />
+1111 :           <motion.div 
+1112 :             className="absolute inset-0 bg-gradient-to-tl from-yellow-500/10 via-transparent to-amber-600/10"
+1113 :             animate={{ opacity: [0.08, 0.18, 0.08] }}
+1114 :             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+1115 :           />
+1116 :           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-yellow-500/8 to-transparent"></div>
+1117 :           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(234,179,8,0.08),transparent_70%)]"></div>
+1118 :           
+1119 :           {/* Ornate gold corner accents with decorative elements */}
+1120 :           <div className="absolute top-0 left-0 w-24 h-24">
+1121 :             <div className="absolute top-0 left-0 w-full h-full border-t-2 border-l-2 border-yellow-600/40 rounded-tl-3xl"></div>
+1122 :             <div className="absolute top-2 left-2 w-3 h-3 border-t border-l border-yellow-500/60"></div>
+1123 :             <div className="absolute top-4 left-4 w-2 h-2 bg-yellow-500/40 rounded-full"></div>
+1124 :           </div>
+1125 :           <div className="absolute top-0 right-0 w-24 h-24">
+1126 :             <div className="absolute top-0 right-0 w-full h-full border-t-2 border-r-2 border-yellow-600/40 rounded-tr-3xl"></div>
+1127 :             <div className="absolute top-2 right-2 w-3 h-3 border-t border-r border-yellow-500/60"></div>
+1128 :             <div className="absolute top-4 right-4 w-2 h-2 bg-yellow-500/40 rounded-full"></div>
+1129 :           </div>
+1130 :           <div className="absolute bottom-0 left-0 w-24 h-24">
+1131 :             <div className="absolute bottom-0 left-0 w-full h-full border-b-2 border-l-2 border-yellow-600/40 rounded-bl-3xl"></div>
+1132 :             <div className="absolute bottom-2 left-2 w-3 h-3 border-b border-l border-yellow-500/60"></div>
+1133 :             <div className="absolute bottom-4 left-4 w-2 h-2 bg-yellow-500/40 rounded-full"></div>
+1134 :           </div>
+1135 :           <div className="absolute bottom-0 right-0 w-24 h-24">
+1136 :             <div className="absolute bottom-0 right-0 w-full h-full border-b-2 border-r-2 border-yellow-600/40 rounded-br-3xl"></div>
+1137 :             <div className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-yellow-500/60"></div>
+1138 :             <div className="absolute bottom-4 right-4 w-2 h-2 bg-yellow-500/40 rounded-full"></div>
+1139 :           </div>
+1140 :           
+1141 :           {/* Decorative side borders */}
+1142 :           <div className="absolute top-1/2 left-0 w-1 h-16 bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent transform -translate-y-1/2"></div>
+1143 :           <div className="absolute top-1/2 right-0 w-1 h-16 bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent transform -translate-y-1/2"></div>
+1144 :           
+1145 :           <div className="relative z-10">
+1146 :             <div className="flex items-center justify-center mb-6">
+1147 :               <motion.div 
+1148 :                 animate={{ 
+1149 :                   rotate: [0, 5, -5, 0],
+1150 :                   scale: [1, 1.08, 1],
+1151 :                   y: [0, -3, 0]
+1152 :                 }}
+1153 :                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+1154 :                 className="relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-yellow-600/60 overflow-hidden"
+1155 :                 style={{ 
+1156 :                   willChange: 'transform', 
+1157 :                   transform: 'translateZ(0)',
+1158 :                   boxShadow: '0 15px 40px rgba(234, 179, 8, 0.4), 0 0 60px rgba(217, 119, 6, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.2)'
+1159 :                 }}
+1160 :               >
+1161 :                 {/* Luxurious multi-layer gold gradient background */}
+1162 :                 <motion.div
+1163 :                   className="absolute inset-0 bg-gradient-to-br from-yellow-600 via-amber-600 to-yellow-700"
+1164 :                   animate={{
+1165 :                     backgroundPosition: ['0% 0%', '100% 100%', '0% 0%']
+1166 :                   }}
+1167 :                   transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+1168 :                   style={{
+1169 :                     background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 33%, #d97706 66%, #92400e 100%)',
+1170 :                     backgroundSize: '200% 200%'
+1171 :                   }}
+1172 :                 />
+1173 :                 {/* Inner ornate border */}
+1174 :                 <div className="absolute inset-1 border border-yellow-500/50 rounded-xl" style={{
+1175 :                   boxShadow: 'inset 0 0 15px rgba(234, 179, 8, 0.3)'
+1176 :                 }}></div>
+1177 :                 {/* Multi-layer inner gold glow */}
+1178 :                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/50 via-yellow-500/30 to-transparent"></div>
+1179 :                 <div className="absolute inset-0 bg-gradient-radial from-white/40 via-transparent to-transparent"></div>
+1180 :                 {/* Luxurious gold shimmer effects */}
+1181 :                 <motion.div
+1182 :                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+1183 :                   animate={{ x: ['-100%', '100%'] }}
+1184 :                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+1185 :                 />
+1186 :                 <motion.div
+1187 :                   className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-transparent"
+1188 :                   animate={{ y: ['-100%', '100%'] }}
+1189 :                   transition={{ duration: 4, repeat: Infinity, ease: "linear", delay: 1 }}
+1190 :                 />
+1191 :                 {/* Decorative corner elements */}
+1192 :                 <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-yellow-400/60 rounded-tl"></div>
+1193 :                 <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-yellow-400/60 rounded-tr"></div>
+1194 :                 <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-yellow-400/60 rounded-bl"></div>
+1195 :                 <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-yellow-400/60 rounded-br"></div>
+1196 :                 <Shield className="w-10 h-10 text-black drop-shadow-lg relative z-10" style={{ 
+1197 :                   filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6)), drop-shadow(0 0 15px rgba(234, 179, 8, 0.3))'
+1198 :                 }} />
+1199 :               </motion.div>
+1200 :             </div>
+1201 :             
+1202 :             <h2 className="text-3xl font-extrabold mb-4 text-center tracking-tight relative">
+1203 :                 <span className="relative z-10 bg-gradient-to-r from-yellow-300 via-yellow-400 via-yellow-500 via-amber-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg" style={{
+1204 :                   textShadow: '0 0 20px rgba(234, 179, 8, 0.3), 0 0 40px rgba(217, 119, 6, 0.2)'
+1205 :                 }}>
+1206 :               Verify Humanity
+1207 :                 </span>
+1208 :                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/50 via-amber-400/60 to-yellow-400/50 blur-xl opacity-60 -z-10"></span>
+1209 :                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/30 to-amber-600/30 blur-2xl opacity-40 -z-20"></span>
+1210 :             </h2>
+1211 :             <div className="flex items-center justify-center gap-3 mb-6">
+1212 :               <div className="h-px w-12 bg-gradient-to-r from-transparent to-yellow-600/40"></div>
+1213 :               <p className="text-gray-300 mb-0 text-center leading-relaxed text-base font-medium">
+1214 :               You must verify your humanity to access the application.
+1215 :             </p>
+1216 :               <div className="h-px w-12 bg-gradient-to-l from-transparent to-yellow-600/40"></div>
+1217 :             </div>
+1218 : 
+1219 :             {verifyError && (
+1220 :               <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-center text-sm">
+1221 :                 {verifyError}
+1222 :               </div>
+1223 :             )}
+1224 : 
+1225 :             <motion.button
+1226 :               whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(234, 179, 8, 0.6), 0 0 60px rgba(217, 119, 6, 0.4)" }}
+1227 :               whileTap={{ scale: 0.97 }}
+1228 :               onClick={handleVerify}
+1229 :               disabled={isVerifying}
+1230 :               className="w-full text-black font-extrabold py-4 px-6 rounded-2xl flex items-center justify-center space-x-3 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all border-2 border-yellow-500/30"
+1231 :               style={{
+1232 :                 background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
+1233 :                 boxShadow: '0 15px 40px rgba(234, 179, 8, 0.5), 0 0 30px rgba(217, 119, 6, 0.4), 0 0 50px rgba(251, 191, 36, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.2)',
+1234 :                 willChange: 'transform',
+1235 :                 transform: 'translateZ(0)'
+1236 :               }}
+1237 :             >
+1238 :               {/* Background gradient layer */}
+1239 :               <div 
+1240 :                 className="absolute inset-0 rounded-2xl"
+1241 :                 style={{
+1242 :                   background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #92400e 100%)',
+1243 :                   zIndex: 0
+1244 :                 }}
+1245 :               />
+1246 :               
+1247 :               {/* Animated shimmer layer */}
+1248 :               <motion.div
+1249 :                 className="absolute inset-0 rounded-2xl"
+1250 :                 animate={{
+1251 :                   backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+1252 :                 }}
+1253 :                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+1254 :                 style={{
+1255 :                   background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%)',
+1256 :                   backgroundSize: '200% 100%',
+1257 :                   zIndex: 1
+1258 :                 }}
+1259 :               />
+1260 :               
+1261 :               {/* Hover overlay */}
+1262 :               <div 
+1263 :                 className="absolute inset-0 bg-gradient-to-r from-yellow-300/50 via-amber-300/50 to-yellow-300/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+1264 :                 style={{ zIndex: 2 }}
+1265 :               />
+1266 :               
+1267 :               {/* Inner glow */}
+1268 :               <div 
+1269 :                 className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent rounded-2xl pointer-events-none"
+1270 :                 style={{ zIndex: 3 }}
+1271 :               />
+1272 :               
+1273 :               {/* Button content - always on top */}
+1274 :               <span className="relative z-20 flex items-center justify-center space-x-3">
+1275 :                 {isVerifying ? (
+1276 :                   <>
+1277 :                     <Loader2 className="w-5 h-5 animate-spin drop-shadow-lg" />
+1278 :                     <span className="text-base font-extrabold tracking-wide drop-shadow-lg">Verifying...</span>
+1279 :                   </>
+1280 :                 ) : (
+1281 :                   <>
+1282 :                     <Shield className="w-5 h-5 drop-shadow-md" />
+1283 :                     <span className="text-base font-extrabold tracking-wide drop-shadow-md">Verify</span>
+1284 :                       <motion.div
+1285 :                         className="w-2 h-2 bg-black/40 rounded-full shadow-lg"
+1286 :                         animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+1287 :                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+1288 :                       />
+1289 :                     </>
+1290 :                   )}
+1291 :                 </span>
+1292 :               </motion.button>
+1293 :             </div>
+1294 :           </div>
+1295 :         </motion.div>
+1296 :       </div>
+1297 : 
+1298 :       {/* Luxurious Footer */}
+1299 :       <motion.div
+1300 :           initial={{ opacity: 0, y: 20 }}
+1301 :           animate={{ opacity: 1, y: 0 }}
+1302 :           transition={{ delay: 0.8, duration: 0.6 }}
+1303 :           className="text-center mt-10 relative"
+1304 :           style={{ willChange: 'opacity, transform' }}
+1305 :         >
+1306 :           {/* Decorative top line */}
+1307 :           <div className="flex items-center justify-center mb-4">
+1308 :             <div className="h-px w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-transparent"></div>
+1309 :             <div className="mx-3 w-1 h-1 bg-yellow-500/60 rounded-full"></div>
+1310 :             <div className="h-px w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-transparent"></div>
+1311 :           </div>
+1312 :           
+1313 :           <div className="flex items-center justify-center space-x-3">
+1314 :             <motion.div 
+1315 :               className="relative"
+1316 :               animate={{ 
+1317 :                 opacity: [0.6, 1, 0.6],
+1318 :                 scale: [1, 1.3, 1]
+1319 :               }}
+1320 :               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+1321 :             >
+1322 :               <div className="w-2.5 h-2.5 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full shadow-lg" style={{
+1323 :                 boxShadow: '0 0 10px rgba(234, 179, 8, 0.6)'
+1324 :               }}></div>
+1325 :               <motion.div
+1326 :                 className="absolute inset-0 bg-yellow-400 rounded-full blur-md"
+1327 :                 animate={{ opacity: [0.3, 0.6, 0.3] }}
+1328 :                 transition={{ duration: 2, repeat: Infinity }}
+1329 :               />
+1330 :             </motion.div>
+1331 :         <motion.div
+1332 :               className="relative"
+1333 :               animate={{ 
+1334 :                 opacity: [0.6, 1, 0.6],
+1335 :                 scale: [1, 1.3, 1]
+1336 :               }}
+1337 :               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+1338 :             >
+1339 :               <div className="w-2.5 h-2.5 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full shadow-lg" style={{
+1340 :                 boxShadow: '0 0 10px rgba(234, 179, 8, 0.6)'
+1341 :               }}></div>
+1342 :               <motion.div
+1343 :                 className="absolute inset-0 bg-yellow-400 rounded-full blur-md"
+1344 :                 animate={{ opacity: [0.3, 0.6, 0.3] }}
+1345 :                 transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+1346 :               />
+1347 :             </motion.div>
+1348 :           </div>
+1349 :         </motion.div>
+1350 :       </div>
+1351 :       </div>
+1352 :     </div>
+1353 :   );
+1354 : };
