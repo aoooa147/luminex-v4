@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-            <head>
+      <head>
         <meta name="miniapp-verify-action" content="luminexstaking" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

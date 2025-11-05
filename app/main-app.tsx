@@ -1491,13 +1491,13 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
               <div className="w-2.5 h-2.5 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full shadow-lg" style={{
                 boxShadow: '0 0 10px rgba(234, 179, 8, 0.6)'
               }}></div>
-              <motion.div
+                  <motion.div
                 className="absolute inset-0 bg-yellow-400 rounded-full blur-md"
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
-              />
-                        </motion.div>
-            <motion.div 
+                  />
+      </motion.div>
+        <motion.div
               className="relative"
               animate={{ 
                 opacity: [0.6, 1, 0.6],
@@ -2256,7 +2256,7 @@ const LuminexApp = () => {
       return;
     }
 
-        setIsClaiming(true);
+    setIsClaiming(true);
     try {
       // Check if MiniKit is available
       const MiniKit = (window as any).MiniKit;
@@ -2269,7 +2269,7 @@ const LuminexApp = () => {
 
       // Encode claimRewards function call
       const claimData = stakingContractInterface.encodeFunctionData('claimRewards', [selectedPool]);
-      
+
       console.log(`🔄 Claiming rewards from pool ${selectedPool}...`);
       const claimResult = await MiniKit.commandsAsync.sendTransaction({
         to: STAKING_CONTRACT_ADDRESS,
@@ -2312,7 +2312,7 @@ const LuminexApp = () => {
       return;
     }
 
-        setIsWithdrawing(true);
+    setIsWithdrawing(true);
     try {
       // Check if MiniKit is available
       const MiniKit = (window as any).MiniKit;
@@ -2328,7 +2328,7 @@ const LuminexApp = () => {
       // Get staking contract for reading and encoding
       const stakingContractRead = new ethers.Contract(STAKING_CONTRACT_ADDRESS, STAKING_ABI, provider);
       const stakingContractInterface = new ethers.Interface(STAKING_ABI);
-
+      
       // Get user stake info to determine withdrawal amount
       const stakeInfo = await stakingContractRead.getUserStakeInfo(actualAddress, selectedPool);
       const amountWei = stakeInfo.amount; // Withdraw all staked amount
@@ -2339,7 +2339,7 @@ const LuminexApp = () => {
 
       // Encode withdraw function call
       const withdrawData = stakingContractInterface.encodeFunctionData('withdraw', [selectedPool, amountWei]);
-      
+
       console.log(`🔄 Withdrawing from pool ${selectedPool}...`);
       const withdrawResult = await MiniKit.commandsAsync.sendTransaction({
         to: STAKING_CONTRACT_ADDRESS,
@@ -2852,7 +2852,7 @@ const LuminexApp = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-3"
+                            className="space-y-2"
               style={{ willChange: 'transform, opacity' }}
             >
             {/* Pool Selection */}
@@ -2865,24 +2865,24 @@ const LuminexApp = () => {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setSelectedPool(pool.id)}
-                      className={`relative p-2 rounded-xl border-2 transition-all overflow-hidden ${                                                          
+                      className={`relative p-1.5 rounded-lg border-2 transition-all overflow-hidden ${                                                            
                         selectedPool === pool.id
-                          ? 'border-yellow-500 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 shadow-lg shadow-yellow-500/20'
-                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'
+                          ? 'border-yellow-500 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 shadow-lg shadow-yellow-500/20'                             
+                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'                                                                
                       }`}
                       style={{ willChange: 'transform' }}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${pool.color} opacity-10`}></div>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${pool.color} opacity-10`}></div>                                                     
                       <div className="relative">
                         <i
-                          className={`flex justify-center mb-1 ${
-                            selectedPool === pool.id ? 'text-yellow-400' : 'text-white/60'
+                          className={`flex justify-center mb-0.5 ${
+                            selectedPool === pool.id ? 'text-yellow-400' : 'text-white/60'                                                                      
                           }`}
                         >
-                          <Icon className="w-5 h-5" />
+                          <Icon className="w-4 h-4" />
                         </i>
-                        <p className="text-white font-bold text-[10px] leading-tight">{pool.name}</p>
-                        <p className={`text-[9px] font-semibold mt-0.5 ${selectedPool === pool.id ? 'text-yellow-400' : 'text-white/50'}`}>{pool.apy}%</p>
+                        <p className="text-white font-bold text-[9px] leading-tight">{pool.name}</p>                                                           
+                        <p className={`text-[8px] font-semibold mt-0.5 ${selectedPool === pool.id ? 'text-yellow-400' : 'text-white/50'}`}>{pool.apy}%</p>      
                       </div>
                     </motion.button>
                   );
@@ -2900,14 +2900,14 @@ const LuminexApp = () => {
                   <div className="flex items-center justify-between p-2 bg-black/40 rounded-lg border border-white/10">                                         
                     <div className="flex items-center space-x-1.5">
                       <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                      <span className="text-white/80 text-[10px]">Power License:</span>                                                                         
+                      <span className="text-white/80 text-[10px]">Power License:</span>                                                                           
                       <span className="text-white font-bold text-xs">
-                        {currentPower ? currentPower.name : 'None'}
-                      </span>
+                          {currentPower ? currentPower.name : 'None'}
+                            </span>
                   </div>
                     <div className="text-right">
                       <div className="text-yellow-300 font-bold text-xs">{totalApy}% Total APY</div>                                                            
-                      <div className="text-white/60 text-[9px]">
+                      <div className="text-white/60 text-[9px] mt-0.5">
                         Base {baseApy}% {powerBoost > 0 ? `+ ${powerBoost}%` : ''}                                                                              
                       </div>
                     </div>
@@ -2918,12 +2918,12 @@ const LuminexApp = () => {
                     <p className="text-white/80 text-[10px] mb-1">{t('myStakingBalance')}</p>                                                                   
                       {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
                       <div className="flex items-center justify-center py-1">   
-                        <span className="text-yellow-400 text-[10px] text-center">                                                                              
+                          <span className="text-yellow-400 text-[10px] text-center">
                           {!actualAddress ? 'Connect wallet' : 'Contract not configured'}                                                                       
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between">     
+                        <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-1.5">
                           <Coins className="w-4 h-4 text-yellow-300" />
                           <span className="text-lg font-extrabold text-white">{formattedStakedAmount}</span>                                                    
@@ -2943,19 +2943,19 @@ const LuminexApp = () => {
                     </div>
                   </div>
 
-                                    {/* Time Elapsed */}
+                  {/* Time Elapsed */}
                   {timeElapsed.days > 0 || timeElapsed.hours > 0 || timeElapsed.minutes > 0 ? (
                     <div className="flex items-center space-x-1.5 text-[10px] text-white/70 bg-white/5 rounded-lg px-2 py-1">
-                      <Timer className="w-3 h-3 flex-shrink-0" />
+                    <Timer className="w-3 h-3 flex-shrink-0" />
                       <span className="font-mono">
                         {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m
                       </span>
-                    </div>
+                  </div>
                   ) : null}
                 </div>
               </motion.div>
 
-                                          {/* Action Buttons */}
+                            {/* Action Buttons */}
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   {/* STAKING Button */}
@@ -2963,7 +2963,7 @@ const LuminexApp = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowStakeModal(true)}
-                    className="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 text-xs shadow-lg"
+                    className="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 text-xs shadow-lg"                                                                   
                   >
                     <BarChart3 className="w-4 h-4" />
                     <span>{t('staking')}</span>
@@ -3006,20 +3006,20 @@ const LuminexApp = () => {
                   )}
                 </motion.button>
 
-                                {/* Free Token Button */}
+                {/* Free Token Button */}
                 <motion.button
                   whileHover={{ scale: 1.02, boxShadow: "0 15px 35px rgba(147, 51, 234, 0.4)" }}                                                                
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveTab('game')}
-                  className="w-full text-white font-bold py-3 px-4 rounded-2xl flex items-center justify-center space-x-2 relative overflow-hidden group"       
+                  className="w-full text-white font-bold py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 relative overflow-hidden group text-xs"       
                   style={{
                     background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 50%, #9333ea 100%)',                                                               
                     backgroundSize: '200% 100%',
                     boxShadow: '0 8px 25px rgba(147, 51, 234, 0.3), 0 0 15px rgba(236, 72, 153, 0.2)'                                                           
                   }}
                 >
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl"
+                                    <motion.div
+                    className="absolute inset-0 rounded-lg"
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']      
                     }}
@@ -3029,11 +3029,11 @@ const LuminexApp = () => {
                       backgroundSize: '200% 100%'
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/50 via-amber-400/50 to-yellow-400/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>                                               
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-2xl"></div>                                            
-                  <Gift className="w-6 h-6 relative z-10" />
-                  <span className="text-base relative z-10 font-extrabold">{t('freeToken')}</span>                                                              
-                  <Sparkles className="w-5 h-5 relative z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/50 via-amber-400/50 to-yellow-400/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>                                               
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-lg"></div>                                            
+                  <Gift className="w-4 h-4 relative z-10" />
+                  <span className="text-xs relative z-10 font-extrabold">{t('freeToken')}</span>                                                              
+                  <Sparkles className="w-3.5 h-3.5 relative z-10" />
                 </motion.button>
               </div>
             </motion.div>
@@ -3046,26 +3046,26 @@ const LuminexApp = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-3"
+              className="space-y-4"
               style={{ willChange: 'transform, opacity' }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between mb-1.5 px-1">
-                <div className="flex items-center space-x-1.5">
-                  <Zap className="w-4 h-4 text-yellow-400" />
-                  <span className="text-yellow-400 font-bold text-xs">POWER LICENSES</span>
+              <div className="flex items-center justify-between mb-3 px-2">
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-yellow-400" />
+                  <span className="text-yellow-400 font-bold text-sm">POWER LICENSES</span>
                     </div>
                 {currentPower && (
-                  <div className="flex items-center space-x-1 px-1.5 py-0.5 bg-yellow-500/20 rounded border border-yellow-400/30">
-                    <span className="text-xs">⚡</span>
-                    <span className="text-white font-bold text-[10px]">{currentPower.name}</span>
-                    <span className="text-yellow-300 font-bold text-[10px]">{totalApy}%</span>
+                  <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-yellow-500/20 rounded-lg border border-yellow-400/30">
+                    <span className="text-base">⚡</span>
+                    <span className="text-white font-bold text-xs">{currentPower.name}</span>
+                    <span className="text-yellow-300 font-bold text-xs">{totalApy}%</span>
                 </div>
                 )}
                 </div>
 
               {/* Power Tiers */}
-              <div className="space-y-1">
+                <div className="space-y-3">
                 {POWERS.map((power, index) => {
                   const isOwned = currentPower?.code === power.code;
                   const canUpgrade = !currentPower || (getPowerByCode(currentPower.code) && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) < parseFloat(power.priceWLD));
@@ -3077,28 +3077,28 @@ const LuminexApp = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className={`flex items-center justify-between p-1.5 rounded-lg border ${
+                      className={`flex items-center justify-between p-4 rounded-xl border ${
                         isOwned ? 'border-yellow-400 bg-yellow-500/10' : 'border-white/10 bg-black/20'
                       }`}
                     >
-                      <div className="flex items-center space-x-1.5 flex-1 min-w-0">
-                        <span className="text-xs">⚡</span>
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <span className="text-lg">⚡</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-white font-bold text-[11px]">{power.name}</span>
-                            <span className="text-yellow-300 font-bold text-[10px]">{power.totalAPY}% APY</span>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-white font-bold text-base">{power.name}</span>
+                            <span className="text-yellow-300 font-bold text-sm">{power.totalAPY}% APY</span>
                           </div>
-                          <div className="text-white/70 text-[9px] mt-0.5">
+                          <div className="text-white/70 text-xs">
                             +{power.totalAPY - BASE_APY}% Power Boost
                           </div>
                         </div>
                       </div>
                       <motion.button
-                        whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.03 : 1 }}
-                        whileTap={{ scale: canUpgrade && !isPurchasingPower ? 0.97 : 1 }}
+                        whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.05 : 1 }}
+                        whileTap={{ scale: canUpgrade && !isPurchasingPower ? 0.95 : 1 }}
                         onClick={() => canUpgrade && !isPurchasingPower ? handlePurchasePower(power.code) : undefined}
                         disabled={!canUpgrade || isPurchasingPower || !!isLower}
-                        className={`px-2 py-1 font-bold rounded text-[10px] whitespace-nowrap ml-1.5 ${
+                        className={`px-4 py-2 font-bold rounded-lg text-xs whitespace-nowrap ml-3 ${
                           isOwned
                             ? 'bg-yellow-400 text-black cursor-default'
                             : isLower || !canUpgrade
@@ -3107,15 +3107,15 @@ const LuminexApp = () => {
                         }`}
                       >
                         {isPurchasingPower ? (
-                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : isOwned ? (
-                          '✓'
+                          '✓ Active'
                         ) : isLower ? (
                           '↓'
                         ) : !currentPower ? (
                           `${power.priceWLD} WLD`
                         ) : (
-                          `+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)}`
+                          `+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)} WLD`
                         )}
                       </motion.button>
                     </motion.div>
@@ -3512,7 +3512,7 @@ const LuminexApp = () => {
         )}
       </AnimatePresence>
 
-            {/* Spacer for bottom nav */}
+      {/* Spacer for bottom nav */}
       <div className="h-16"></div>
     </div>
   );
