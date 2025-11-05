@@ -903,70 +903,70 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
     console.log('🔴 handleVerify called!');
     setIsVerifying(true);
     setVerifyError(null);
-    
+
     try {
       // Check if running in World App with MiniKit
-      const hasWindowMiniKit = typeof window !== 'undefined' && (window as any).MiniKit;
-      console.log('🔄 Starting wallet authentication...', { hasWindowMiniKit });
-      
+      const hasWindowMiniKit = typeof window !== 'undefined' && (window as any).MiniKit;                                                                        
+      console.log('🔍 Starting wallet authentication...', { hasWindowMiniKit });                                                                              
+
       if (hasWindowMiniKit) {
         console.log('✅ Using MiniKit wallet auth for verification');
         const MiniKit = (window as any).MiniKit;
-        
+
         // Use MiniKit.commandsAsync.walletAuth (new API)
         if (MiniKit.commandsAsync?.walletAuth) {
           const nonce = crypto.randomUUID().replace(/-/g, '');
-          const result = await MiniKit.commandsAsync.walletAuth({ nonce });
+          const result = await MiniKit.commandsAsync.walletAuth({ nonce });     
           const walletData = result.finalPayload;
           console.log('✅ Wallet auth payload received:', walletData);
-          console.log('✅ Full walletData keys:', Object.keys(walletData));
-          
+          console.log('✅ Full walletData keys:', Object.keys(walletData));    
+
           // Send to backend for SIWE verification
           const res = await fetch('/api/complete-siwe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ payload: walletData })
           });
-          
+
           const data = await res.json();
           console.log('✅ SIWE verification response:', data);
           console.log('✅ Full SIWE data keys:', Object.keys(data));
-          
+
         if (data.status === 'ok' && data.isValid) {
           console.log('✅ Wallet authenticated successfully');
           console.log('✅ SIWE message data:', data.siweMessageData);
-          console.log('✅ Full SIWE message data keys:', data.siweMessageData ? Object.keys(data.siweMessageData) : 'none');
-          
+          console.log('✅ Full SIWE message data keys:', data.siweMessageData ? Object.keys(data.siweMessageData) : 'none');                                   
+
           // Store verification status in sessionStorage
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('verified', 'true');
             if (walletData.address) {
-              sessionStorage.setItem('verifiedAddress', walletData.address);
+              sessionStorage.setItem('verifiedAddress', walletData.address);    
             }
             // Store chain ID if available
             if (data.siweMessageData?.chain_id) {
-              sessionStorage.setItem('chainId', String(data.siweMessageData.chain_id));
+              sessionStorage.setItem('chainId', String(data.siweMessageData.chain_id));                                                                         
             }
-            
+
             // Try to extract and store user info if available
             if (walletData.name || walletData.username) {
-              sessionStorage.setItem('userName', walletData.name || walletData.username || '');
-              console.log('✅ Stored user name:', walletData.name || walletData.username);
+              sessionStorage.setItem('userName', walletData.name || walletData.username || '');                                                                 
+              console.log('✅ Stored user name:', walletData.name || walletData.username);                                                                     
             }
           }
-          
+
           onVerify();
         } else {
-          const errorMsg = data.message || 'Wallet authentication failed';
+          const errorMsg = data.message || 'Wallet authentication failed';      
           throw new Error(errorMsg);
         }
         } else {
-          console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available');
+          console.warn('⚠️ MiniKit.commandsAsync.walletAuth not available'); 
           throw new Error('Wallet auth not available');
         }
       } else {
         // Fallback: Skip verification or show error
-        console.warn('⚠️ MiniKit not available, skipping authentication');
+        console.warn('⚠️ MiniKit not available, skipping authentication');   
         // For now, just proceed without verification
         onVerify();
       }
@@ -979,36 +979,36 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
   };
 
     return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden" style={{ willChange: 'auto' }}>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden" style={{ willChange: 'auto' }}>                   
       {/* Header Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-yellow-600/20">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-yellow-600/20">                                              
+        <div className="flex items-center justify-between px-4 py-3 h-12">
           {/* Left: Close button */}
           <button
             onClick={() => window.history.back()}
-            className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0"                                             
           >
             <X className="w-5 h-5" />
           </button>
 
           {/* Center: Logo and Title */}
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50">
+          <div className="flex items-center gap-2 flex-1 justify-center min-w-0">       
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50 flex-shrink-0">  
               <span className="text-black font-black text-sm">L</span>
             </div>
-            <span className="text-white font-semibold text-sm">Luminex Staking</span>
-            <AlertTriangle className="w-4 h-4 text-yellow-400" />
+            <span className="text-white font-semibold text-sm whitespace-nowrap">Luminex Staking</span>
+            <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
           </div>
 
           {/* Right: Menu button */}
-          <button className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors">
+          <button className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0">                                      
             <MoreVertical className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="min-h-screen flex items-center justify-center p-4 pt-20">
+      <div className="min-h-screen flex items-center justify-center p-4 pt-20 pb-24"> 
       {/* Luxurious geometric background pattern */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ 
         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(234, 179, 8, 0.1) 35px, rgba(234, 179, 8, 0.1) 70px),
@@ -1114,7 +1114,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
+          className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3 whitespace-nowrap"                                                                              
           style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
         >
           STAKING PLATFORM
@@ -1240,11 +1240,11 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/30 to-amber-600/30 blur-2xl opacity-40 -z-20"></span>
             </h2>
             <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-yellow-600/40"></div>
-              <p className="text-gray-300 mb-0 text-center leading-relaxed text-base font-medium">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-yellow-600/40 flex-shrink-0"></div>                                                              
+              <p className="text-gray-300 mb-0 text-center leading-relaxed text-base font-medium px-2">                                                              
               You must verify your humanity to access the application.
             </p>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-yellow-600/40"></div>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-yellow-600/40 flex-shrink-0"></div>                                                              
             </div>
 
             {verifyError && (
@@ -1378,6 +1378,28 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           </div>
         </motion.div>
       </div>
+
+      {/* "เปิด MiniKit" Button - Bottom Right Corner */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+        onClick={() => {
+          if (typeof window !== 'undefined' && (window as any).MiniKit) {
+            // MiniKit is available
+            handleVerify();
+          } else {
+            // Show message to open in World App
+            alert('กรุณาเปิดแอปใน World App เพื่อใช้งาน MiniKit');
+          }
+        }}
+        className="fixed bottom-4 right-4 z-40 px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold text-sm rounded-lg shadow-lg hover:shadow-xl transition-all border-2 border-yellow-400/50 flex items-center gap-2"
+        style={{
+          boxShadow: '0 4px 12px rgba(234, 179, 8, 0.4), 0 0 20px rgba(234, 179, 8, 0.2)',
+        }}
+      >
+        <span>เปิด MiniKit</span>
+      </motion.button>
     </div>
   );
 };

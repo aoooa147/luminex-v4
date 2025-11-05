@@ -100,14 +100,14 @@ const Logo3D: React.FC<Logo3DProps> = ({
             left: '-10%',
             top: '-10%',
             transform: 'translateZ(-5px)',
-            border: '2px solid rgba(234, 179, 8, 0.3)',
+            border: '2px solid rgba(184, 148, 31, 0.25)',
             borderStyle: 'dashed',
             borderDasharray: '8 6',
-            boxShadow: '0 0 20px rgba(234, 179, 8, 0.4), inset 0 0 20px rgba(234, 179, 8, 0.2)',
+            boxShadow: '0 0 15px rgba(184, 148, 31, 0.3), inset 0 0 15px rgba(184, 148, 31, 0.15)',
           } as React.CSSProperties}
           animate={{
             rotate: [0, 360],
-            opacity: [0.5, 0.8, 0.5],
+            opacity: [0.4, 0.6, 0.4],
           }}
           transition={{
             rotate: {
@@ -138,12 +138,12 @@ const Logo3D: React.FC<Logo3DProps> = ({
                   height: '4px',
                   left: `calc(50% + ${x}% - 2px)`,
                   top: `calc(50% + ${y}% - 2px)`,
-                  background: 'radial-gradient(circle, rgba(234, 179, 8, 1) 0%, rgba(234, 179, 8, 0) 70%)',
-                  boxShadow: '0 0 8px rgba(234, 179, 8, 0.8), 0 0 16px rgba(234, 179, 8, 0.4)',
+                  background: 'radial-gradient(circle, rgba(184, 148, 31, 0.8) 0%, rgba(184, 148, 31, 0) 70%)',
+                  boxShadow: '0 0 6px rgba(184, 148, 31, 0.6), 0 0 12px rgba(184, 148, 31, 0.3)',
                 }}
                 animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.6, 1, 0.6],
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.8, 0.5],
                 }}
                 transition={{
                   duration: 2,
@@ -162,34 +162,33 @@ const Logo3D: React.FC<Logo3DProps> = ({
           style={{
             transform: 'translateZ(10px)',
             background: `
-              radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
-              radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.35) 0%, transparent 50%),
               linear-gradient(135deg,
-                #d4af37 0%,
-                #f4d03f 15%,
-                #f7dc6f 25%,
-                #d4af37 40%,
-                #b8941f 55%,
-                #d4af37 70%,
-                #f4d03f 85%,
-                #d4af37 100%
+                #b8941f 0%,
+                #d4af37 20%,
+                #c9a832 35%,
+                #b8941f 50%,
+                #a0821a 65%,
+                #b8941f 80%,
+                #c9a832 100%
               )
             `,
             boxShadow: `
-              inset 0 8px 16px rgba(255, 255, 255, 0.4),
-              inset 0 -8px 16px rgba(0, 0, 0, 0.4),
-              inset 0 0 40px rgba(234, 179, 8, 0.3),
-              0 10px 30px rgba(0, 0, 0, 0.6),
-              0 0 40px rgba(234, 179, 8, 0.4),
-              0 0 80px rgba(234, 179, 8, 0.2)
+              inset 0 6px 12px rgba(255, 255, 255, 0.3),
+              inset 0 -6px 12px rgba(0, 0, 0, 0.5),
+              inset 0 0 30px rgba(184, 148, 31, 0.25),
+              0 8px 24px rgba(0, 0, 0, 0.7),
+              0 0 30px rgba(184, 148, 31, 0.3),
+              0 0 60px rgba(184, 148, 31, 0.15)
             `,
-            border: '2px solid rgba(234, 179, 8, 0.5)',
+            border: '2px solid rgba(184, 148, 31, 0.4)',
           }}
           animate={{
             boxShadow: [
-              'inset 0 8px 16px rgba(255, 255, 255, 0.4), inset 0 -8px 16px rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(234, 179, 8, 0.3), 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 40px rgba(234, 179, 8, 0.4), 0 0 80px rgba(234, 179, 8, 0.2)',
-              'inset 0 10px 20px rgba(255, 255, 255, 0.5), inset 0 -10px 20px rgba(0, 0, 0, 0.3), inset 0 0 50px rgba(234, 179, 8, 0.4), 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 60px rgba(234, 179, 8, 0.6), 0 0 100px rgba(234, 179, 8, 0.3)',
-              'inset 0 8px 16px rgba(255, 255, 255, 0.4), inset 0 -8px 16px rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(234, 179, 8, 0.3), 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 40px rgba(234, 179, 8, 0.4), 0 0 80px rgba(234, 179, 8, 0.2)',
+              'inset 0 6px 12px rgba(255, 255, 255, 0.3), inset 0 -6px 12px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(184, 148, 31, 0.25), 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 30px rgba(184, 148, 31, 0.3), 0 0 60px rgba(184, 148, 31, 0.15)',
+              'inset 0 8px 16px rgba(255, 255, 255, 0.35), inset 0 -8px 16px rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(184, 148, 31, 0.3), 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 40px rgba(184, 148, 31, 0.4), 0 0 70px rgba(184, 148, 31, 0.2)',
+              'inset 0 6px 12px rgba(255, 255, 255, 0.3), inset 0 -6px 12px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(184, 148, 31, 0.25), 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 30px rgba(184, 148, 31, 0.3), 0 0 60px rgba(184, 148, 31, 0.15)',
             ],
           }}
           transition={{
@@ -230,22 +229,22 @@ const Logo3D: React.FC<Logo3DProps> = ({
               style={{
                 fontSize: `${size * 0.35}px`,
                 fontWeight: 900,
-                color: '#1a1a1a',
-                textShadow: `
-                  2px 2px 0px rgba(255, 255, 255, 0.5),
-                  4px 4px 8px rgba(0, 0, 0, 0.5),
-                  -1px -1px 0px rgba(255, 255, 255, 0.3),
-                  inset 0 0 10px rgba(234, 179, 8, 0.2)
-                `,
+                                  color: '#1a1a1a',
+                  textShadow: `
+                    2px 2px 0px rgba(255, 255, 255, 0.5),
+                    4px 4px 8px rgba(0, 0, 0, 0.5),
+                    -1px -1px 0px rgba(255, 255, 255, 0.3),
+                    inset 0 0 10px rgba(184, 148, 31, 0.15)
+                  `,
                 fontFamily: 'system-ui, -apple-system, sans-serif',
                 letterSpacing: '-0.05em',
               }}
               animate={{
-                textShadow: [
-                  '2px 2px 0px rgba(255, 255, 255, 0.5), 4px 4px 8px rgba(0, 0, 0, 0.5), -1px -1px 0px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(234, 179, 8, 0.2)',
-                  '3px 3px 0px rgba(255, 255, 255, 0.6), 6px 6px 12px rgba(0, 0, 0, 0.6), -2px -2px 0px rgba(255, 255, 255, 0.4), inset 0 0 15px rgba(234, 179, 8, 0.3)',
-                  '2px 2px 0px rgba(255, 255, 255, 0.5), 4px 4px 8px rgba(0, 0, 0, 0.5), -1px -1px 0px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(234, 179, 8, 0.2)',
-                ],
+                                    textShadow: [
+                      '2px 2px 0px rgba(255, 255, 255, 0.5), 4px 4px 8px rgba(0, 0, 0, 0.5), -1px -1px 0px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(184, 148, 31, 0.15)',
+                      '3px 3px 0px rgba(255, 255, 255, 0.6), 6px 6px 12px rgba(0, 0, 0, 0.6), -2px -2px 0px rgba(255, 255, 255, 0.4), inset 0 0 15px rgba(184, 148, 31, 0.2)',
+                      '2px 2px 0px rgba(255, 255, 255, 0.5), 4px 4px 8px rgba(0, 0, 0, 0.5), -1px -1px 0px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(184, 148, 31, 0.15)',
+                    ],
               }}
               transition={{
                 duration: 3,
@@ -300,13 +299,13 @@ const Logo3D: React.FC<Logo3DProps> = ({
         <motion.div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(234, 179, 8, 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(184, 148, 31, 0.1) 0%, transparent 70%)',
             transform: 'translateZ(-15px)',
             filter: 'blur(25px)',
           }}
           animate={{
-            opacity: [0.3, 0.5, 0.3],
-            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.35, 0.2],
+            scale: [1, 1.2, 1],
           }}
           transition={{
             duration: 4,
