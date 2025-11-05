@@ -79,11 +79,11 @@ export default function MemoryMatchPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
+      alert('Please connect your wallet first');
       return;
     }
     if (isOnCooldown) {
-      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
       return;
     }
 
@@ -292,7 +292,7 @@ export default function MemoryMatchPage() {
             className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
           >
             <p className="text-red-300 font-bold">
-              ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+              ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
             </p>
           </motion.div>
         )}
@@ -305,14 +305,14 @@ export default function MemoryMatchPage() {
           >
             <div className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 text-center">
               <div className="text-6xl mb-4">🧠</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">จำลำดับสีให้ถูกต้อง!</h2>
+              <h2 className="text-3xl font-bold mb-4 text-white">Remember the color sequence!</h2>
               <p className="text-white/80 mb-6">
-                ดูลำดับสีที่แสดง แล้วกดสีตามลำดับให้ถูกต้อง
+                Watch the color sequence shown, then tap the colors in the correct order
               </p>
               <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ คุณมี 3 ชีวิต</p>
-                <p>🔥 แต่ละเลเวลจะยาวขึ้นเรื่อยๆ</p>
-                <p>💎 รางวัล: 0-5 LUX (ยากมากที่จะได้ 5!)</p>
+                <p>✨ You have 3 lives</p>
+                <p>🔥 Each level gets longer</p>
+                <p>💎 Reward: 0-5 LUX (very rare to get 5!)</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -321,7 +321,7 @@ export default function MemoryMatchPage() {
                 disabled={isOnCooldown}
                 className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ▶ เริ่มเล่น
+                ▶ Start Playing
               </motion.button>
             </div>
           </motion.div>
@@ -331,10 +331,10 @@ export default function MemoryMatchPage() {
           <div className="space-y-6">
             <div className="text-center">
               <p className="text-white/70 text-lg">
-                {gameState === 'showing' ? '👀 ดูลำดับสีให้ดี...' : '🎮 กดสีตามลำดับ!'}
+                {gameState === 'showing' ? '👀 Watch the sequence carefully...' : '🎮 Tap the colors in order!'}
               </p>
               <p className="text-white/50 text-sm mt-2">
-                คุณกดไปแล้ว: {playerSequence.length} / {sequence.length}
+                Progress: {playerSequence.length} / {sequence.length}
               </p>
             </div>
 
@@ -372,13 +372,13 @@ export default function MemoryMatchPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/30 to-pink-500/30 border-2 border-purple-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📊 เลเวลสูงสุด: <b className="text-purple-300">{level}</b></p>
+              <p className="text-white/90">🎯 Final score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">📊 Highest level: <b className="text-purple-300">{level}</b></p>
               {luxReward !== null && (
                 <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
-                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}ได้รับ {luxReward} LUX!
+                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}Earned {luxReward} LUX!
                 </div>
               )}
             </div>
@@ -388,7 +388,7 @@ export default function MemoryMatchPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl"
             >
-              กลับไปหน้าแรก
+              Back to Home
             </motion.button>
           </motion.div>
         )}

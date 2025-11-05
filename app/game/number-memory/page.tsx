@@ -36,11 +36,11 @@ export default function NumberMemoryPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อม Wallet ก่อน');
+      alert('Please connect your wallet first');
       return;
     }
     if (energy <= 0) {
-      alert('พลังงานหมด');
+      alert('Energy depleted');
       return;
     }
     setGameState('showing');
@@ -182,11 +182,11 @@ export default function NumberMemoryPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/30 text-center"
           >
             <div className="text-6xl mb-4">🧠</div>
-            <h2 className="text-3xl font-bold mb-4 text-white">จำตัวเลขให้ได้!</h2>
+            <h2 className="text-3xl font-bold mb-4 text-white">Remember the numbers!</h2>
             <p className="text-white/80 mb-6">
-              จำตัวเลขที่แสดง แล้วพิมพ์ซ้ำให้ถูกต้อง
+              Remember the numbers shown, then type them back correctly
               <br />
-              <b className="text-blue-300">ทำครบ {ROUNDS_TO_WIN} รอบเพื่อชนะ!</b>
+              <b className="text-blue-300">Complete {ROUNDS_TO_WIN} rounds to win!</b>
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -194,7 +194,7 @@ export default function NumberMemoryPage() {
               onClick={startGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 font-bold text-xl shadow-2xl shadow-blue-500/50"
             >
-              ▶ เริ่มเล่น
+              ▶ Start Playing
             </motion.button>
           </motion.div>
         )}
@@ -202,7 +202,7 @@ export default function NumberMemoryPage() {
         {gameState === 'showing' && (
           <div className="space-y-6">
             <div className="text-center">
-              <p className="text-white/70 mb-4">จำตัวเลขนี้:</p>
+              <p className="text-white/70 mb-4">Remember this number:</p>
               <motion.div
                 key={currentDisplayIndex}
                 initial={{ scale: 0, opacity: 0 }}
@@ -222,18 +222,18 @@ export default function NumberMemoryPage() {
         {gameState === 'inputting' && (
           <div className="space-y-6">
             <div className="text-center">
-              <p className="text-white/70 mb-4 text-xl">พิมพ์ตัวเลขที่จำได้:</p>
+              <p className="text-white/70 mb-4 text-xl">Type the number you remember:</p>
               <input
                 type="text"
                 value={userInput}
                 onChange={handleInput}
                 autoFocus
                 className="w-full py-6 text-4xl font-bold text-center bg-zinc-900/60 border-2 border-blue-500/50 rounded-xl text-blue-400 focus:outline-none focus:border-blue-400"
-                placeholder="พิมพ์ที่นี่..."
+                                    placeholder="Type here..."
                 maxLength={numberSequence.length}
               />
               <p className="text-white/50 mt-4">
-                {userInput.length}/{numberSequence.length} ตัว
+                                    {userInput.length}/{numberSequence.length} digits
               </p>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function NumberMemoryPage() {
             >
               ✅
             </motion.div>
-            <p className="text-2xl font-bold text-green-400">ถูกต้อง!</p>
+            <p className="text-2xl font-bold text-green-400">Correct!</p>
           </div>
         )}
 
@@ -259,10 +259,10 @@ export default function NumberMemoryPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-2 border-blue-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">คุณชนะแล้ว!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">You Win!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนน: <b className="text-blue-300">{score.toLocaleString()}</b></p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 15 Tokens!</p>
+              <p className="text-white/90">🎯 Score: <b className="text-blue-300">{score.toLocaleString()}</b></p>
+              <p className="text-green-400 font-bold">💰 Earned 15 Tokens!</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -270,7 +270,7 @@ export default function NumberMemoryPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 font-bold text-xl"
             >
-              เล่นอีกครั้ง
+              Play Again
             </motion.button>
           </motion.div>
         )}
@@ -282,15 +282,15 @@ export default function NumberMemoryPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-red-500/20 to-pink-500/20 border-2 border-red-500/30 text-center space-y-6"
           >
             <div className="text-7xl mb-4">😢</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
-            <p className="text-white/90 text-lg">🎯 คะแนน: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-white/90 text-lg">🎯 Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 font-bold text-xl"
             >
-              ลองอีกครั้ง
+              Try Again
             </motion.button>
           </motion.div>
         )}

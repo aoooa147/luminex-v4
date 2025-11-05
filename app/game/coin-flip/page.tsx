@@ -89,15 +89,15 @@ export default function CoinFlipPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อมต่อ Wallet ก่อนเริ่มเกม');
+      alert('Please connect your wallet before starting the game');
       return;
     }
     if (energy <= 0) {
-      alert('พลังงานไม่เพียงพอ! โปรดรอหรือเติมพลังงาน');
+      alert('Insufficient energy! Please wait or recharge your energy');
       return;
     }
     if (isOnCooldown) {
-      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      alert(`You need to wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
       return;
     }
 
@@ -380,7 +380,7 @@ export default function CoinFlipPage() {
               className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
             >
               <p className="text-red-300 font-bold">
-                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+                ⏰ You need to wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
               </p>
             </motion.div>
           )}
@@ -393,14 +393,14 @@ export default function CoinFlipPage() {
             >
               <div className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 text-center">
               <div className="text-6xl mb-4">🪙</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">พร้อมท้าทายแล้ว!</h2>
+                            <h2 className="text-3xl font-bold mb-4 text-white">Ready to challenge!</h2>
               <p className="text-white/80 mb-6">
-                เดาเหรียญให้ถูกต้อง <b className="text-yellow-300">{TARGET_STREAK} ครั้งติดต่อกัน</b> เพื่อชนะ!
+                Guess the coin correctly <b className="text-yellow-300">{TARGET_STREAK} times in a row</b> to win!        
               </p>
               <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ คุณมี {MAX_LIVES} ชีวิต</p>
-                <p>🔥 ทำ Streak เพื่อคะแนนเพิ่มขึ้น</p>
-                <p>⚡ คะแนนจะเพิ่มตาม Multiplier!</p>
+                <p>✨ You have {MAX_LIVES} lives</p>
+                <p>🔥 Build a streak to increase your score</p>
+                <p>⚡ Score increases with multiplier!</p>
               </div>
                               <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -409,7 +409,7 @@ export default function CoinFlipPage() {
                   disabled={isOnCooldown}
                   className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl shadow-2xl shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ▶ เริ่มเล่น
+                  ▶ Start Playing
                 </motion.button>
             </div>
           </motion.div>
@@ -470,9 +470,9 @@ export default function CoinFlipPage() {
                   }`}
                 >
                   {isCorrect ? (
-                    <span>✅ ถูกต้อง! +{100 * scoreMultiplier} คะแนน</span>
+                    <span>✅ Correct! +{100 * scoreMultiplier} points</span>
                   ) : (
-                    <span>❌ ผิด! -1 ชีวิต</span>
+                    <span>❌ Wrong! -1 life</span>
                   )}
                 </motion.div>
               )}
@@ -503,7 +503,7 @@ export default function CoinFlipPage() {
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-white/70">
-                <span>ความคืบหน้า</span>
+                <span>Progress</span>
                 <span>{streak}/{TARGET_STREAK}</span>
               </div>
               <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
@@ -538,11 +538,11 @@ export default function CoinFlipPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 border-2 border-yellow-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">คุณชนะแล้ว!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">You Win!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">🔥 Streak สูงสุด: <b className="text-orange-300">{streak}</b></p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 10 Tokens!</p>
+              <p className="text-white/90">🎯 Final Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">🔥 Highest Streak: <b className="text-orange-300">{streak}</b></p>
+              <p className="text-green-400 font-bold">💰 Earned 10 Tokens!</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -550,7 +550,7 @@ export default function CoinFlipPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl"
             >
-              เล่นอีกครั้ง
+              Play Again
             </motion.button>
           </motion.div>
         )}
@@ -562,10 +562,10 @@ export default function CoinFlipPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-red-500/20 to-pink-500/20 border-2 border-red-500/30 text-center space-y-6"
           >
             <div className="text-7xl mb-4">😢</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">🔥 Streak สูงสุด: <b className="text-orange-300">{streak}</b></p>
+              <p className="text-white/90">🎯 Final Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">🔥 Highest Streak: <b className="text-orange-300">{streak}</b></p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -573,7 +573,7 @@ export default function CoinFlipPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 font-bold text-xl"
             >
-              ลองอีกครั้ง
+              Try Again
             </motion.button>
           </motion.div>
         )}

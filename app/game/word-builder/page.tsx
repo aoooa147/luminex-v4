@@ -124,15 +124,15 @@ export default function WordBuilderPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
+      alert('Please connect your wallet first');
       return;
     }
     if (energy <= 0) {
-      alert('พลังงานไม่เพียงพอ!');
+      alert('Insufficient energy!');
       return;
     }
     if (isOnCooldown) {
-      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
       return;
     }
 
@@ -392,7 +392,7 @@ export default function WordBuilderPage() {
               className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
             >
               <p className="text-red-300 font-bold">
-                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+                ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
               </p>
             </motion.div>
           )}
@@ -405,16 +405,16 @@ export default function WordBuilderPage() {
           >
             <div className="rounded-2xl p-8 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border-2 border-indigo-500/30 text-center">
               <div className="text-6xl mb-4">📝</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">สร้างคำจากตัวอักษร!</h2>
+              <h2 className="text-3xl font-bold mb-4 text-white">Build words from letters!</h2>
               <p className="text-white/80 mb-6">
-                เลือกตัวอักษรที่ให้มาเพื่อสร้างคำให้ถูกต้อง
+                Select letters from the given set to build correct words
               </p>
               <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ คุณมี 60 วินาที</p>
-                <p>🔥 คำ 3 ตัวอักษร: 150 คะแนน</p>
-                <p>🔥 คำ 4 ตัวอักษร: 200 คะแนน</p>
-                <p>🔥 คำ 5 ตัวอักษร: 250 คะแนน</p>
-                <p>💡 Hint จะแสดงอัตโนมัติหลังจาก 10 วินาที</p>
+                <p>✨ You have 60 seconds</p>
+                <p>🔥 3-letter word: 150 points</p>
+                <p>🔥 4-letter word: 200 points</p>
+                <p>🔥 5-letter word: 250 points</p>
+                <p>💡 Hint will appear automatically after 10 seconds</p>
               </div>
                              <motion.button
                  whileHover={{ scale: 1.05 }}
@@ -423,7 +423,7 @@ export default function WordBuilderPage() {
                  disabled={isOnCooldown}
                  className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl shadow-2xl shadow-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                >
-                 ▶ เริ่มเล่น
+                 ▶ Start Playing
                </motion.button>
             </div>
           </motion.div>
@@ -441,7 +441,7 @@ export default function WordBuilderPage() {
                   className="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-xl p-4 text-center"
                 >
                   <p className="text-yellow-300 font-bold">
-                    💡 Hint: คำที่ต้องหาคือ <span className="text-2xl">{hintWord}</span>
+                    💡 Hint: The word to find is <span className="text-2xl">{hintWord}</span>
                   </p>
                 </motion.div>
               )}
@@ -461,9 +461,9 @@ export default function WordBuilderPage() {
                   }`}
                 >
                   {feedback === 'correct' ? (
-                    <span>✅ คำถูกต้อง!</span>
+                    <span>✅ Correct word!</span>
                   ) : (
-                    <span>❌ คำไม่ถูกต้อง ลองอีกครั้ง</span>
+                    <span>❌ Incorrect word, try again</span>
                   )}
                 </motion.div>
               )}
@@ -471,10 +471,10 @@ export default function WordBuilderPage() {
 
             {/* Current Word */}
             <div className="rounded-2xl p-6 bg-zinc-900/60 border border-zinc-800">
-              <div className="text-sm text-white/60 mb-3">คำที่คุณสร้าง:</div>
+              <div className="text-sm text-white/60 mb-3">Your word:</div>
               <div className="flex flex-wrap gap-2 min-h-[80px] items-center justify-center">
                 {currentWord.length === 0 ? (
-                  <span className="text-white/30">ลากตัวอักษรมาเพื่อสร้างคำ...</span>
+                  <span className="text-white/30">Drag letters here to build a word...</span>
                 ) : (
                   currentWord.map((letter, idx) => (
                     <motion.button
@@ -498,14 +498,14 @@ export default function WordBuilderPage() {
                   onClick={checkWord}
                   className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 font-bold text-lg shadow-lg"
                 >
-                  ✅ ตรวจสอบคำ
+                  ✅ Check Word
                 </motion.button>
               )}
             </div>
 
             {/* Available Letters */}
             <div className="rounded-2xl p-6 bg-zinc-900/60 border border-zinc-800">
-              <div className="text-sm text-white/60 mb-4">ตัวอักษรที่มี:</div>
+              <div className="text-sm text-white/60 mb-4">Available letters:</div>
               <div className="flex flex-wrap gap-3 justify-center">
                 {availableLetters.map((letter, idx) => (
                   <motion.button
@@ -527,7 +527,7 @@ export default function WordBuilderPage() {
             {/* Used Words */}
             {usedWords.size > 0 && (
               <div className="rounded-2xl p-4 bg-green-500/10 border border-green-500/30">
-                <div className="text-sm text-green-400 mb-3 font-bold">✅ คำที่แก้แล้ว ({usedWords.size} คำ):</div>
+                <div className="text-sm text-green-400 mb-3 font-bold">✅ Words found ({usedWords.size} words):</div>
                 <div className="flex flex-wrap gap-2">
                   {Array.from(usedWords).map((word, idx) => (
                     <motion.span
@@ -571,11 +571,11 @@ export default function WordBuilderPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border-2 border-indigo-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📚 คำที่แก้ได้: <b className="text-indigo-300">{usedWords.size}</b> คำ</p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 5 Tokens!</p>
+              <p className="text-white/90">🎯 Final score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">📚 Words found: <b className="text-indigo-300">{usedWords.size}</b> words</p>
+              <p className="text-green-400 font-bold">💰 Earned 5 Tokens!</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -583,7 +583,7 @@ export default function WordBuilderPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl"
             >
-              กลับไปหน้าแรก
+              Back to Home
             </motion.button>
           </motion.div>
         )}

@@ -158,11 +158,11 @@ export default function MathQuizPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
+      alert('Please connect your wallet first');
       return;
     }
     if (isOnCooldown) {
-      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
       return;
     }
 
@@ -343,7 +343,7 @@ export default function MathQuizPage() {
             className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
           >
             <p className="text-red-300 font-bold">
-              ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+              ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
             </p>
           </motion.div>
         )}
@@ -356,15 +356,15 @@ export default function MathQuizPage() {
           >
             <div className="rounded-2xl p-8 bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/30 text-center">
               <div className="text-6xl mb-4">🧩</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">แก้ปริศนาลำดับ!</h2>
+              <h2 className="text-3xl font-bold mb-4 text-white">Solve the pattern puzzle!</h2>
               <p className="text-white/80 mb-6">
-                ดูรูปแบบที่ให้มา แล้วเลือกลำดับถัดไปที่ถูกต้อง
+                Look at the pattern given, then select the correct next sequence
               </p>
               <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ คุณมี 3 ชีวิต</p>
-                <p>🔥 แต่ละเลเวลจะยากขึ้นเรื่อยๆ</p>
-                <p>🧩 รูปแบบ: ตัวเลข, รูปทรง, สี, ทิศทาง</p>
-                <p>💎 รางวัล: 0-5 LUX (ยากมากที่จะได้ 5!)</p>
+                <p>✨ You have 3 lives</p>
+                <p>🔥 Each level gets harder</p>
+                <p>🧩 Patterns: numbers, shapes, colors, directions</p>
+                <p>💎 Reward: 0-5 LUX (very rare to get 5!)</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -373,7 +373,7 @@ export default function MathQuizPage() {
                 disabled={isOnCooldown}
                 className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl shadow-2xl shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ▶ เริ่มเล่น
+                ▶ Start Playing
               </motion.button>
             </div>
           </motion.div>
@@ -384,8 +384,8 @@ export default function MathQuizPage() {
             {/* Sequence Display */}
             <div className="bg-zinc-900/60 rounded-2xl p-6 border border-zinc-800">
               <div className="text-center mb-4">
-                <p className="text-white/70 text-lg mb-2">ดูรูปแบบต่อไปนี้:</p>
-                <p className="text-white/50 text-sm">เลือกลำดับถัดไปที่ถูกต้อง</p>
+                <p className="text-white/70 text-lg mb-2">Look at this pattern:</p>
+                <p className="text-white/50 text-sm">Select the correct next sequence</p>
               </div>
               <div className="flex items-center justify-center gap-4 flex-wrap">
                 {sequence.map((pattern, index) => (
@@ -445,7 +445,7 @@ export default function MathQuizPage() {
                   exit={{ opacity: 0, y: 20 }}
                   className="bg-green-500/20 border-2 border-green-500/50 rounded-xl p-4 text-center"
                 >
-                  <p className="text-green-400 font-bold text-xl">✅ ถูกต้อง!</p>
+                  <p className="text-green-400 font-bold text-xl">✅ Correct!</p>
                 </motion.div>
               )}
               {isWrong && (
@@ -455,7 +455,7 @@ export default function MathQuizPage() {
                   exit={{ opacity: 0, y: 20 }}
                   className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 text-center"
                 >
-                  <p className="text-red-400 font-bold text-xl">❌ ผิด! -1 ชีวิต</p>
+                  <p className="text-red-400 font-bold text-xl">❌ Wrong! -1 life</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -469,13 +469,13 @@ export default function MathQuizPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-orange-500/30 to-red-500/30 border-2 border-orange-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📊 เลเวลสูงสุด: <b className="text-orange-300">{level}</b></p>
+              <p className="text-white/90">🎯 Final score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">📊 Highest level: <b className="text-orange-300">{level}</b></p>
               {luxReward !== null && (
                 <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
-                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}ได้รับ {luxReward} LUX!
+                  {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}Earned {luxReward} LUX!
                 </div>
               )}
             </div>
@@ -485,7 +485,7 @@ export default function MathQuizPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 font-bold text-xl"
             >
-              กลับไปหน้าแรก
+              Back to Home
             </motion.button>
           </motion.div>
         )}

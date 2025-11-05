@@ -10,12 +10,12 @@ type GameState = 'idle' | 'showing' | 'playing' | 'gameover' | 'victory';
 
 const COLORS: Color[] = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 const COLOR_CONFIG: Record<Color, { name: string; emoji: string; bg: string; light: string; border: string }> = {
-  red: { name: 'แดง', emoji: '🔴', bg: 'from-red-500 to-red-600', light: 'bg-red-400', border: 'border-red-400' },
-  blue: { name: 'น้ำเงิน', emoji: '🔵', bg: 'from-blue-500 to-blue-600', light: 'bg-blue-400', border: 'border-blue-400' },
-  green: { name: 'เขียว', emoji: '🟢', bg: 'from-green-500 to-green-600', light: 'bg-green-400', border: 'border-green-400' },
-  yellow: { name: 'เหลือง', emoji: '🟡', bg: 'from-yellow-500 to-yellow-600', light: 'bg-yellow-400', border: 'border-yellow-400' },
-  purple: { name: 'ม่วง', emoji: '🟣', bg: 'from-purple-500 to-purple-600', light: 'bg-purple-400', border: 'border-purple-400' },
-  orange: { name: 'ส้ม', emoji: '🟠', bg: 'from-orange-500 to-orange-600', light: 'bg-orange-400', border: 'border-orange-400' },
+  red: { name: 'Red', emoji: '🔴', bg: 'from-red-500 to-red-600', light: 'bg-red-400', border: 'border-red-400' },
+  blue: { name: 'Blue', emoji: '🔵', bg: 'from-blue-500 to-blue-600', light: 'bg-blue-400', border: 'border-blue-400' },
+  green: { name: 'Green', emoji: '🟢', bg: 'from-green-500 to-green-600', light: 'bg-green-400', border: 'border-green-400' },
+  yellow: { name: 'Yellow', emoji: '🟡', bg: 'from-yellow-500 to-yellow-600', light: 'bg-yellow-400', border: 'border-yellow-400' },
+  purple: { name: 'Purple', emoji: '🟣', bg: 'from-purple-500 to-purple-600', light: 'bg-purple-400', border: 'border-purple-400' },
+  orange: { name: 'Orange', emoji: '🟠', bg: 'from-orange-500 to-orange-600', light: 'bg-orange-400', border: 'border-orange-400' },
 };
 
 const INITIAL_SEQUENCE_LENGTH = 3;
@@ -99,15 +99,15 @@ export default function ColorTapPage() {
 
   function startGame() {
     if (!address) {
-      alert('กรุณาเชื่อมต่อ Wallet ก่อน');
+      alert('Please connect your wallet first');
       return;
     }
     if (energy <= 0) {
-      alert('พลังงานไม่เพียงพอ!');
+      alert('Insufficient energy!');
       return;
     }
     if (isOnCooldown) {
-      alert(`คุณต้องรอ ${cooldownRemaining.hours} ชั่วโมง ${cooldownRemaining.minutes} นาที`);
+      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
       return;
     }
 
@@ -360,7 +360,7 @@ export default function ColorTapPage() {
               className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
             >
               <p className="text-red-300 font-bold">
-                ⏰ คุณต้องรอ {cooldownRemaining.hours} ชั่วโมง {cooldownRemaining.minutes} นาที
+                ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
               </p>
             </motion.div>
           )}
@@ -373,14 +373,14 @@ export default function ColorTapPage() {
           >
             <div className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 text-center">
               <div className="text-6xl mb-4">🎨</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">จำลำดับสีให้ถูกต้อง!</h2>
+              <h2 className="text-3xl font-bold mb-4 text-white">Remember the color sequence!</h2>
               <p className="text-white/80 mb-6">
-                ดูลำดับสีที่แสดง แล้วกดสีตามลำดับให้ถูกต้อง
+                Watch the color sequence shown, then tap the colors in the correct order
               </p>
               <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ คุณมี 3 ชีวิต</p>
-                <p>🔥 แต่ละเลเวลจะยาวขึ้นเรื่อยๆ</p>
-                <p>💎 คะแนนสูงขึ้นตามเลเวล!</p>
+                <p>✨ You have 3 lives</p>
+                <p>🔥 Each level gets longer</p>
+                <p>💎 Score increases with level!</p>
               </div>
                              <motion.button
                  whileHover={{ scale: 1.05 }}
@@ -389,7 +389,7 @@ export default function ColorTapPage() {
                  disabled={isOnCooldown}
                  className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                >
-                 ▶ เริ่มเล่น
+                 ▶ Start Playing
                </motion.button>
             </div>
           </motion.div>
@@ -400,11 +400,11 @@ export default function ColorTapPage() {
             {/* Status Message */}
             <div className="text-center">
               <p className="text-white/70 text-lg font-bold">
-                {gameState === 'showing' ? '👀 ดูลำดับสีให้ดี...' : '🎮 กดสีตามลำดับ!'}
+                {gameState === 'showing' ? '👀 Watch the sequence carefully...' : '🎮 Tap the colors in order!'}
               </p>
               {gameState === 'playing' && (
                 <p className="text-white/50 text-sm mt-2">
-                  คุณกดไปแล้ว: {currentProgress} / {totalSequence}
+                  Progress: {currentProgress} / {totalSequence}
                 </p>
               )}
             </div>
@@ -475,9 +475,9 @@ export default function ColorTapPage() {
                   }`}
                 >
                   {showFeedback === 'correct' ? (
-                    <span>✅ ถูกต้อง!</span>
+                    <span>✅ Correct!</span>
                   ) : (
-                    <span>❌ ผิด! -1 ชีวิต</span>
+                    <span>❌ Wrong! -1 life</span>
                   )}
                 </motion.div>
               )}
@@ -509,11 +509,11 @@ export default function ColorTapPage() {
             className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/30 to-pink-500/30 border-2 border-purple-500/50 text-center space-y-6"
           >
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">เกมจบ!</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 คะแนนสุดท้าย: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📊 เลเวลสูงสุด: <b className="text-purple-300">{level}</b></p>
-              <p className="text-green-400 font-bold">💰 ได้รับ 5 Tokens!</p>
+              <p className="text-white/90">🎯 Final Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
+              <p className="text-white/90">📊 Highest level: <b className="text-purple-300">{level}</b></p>
+              <p className="text-green-400 font-bold">💰 Earned 5 Tokens!</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -521,7 +521,7 @@ export default function ColorTapPage() {
               onClick={resetGame}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl"
             >
-              กลับไปหน้าแรก
+              Back to Home
             </motion.button>
           </motion.div>
         )}
