@@ -107,7 +107,7 @@ export default function ColorTapPage() {
       return;
     }
     if (isOnCooldown) {
-      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
+      alert(`You can only play one game every 24 hours. You need to wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes before playing any game.`);
       return;
     }
 
@@ -170,6 +170,11 @@ export default function ColorTapPage() {
     if (timeSinceLastClick < 100 && lastClickTime > 0) {
       const cheatCheck = antiCheat.checkAction(address, 'color_click', { color, timeSinceLastClick });
       if (cheatCheck.suspicious) {
+        if (cheatCheck.blocked) {
+          alert('Cheating detected. Access blocked.');
+          setGameState('gameover');
+          return;
+        }
         alert('Suspicious activity detected. Please play normally.');
         return;
       }
@@ -182,12 +187,15 @@ export default function ColorTapPage() {
     const newPlayerSeq = [...playerSequence, color];
     setPlayerSequence(newPlayerSeq);
     
-    // Check if correct
+        // Check if correct
     const expectedColor = sequence[newPlayerSeq.length - 1];
     const isCorrect = color === expectedColor;
-    
-    if (isCorrect) {
-      // Correct!
+
+    // Apply 80% loss rate: 80% chance of losing regardless of actual result
+    const shouldLose = antiCheat.shouldForceLoss(address, isCorrect);
+
+    if (isCorrect && !shouldLose) {
+      // Correct AND passed 80% loss check (20% chance)
       if (soundEnabled) playSound('correct');
       setShowFeedback('correct');
       antiCheat.recordAction(address, 'correct_color', { correct: true, level });
@@ -242,9 +250,17 @@ export default function ColorTapPage() {
     try {
       const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
       
+      // Apply 80% loss rate: 80% chance of losing even if game completed
+      const shouldLose = antiCheat.shouldForceLoss(address, true);
+      if (shouldLose) {
+        // Force loss - no reward
+        alert('Better luck next time!');
+        return;
+      }
+
       // Anti-cheat: Validate score
-      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
-      if (scoreCheck.suspicious) {
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount, GAME_ID);
+      if (scoreCheck.suspicious || scoreCheck.blocked) {
         console.warn('Suspicious score detected:', scoreCheck.reason);
         alert('Score validation failed. Please try again.');
         return;

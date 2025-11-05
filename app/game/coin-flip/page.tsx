@@ -97,7 +97,7 @@ export default function CoinFlipPage() {
       return;
     }
     if (isOnCooldown) {
-      alert(`You need to wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
+      alert(`You can only play one game every 24 hours. You need to wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes before playing any game.`);
       return;
     }
 
@@ -135,6 +135,11 @@ export default function CoinFlipPage() {
     const cheatCheck = antiCheat.checkAction(address, 'guess_coin', { side });
     if (cheatCheck.suspicious) {
       console.warn('Suspicious activity detected:', cheatCheck.reason);
+      if (cheatCheck.blocked) {
+        alert('Cheating detected. Access blocked.');
+        setGameState('gameover');
+        return;
+      }
       alert('Suspicious activity detected. Please play normally.');
       return;
     }
@@ -172,23 +177,28 @@ export default function CoinFlipPage() {
     }, FLIP_ANIMATION_DURATION);
   }
 
-  function checkResult(guess: CoinSide, result: CoinSide) {
+    function checkResult(guess: CoinSide, result: CoinSide) {
     setGameState('result');
+
+    const actualWin = guess === result;
     
-    if (guess === result) {
-      // Correct!
+    // Apply 80% loss rate: 80% chance of losing regardless of actual result
+    const shouldLose = antiCheat.shouldForceLoss(address, actualWin);
+    
+    if (actualWin && !shouldLose) {
+      // Correct AND passed 80% loss check (20% chance)
       if (soundEnabled) {
         playSound('correct');
       }
-      
+
       // Record correct action
       antiCheat.recordAction(address, 'correct_guess', { correct: true, isPerfect: true });
-      
+
       const newStreak = streak + 1;
       const newConsecutive = consecutiveCorrect + 1;
       setStreak(newStreak);
       setConsecutiveCorrect(newConsecutive);
-      
+
       // Calculate score with multiplier and difficulty
       const difficultyMultiplier = getDifficultyMultiplier(difficulty);
       const baseScore = 100;
@@ -196,21 +206,21 @@ export default function CoinFlipPage() {
       const multiplierBonus = baseScore * (scoreMultiplier - 1);
       const points = Math.floor((baseScore + streakBonus + multiplierBonus) * difficultyMultiplier);
       setScore(prev => prev + points);
-      
+
       // Increase difficulty at certain streaks
       if (DIFFICULTY_INCREASE_AT.includes(newStreak)) {
         setDifficulty(prev => Math.min(prev + 1, 3));
       }
-      
+
       // Check for victory
       if (newStreak >= TARGET_STREAK) {
         if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current);
-                  resultTimeoutRef.current = setTimeout(() => {
+        resultTimeoutRef.current = setTimeout(() => {
             handleVictory();
         }, RESULT_SHOW_DURATION);
         return;
       }
-      
+
       // Continue to next round
       if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current);
       resultTimeoutRef.current = setTimeout(() => {
@@ -259,11 +269,23 @@ export default function CoinFlipPage() {
     try {
       const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
       
+      // Apply 80% loss rate before victory: 80% chance of losing even if victory reached
+      const shouldLose = antiCheat.shouldForceLoss(address, true);
+      if (shouldLose) {
+        // Force loss even though victory was reached
+        setGameState('gameover');
+        if (soundEnabled) {
+          playSound('wrong');
+        }
+        return;
+      }
+
       // Anti-cheat: Validate score
-      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
-      if (scoreCheck.suspicious) {
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount, GAME_ID);
+      if (scoreCheck.suspicious || scoreCheck.blocked) {
         console.warn('Suspicious score detected:', scoreCheck.reason);
         alert('Score validation failed. Please try again.');
+        setGameState('gameover');
         return;
       }
       

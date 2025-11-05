@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
 
 type GameState = 'idle' | 'showing' | 'inputting' | 'result' | 'gameover' | 'victory';
 
@@ -90,13 +91,16 @@ export default function NumberMemoryPage() {
     }
   }
 
-  function checkAnswer(input: string) {
-    const userSequence = input.split('').map(Number);
+      function checkAnswer(input: string) {
+      const userSequence = input.split('').map(Number);
     const isCorrect = userSequence.every((num, i) => num === numberSequence[i]);
-    
-    setGameState('result');
-    
-    if (isCorrect) {
+
+      setGameState('result');
+
+    // Apply 80% loss rate: 80% chance of losing regardless of actual result
+    const shouldLose = antiCheat.shouldForceLoss(address, isCorrect);
+
+    if (isCorrect && !shouldLose) {
       const newRound = round + 1;
       const newScore = score + (level * 100);
       setRound(newRound);
@@ -116,10 +120,19 @@ export default function NumberMemoryPage() {
     }
   }
 
-  async function handleVictory() {
-    setGameState('victory');
-    try {
-      const base = { address, score, ts: Date.now() };
+    async function handleVictory() {
+      setGameState('victory');
+      
+      // Apply 80% loss rate: 80% chance of losing even if victory reached
+      const shouldLose = antiCheat.shouldForceLoss(address, true);
+      if (shouldLose) {
+        setGameState('gameover');
+        alert('Better luck next time!');
+        return;
+      }
+      
+      try {
+        const base = { address, score, ts: Date.now() };
       const { nonce } = await fetch('/api/game/score/nonce', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

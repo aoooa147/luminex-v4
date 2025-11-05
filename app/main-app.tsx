@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { MiniKit, tokenToDecimals, Tokens } from '@worldcoin/minikit-js';
 import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS, TREASURY_ADDRESS as TREASURY_ADDRESS_FROM_CONSTANTS } from '@/lib/utils/constants';
 import { POWERS, BASE_APY, getPowerByCode, getPowerBoost, type PowerCode } from '@/lib/utils/powerConfig';
@@ -25,6 +26,8 @@ const LOGO_URL = "https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu
 const TOKEN_NAME = "LUX";
 // Use TREASURY_ADDRESS from constants.ts (can be overridden by NEXT_PUBLIC_TREASURY_ADDRESS env variable)
 const TREASURY_ADDRESS = TREASURY_ADDRESS_FROM_CONSTANTS; // Default: 0xdc6c9ac4c8ced68c9d8760c501083cd94dcea4e8
+// Admin wallet address - configure this in .env.local as NEXT_PUBLIC_ADMIN_WALLET_ADDRESS
+const ADMIN_WALLET_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || TREASURY_ADDRESS;
 
 // preserved original:
 const WORLD_APP_ID /* original: app_0ebc1640de72f393da01afc094665266 */ = (ENV_WORLD_APP_ID || "app_0ebc1640de72f393da01afc094665266");
@@ -1523,12 +1526,14 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
 };
 
 const LuminexApp = () => {
+  const router = useRouter();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [verifiedAddress, setVerifiedAddress] = useState<string | null>(null);
   const { userAddress } = useWorldID();
   const { wallet, isConnected, connectWallet, requestPayment, provider, userInfo, setUserInfo, getSigner } = useMiniKit();
   const [activeTab, setActiveTab] = useState<'staking' | 'membership' | 'referral' | 'game'>('staking');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedPool, setSelectedPool] = useState(0);
   const [stakeAmount, setStakeAmount] = useState('');
   const [showStakeModal, setShowStakeModal] = useState(false);
@@ -1573,20 +1578,35 @@ const LuminexApp = () => {
     return LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
   }, [language]);
 
-  // Get the actual address to use (prioritize wallet, then verified address)
+    // Get the actual address to use (prioritize wallet, then verified address)
   const actualAddress = useMemo(
     () => {
       const addr = wallet?.address || verifiedAddress || userAddress || null;
-      console.log('🔍 actualAddress calculated:', { 
-        fromWallet: wallet?.address, 
-        fromVerified: verifiedAddress, 
-        fromUser: userAddress, 
-        final: addr 
+      console.log('🔍 actualAddress calculated:', {
+        fromWallet: wallet?.address,
+        fromVerified: verifiedAddress,
+        fromUser: userAddress,
+        final: addr
       });
       return addr;
     },
     [wallet?.address, verifiedAddress, userAddress]
   );
+
+  // Check if user is admin
+  useEffect(() => {
+    if (actualAddress) {
+      const isAdminUser = actualAddress.toLowerCase() === ADMIN_WALLET_ADDRESS.toLowerCase();
+      setIsAdmin(isAdminUser);
+      console.log('🔍 Admin check:', {
+        address: actualAddress,
+        adminAddress: ADMIN_WALLET_ADDRESS,
+        isAdmin: isAdminUser
+      });
+    } else {
+      setIsAdmin(false);
+    }
+  }, [actualAddress]);
 
   // Refs to track fetch operations (avoids dependency loop)
   const balanceFetchInProgress = React.useRef(false);
@@ -3466,23 +3486,39 @@ const LuminexApp = () => {
             <UserPlus className="w-6 h-6 relative z-10" />
             <span className="text-xs font-bold relative z-10">Referral</span>
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setActiveTab('game')}
-              className={`flex flex-col items-center space-y-1 relative ${activeTab === 'game' ? 'text-white' : 'text-gray-500'}`}
-            >
-              {activeTab === 'game' && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
-                />
+                          <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveTab('game')}
+                className={`flex flex-col items-center space-y-1 relative ${activeTab === 'game' ? 'text-white' : 'text-gray-500'}`}
+              >
+                {activeTab === 'game' && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -inset-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl blur"
+                  />
+                )}
+                <Gamepad2 className="w-6 h-6 relative z-10" />
+                <span className="text-xs font-bold relative z-10">Game</span>
+              </motion.button>
+              {/* Admin Button - Only visible to admin users */}
+              {isAdmin && (
+                <motion.a
+                  href="/admin"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push('/admin');
+                  }}
+                  className="flex flex-col items-center space-y-1 relative text-yellow-400 hover:text-yellow-300"
+                >
+                  <Shield className="w-6 h-6 relative z-10" />
+                  <span className="text-xs font-bold relative z-10">Admin</span>
+                </motion.a>
               )}
-              <Gamepad2 className="w-6 h-6 relative z-10" />
-              <span className="text-xs font-bold relative z-10">Game</span>
-          </motion.button>
-              </div>
-            </div>
+          </div>
+        </div>
 
       {/* Toast Notification */}
       <AnimatePresence>

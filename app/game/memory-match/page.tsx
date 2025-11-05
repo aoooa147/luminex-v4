@@ -83,7 +83,7 @@ export default function MemoryMatchPage() {
       return;
     }
     if (isOnCooldown) {
-      alert(`You must wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes`);
+      alert(`You can only play one game every 24 hours. You need to wait ${cooldownRemaining.hours} hours ${cooldownRemaining.minutes} minutes before playing any game.`);
       return;
     }
 
@@ -196,8 +196,15 @@ export default function MemoryMatchPage() {
     try {
       const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
       
-      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount);
-      if (scoreCheck.suspicious) {
+      // Apply 80% loss rate: 80% chance of losing even if game completed
+      const shouldLose = antiCheat.shouldForceLoss(address, true);
+      if (shouldLose) {
+        alert('Better luck next time!');
+        return;
+      }
+
+      const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount, GAME_ID);
+      if (scoreCheck.suspicious || scoreCheck.blocked) {
         alert('Score validation failed.');
         return;
       }

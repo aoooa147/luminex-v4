@@ -36,22 +36,32 @@ export async function POST(req: NextRequest){
   const now=Date.now(); 
   if(Math.abs(now-Number(ts))>WINDOW_MS) return Response.json({ok:false,error:'stale'},{status:400});
   
-  // Enhanced anti-cheat checks
+    // Enhanced anti-cheat checks using the anti-cheat system
+  const { antiCheat } = await import('@/lib/game/anticheat');
+  const gameId = payload?.gameId || 'unknown';
+  
   if (typeof gameDuration === 'number' && gameDuration > 0) {
+    const scoreCheck = antiCheat.validateScore(addressLower, score, gameDuration, actionsCount || 0, gameId);
+    if (scoreCheck.suspicious || scoreCheck.blocked) {
+      console.warn(`[anti-cheat] ${addressLower}: ${scoreCheck.reason || 'suspicious_score'} (confidence: ${scoreCheck.confidence})`);
+      return Response.json({ok:false,error:scoreCheck.reason || 'suspicious_score'},{status:400});
+    }
+
+    // Additional checks for extra security
     // Check 1: Score too high relative to game duration
     const scorePerSecond = score / gameDuration;
     if (scorePerSecond > MAX_SCORE_PER_SECOND) {
       console.warn(`[anti-cheat] ${addressLower}: Score too high per second: ${scorePerSecond.toFixed(2)}`);
       return Response.json({ok:false,error:'suspicious_score_rate'},{status:400});
     }
-    
+
     // Check 2: High score with suspiciously short duration
     if (score > HIGH_SCORE_THRESHOLD && gameDuration < MIN_GAME_DURATION_FOR_HIGH_SCORE) {
       console.warn(`[anti-cheat] ${addressLower}: High score (${score}) in short duration (${gameDuration}s)`);
       return Response.json({ok:false,error:'suspicious_score_duration'},{status:400});
     }
   }
-  
+
   // Check 3: Score too high relative to actions
   if (typeof actionsCount === 'number' && actionsCount > 0) {
     const scorePerAction = score / actionsCount;
