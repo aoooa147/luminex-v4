@@ -110,32 +110,43 @@ const AdminPage = () => {
 
   const loadAdminStats = async () => {
     try {
-      // TODO: In production, fetch real stats from your backend/database
-      // For now, using mock data with localStorage as simple storage
-      if (typeof window !== 'undefined') {
-        const storedStats = localStorage.getItem('luminex_admin_stats');
-        if (storedStats) {
-          setStats(JSON.parse(storedStats));
-        } else {
-          // Initialize with default stats
-          setStats({
-            totalUsers: 156,
-            totalStaking: 125000,
-            totalRevenue: 8500,
-            totalReferrals: 42,
-          });
-        }
+      // Fetch real stats from API
+      const response = await fetch('/api/admin/stats');
+      const data = await response.json();
+      
+      if (data.success && data.stats) {
+        setStats({
+          totalUsers: data.stats.totalUsers || 0,
+          totalStaking: data.stats.totalStaking || 0,
+          totalRevenue: data.stats.totalRevenue || 0,
+          totalReferrals: data.stats.totalReferrals || 0,
+        });
+      } else {
+        console.error('Failed to load admin stats:', data.error);
+        // Fallback to default values
+        setStats({
+          totalUsers: 0,
+          totalStaking: 0,
+          totalRevenue: 0,
+          totalReferrals: 0,
+        });
       }
     } catch (error) {
       console.error('Error loading admin stats:', error);
+      // Fallback to default values on error
+      setStats({
+        totalUsers: 0,
+        totalStaking: 0,
+        totalRevenue: 0,
+        totalReferrals: 0,
+      });
     }
   };
 
   const refreshStats = async () => {
     setRefreshing(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Fetch fresh stats from API
       await loadAdminStats();
       
       // Haptic feedback
