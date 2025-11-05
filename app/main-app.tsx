@@ -1051,47 +1051,46 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
         {/* Side accent lines */}
         <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
         <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
-      </div>
+            </div>
 
-              {/* Content */}
-        <div className="relative z-10 max-w-md w-full">
-          {/* Logo - 3D */}
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-center mb-6 flex justify-center"
-            style={{ willChange: 'transform, opacity' }}
-          >
-                                                      <Logo3D size={144} interactive={true} />
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-5xl font-black mt-6 relative"
-              style={{ willChange: 'opacity' }}
-            >
-              <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
-              LUMINEX
-              </span>
-              {/* Elegant gold text glow effect */}
-              <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
-              {/* Gold text shadow */}
-              <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
-              style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
-            >
-              STAKING PLATFORM
-            </motion.p>
-          </div>
+      {/* Content */}
+      <div className="relative z-10 max-w-md w-full">
+        {/* Logo - 3D */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-6 flex justify-center"
+          style={{ willChange: 'transform, opacity' }}
+        >
+          <Logo3D size={144} interactive={true} />
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="text-5xl font-black mt-6 relative"
+          style={{ willChange: 'opacity' }}
+        >
+          <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
+            LUMINEX
+          </span>
+          {/* Elegant gold text glow effect */}
+          <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
+          {/* Gold text shadow */}
+          <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
+          style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
+        >
+          STAKING PLATFORM
+        </motion.p>
 
-          {/* Luxurious Verification Card with Ornate Gold Accents */}
+        {/* Luxurious Verification Card with Ornate Gold Accents */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1348,6 +1347,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             </motion.div>
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );
