@@ -1063,122 +1063,33 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             className="text-center mb-6 flex justify-center"
             style={{ willChange: 'transform, opacity' }}
           >
-            <Logo3D size={144} interactive={true} />
-          </motion.div>
-            {/* Luxurious ornate circuit rings */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 192 192" style={{ transformOrigin: 'center', transform: 'translateZ(0)' }}>
-              {/* Outer ornate ring */}
-              <motion.circle
-                cx="96"
-                cy="96"
-                r="92"
-                fill="none"
-                stroke="url(#goldGradientOuter)"
-                strokeWidth="2.5"
-                strokeDasharray="16 8"
-                opacity="0.7"
-                style={{ transformOrigin: '96px 96px', willChange: 'transform' }}
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              />
-              {/* Middle decorative ring */}
-              <motion.circle
-                cx="96"
-                cy="96"
-                r="88"
-                fill="none"
-                stroke="url(#goldGradientMiddle)"
-                strokeWidth="1.5"
-                strokeDasharray="8 16"
-                opacity="0.5"
-                style={{ transformOrigin: '96px 96px', willChange: 'transform' }}
-                animate={{ rotate: [360, 0] }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              />
-              {/* Inner accent ring */}
-              <motion.circle
-                cx="96"
-                cy="96"
-                r="84"
-                fill="none"
-                stroke="url(#goldGradientInner)"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-                opacity="0.4"
-                style={{ transformOrigin: '96px 96px', willChange: 'transform' }}
-                animate={{ rotate: [0, -360] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              />
-              {/* Decorative corner dots */}
-              {[0, 90, 180, 270].map((angle, i) => {
-                const rad = (angle * Math.PI) / 180;
-                const x = 96 + 92 * Math.cos(rad);
-                const y = 96 + 92 * Math.sin(rad);
-                return (
-                  <motion.circle
-                    key={i}
-                    cx={x}
-                    cy={y}
-                    r="3"
-                    fill="url(#goldGradientOuter)"
-                    animate={{ 
-                      opacity: [0.4, 1, 0.4],
-                      scale: [1, 1.3, 1]
-                    }}
-                    transition={{ 
-                      duration: 2, 
-                      repeat: Infinity, 
-                      delay: i * 0.5,
-                      ease: "easeInOut" 
-                    }}
-                  />
-                );
-              })}
-              <defs>
-                <linearGradient id="goldGradientOuter" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.9" />
-                  <stop offset="25%" stopColor="#f59e0b" stopOpacity="1" />
-                  <stop offset="50%" stopColor="#d97706" stopOpacity="1" />
-                  <stop offset="75%" stopColor="#f59e0b" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.9" />
-                </linearGradient>
-                <linearGradient id="goldGradientMiddle" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.6" />
-                  <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#d97706" stopOpacity="0.6" />
-                </linearGradient>
-                <linearGradient id="goldGradientInner" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.5" />
-                  <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#d97706" stopOpacity="0.5" />
-                </linearGradient>
-              </defs>
-            </svg>
+                                                      <Logo3D size={144} interactive={true} />
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-5xl font-black mt-6 relative"
+              style={{ willChange: 'opacity' }}
+            >
+              <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
+              LUMINEX
+              </span>
+              {/* Elegant gold text glow effect */}
+              <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
+              {/* Gold text shadow */}
+              <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
+              style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
+            >
+              STAKING PLATFORM
+            </motion.p>
           </div>
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-5xl font-black mt-6 relative"
-            style={{ willChange: 'opacity' }}
-          >
-            <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
-            LUMINEX
-            </span>
-            {/* Elegant gold text glow effect */}
-            <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
-            {/* Gold text shadow */}
-            <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm tracking-[0.2em] uppercase mt-3"
-            style={{ willChange: 'opacity', letterSpacing: '0.3em' }}
-          >
-            STAKING PLATFORM
-          </motion.p>
         </motion.div>
 
                                                  {/* Luxurious Verification Card with Ornate Gold Accents */}
