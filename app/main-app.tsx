@@ -979,36 +979,31 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
   };
 
     return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden" style={{ willChange: 'auto' }}>                   
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
       {/* Header Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-yellow-600/20">                                              
-        <div className="flex items-center justify-between px-4 py-3 h-12">
-          {/* Left: Close button */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-yellow-600/30">
+        <div className="flex items-center justify-between px-4 py-3 h-14">
           <button
             onClick={() => window.history.back()}
-            className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0"                                             
+            className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
-
-          {/* Center: Logo and Title */}
-          <div className="flex items-center gap-2 flex-1 justify-center min-w-0">       
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50 flex-shrink-0">  
+          <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50 flex-shrink-0">
               <span className="text-black font-black text-sm">L</span>
             </div>
             <span className="text-white font-semibold text-sm whitespace-nowrap">Luminex Staking</span>
             <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
           </div>
-
-          {/* Right: Menu button */}
-          <button className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0">                                      
+          <button className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0">
             <MoreVertical className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="min-h-screen flex items-center justify-center p-4 pt-20 pb-20 overflow-x-hidden"> 
+      {/* Main Content - Clean Layout */}
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-16 pb-24">
       {/* Luxurious geometric background pattern */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ 
         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(234, 179, 8, 0.1) 35px, rgba(234, 179, 8, 0.1) 70px),
@@ -1081,12 +1076,12 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
         {/* Side accent lines */}
         <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
         <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-transparent via-yellow-600/30 to-transparent"></div>
-            </div>
+      </div>
 
       {/* Content */}
       <div className="relative z-10 max-w-md w-full px-2">
         {/* Logo - 3D */}
-        <motion.div
+      <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -1094,14 +1089,14 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           style={{ willChange: 'transform, opacity' }}
         >
           <Logo3D size={144} interactive={true} />
-        </motion.div>
-        <motion.h1
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+            </motion.div>
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="text-5xl font-black mt-6 relative"
           style={{ willChange: 'opacity' }}
-        >
+          >
           <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent tracking-tight relative inline-block drop-shadow-lg">
             LUMINEX
           </span>
@@ -1109,16 +1104,16 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/40 via-amber-400/50 to-yellow-400/40 blur-xl opacity-70 -z-10" style={{ transform: 'translateZ(0)' }}></span>
           {/* Gold text shadow */}
           <span className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 blur-2xl -z-20" style={{ transform: 'translateZ(0)' }}></span>
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
           className="text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text font-bold text-sm uppercase mt-3 whitespace-nowrap w-full text-center"                                                                              
           style={{ willChange: 'opacity', letterSpacing: '0.25em' }}
-        >
-          STAKING PLATFORM
-        </motion.p>
+          >
+            STAKING PLATFORM
+          </motion.p>
 
         {/* Luxurious Verification Card with Ornate Gold Accents */}
         <motion.div
@@ -1242,8 +1237,8 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
             <div className="flex items-center justify-center gap-2 mb-6 w-full px-2">       
               <div className="h-px w-8 bg-gradient-to-r from-transparent to-yellow-600/40 flex-shrink-0"></div>                                                
               <p className="text-gray-300 mb-0 text-center leading-relaxed text-sm font-medium px-2 flex-1 min-w-0">                                                              
-                You must verify your humanity to access the application.
-              </p>
+              You must verify your humanity to access the application.
+            </p>
               <div className="h-px w-8 bg-gradient-to-l from-transparent to-yellow-600/40 flex-shrink-0"></div>                                                              
 
             </div>
@@ -1313,21 +1308,21 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                   <>
                     <Shield className="w-5 h-5 drop-shadow-md" />
                     <span className="text-base font-extrabold tracking-wide drop-shadow-md">Verify</span>
-                      <motion.div
+                  <motion.div
                         className="w-2 h-2 bg-black/40 rounded-full shadow-lg"
                         animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                      />
+                  />
                     </>
-                  )}
+              )}
                 </span>
               </motion.button>
           </div>
-        </motion.div>
+      </motion.div>
       </div>
 
       {/* Luxurious Footer */}
-      <motion.div
+        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
@@ -1375,8 +1370,8 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
               />
-            </motion.div>
-          </div>
+        </motion.div>
+      </div>
         </motion.div>
       </div>
 
@@ -1459,7 +1454,7 @@ const LuminexApp = () => {
     return LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
   }, [language]);
 
-    // Get the actual address to use (prioritize wallet, then verified address)
+  // Get the actual address to use (prioritize wallet, then verified address)
   const actualAddress = useMemo(
     () => {
       const addr = wallet?.address || verifiedAddress || userAddress || null;
@@ -2753,11 +2748,11 @@ const LuminexApp = () => {
                       className={`relative p-1.5 rounded-lg border-2 transition-all overflow-hidden ${                                                            
                         selectedPool === pool.id
                           ? 'border-yellow-500 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 shadow-lg shadow-yellow-500/20'                             
-                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'                                                                
+                          : 'border-white/10 bg-black/40 backdrop-blur-lg hover:border-white/20'
                       }`}
                       style={{ willChange: 'transform' }}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${pool.color} opacity-10`}></div>                                                     
+                      <div className={`absolute inset-0 bg-gradient-to-br ${pool.color} opacity-10`}></div>
                       <div className="relative">
                         <i
                           className={`flex justify-center mb-0.5 ${
@@ -2840,7 +2835,7 @@ const LuminexApp = () => {
                 </div>
               </motion.div>
 
-                            {/* Action Buttons */}
+              {/* Action Buttons */}
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   {/* STAKING Button */}
@@ -2855,9 +2850,9 @@ const LuminexApp = () => {
                   </motion.button>
 
                   {/* Withdraw Interest */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                     onClick={handleClaimInterest}
                     disabled={isClaimingInterest || pendingRewards === 0}
                     className="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 disabled:opacity-50 text-xs shadow-lg"
@@ -2870,13 +2865,13 @@ const LuminexApp = () => {
                         <span>{t('withdrawInterest')}</span>
                       </>
                     )}
-                  </motion.button>
+                      </motion.button>
                 </div>
 
                 {/* Withdraw Balance */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                   onClick={handleWithdrawBalance}
                   disabled={isWithdrawing || stakedAmount === 0}
                   className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 px-2 rounded-lg flex items-center justify-center space-x-1.5 disabled:opacity-50 text-xs shadow-lg"
@@ -2889,7 +2884,7 @@ const LuminexApp = () => {
                       <span>{t('withdrawBalance')}</span>
                     </>
                   )}
-                </motion.button>
+                      </motion.button>
 
                 {/* Free Token Button */}
                 <motion.button
@@ -3149,7 +3144,7 @@ const LuminexApp = () => {
                     <Share2 className="w-5 h-5" />
                     <span>{translations[language].shareLink || 'Share Link'}</span>
                   </motion.button>
-                                    <motion.button
+                  <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowQRModal(true)}
@@ -3348,7 +3343,7 @@ const LuminexApp = () => {
             )}
             <UserPlus className="w-6 h-6 relative z-10" />
             <span className="text-xs font-bold relative z-10">Referral</span>
-            </motion.button>
+          </motion.button>
                           <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -3380,8 +3375,8 @@ const LuminexApp = () => {
                   <span className="text-xs font-bold relative z-10">Admin</span>
                 </motion.a>
               )}
-          </div>
-        </div>
+              </div>
+            </div>
 
       {/* Toast Notification */}
       <AnimatePresence>
@@ -3447,12 +3442,12 @@ const LuminexApp = () => {
                     level="H"
                   />
                 )}
-              </div>
+        </div>
 
               <div className="text-center">
                 <p className="text-white/80 text-sm mb-2">Scan this QR code to join Luminex!</p>
                 <p className="text-yellow-400 text-xs font-mono">{safeReferralCode}</p>
-              </div>
+      </div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
