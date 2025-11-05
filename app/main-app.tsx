@@ -1090,9 +1090,8 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
               STAKING PLATFORM
             </motion.p>
           </div>
-        </motion.div>
 
-                                                 {/* Luxurious Verification Card with Ornate Gold Accents */}
+          {/* Luxurious Verification Card with Ornate Gold Accents */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
