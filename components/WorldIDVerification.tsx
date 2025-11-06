@@ -262,21 +262,21 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                   className="flex-1 bg-gradient-to-b from-[#f7c948] to-[#d08b26] text-black font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
                   style={{
                     width: 'min(100%, 560px)',
-                    height: 'clamp(48px, 6.2vw, 56px)',
-                    borderRadius: '14px',
-                    fontSize: 'clamp(14px, 3.8vw, 16px)',
+                    height: 'clamp(56px, 8vw, 72px)',
+                    borderRadius: '16px',
+                    fontSize: 'clamp(16px, 4vw, 20px)',
                     letterSpacing: '0.2px',
                     boxShadow: '0 10px 30px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                   }}
                 >
                   {isVerifying ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-6 h-6 animate-spin" />
                       <span>Verifying...</span>
                     </>
                   ) : (
                     <>
-                      <Shield className="w-5 h-5" />
+                      <Shield className="w-6 h-6" />
                       <span>Verify</span>
                     </>
                   )}
