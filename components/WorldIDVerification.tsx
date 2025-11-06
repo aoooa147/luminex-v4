@@ -74,10 +74,8 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
       className="h-[100dvh] bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col"
       style={{
         height: '100dvh',
-        paddingTop: 'calc(var(--safe-top) + clamp(16px, 4vw, 24px))',
-        paddingBottom: isMiniKit 
-          ? 'calc(var(--safe-bottom) + clamp(16px, 4vw, 24px))' 
-          : 'calc(var(--safe-bottom) + clamp(16px, 4vw, 24px))',
+        paddingTop: 'var(--safe-top)',
+        paddingBottom: 'var(--safe-bottom)',
         paddingLeft: 'var(--safe-left)',
         paddingRight: 'var(--safe-right)',
         overflowY: 'hidden',
@@ -87,7 +85,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
       <div 
         className="flex flex-col items-center justify-center flex-1 overflow-y-auto"
         style={{
-          padding: 'clamp(16px, 4vw, 32px)',
+          padding: 'clamp(20px, 5vw, 40px)',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           justifyContent: 'center',
@@ -109,30 +107,30 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         </div>
 
         {/* Hero Section - Centered Layout */}
-        <section className="w-full max-w-lg flex flex-col items-center justify-center gap-8 mx-auto">
+        <section className="w-full max-w-lg flex flex-col items-center justify-center gap-6 mx-auto">
           {/* Logo Section - Centered */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center space-y-4 w-full"
+            className="flex flex-col items-center justify-center space-y-3 w-full"
           >
             <div 
-              className="w-full max-w-[min(85vw,480px)] mx-auto flex items-center justify-center"
+              className="w-full max-w-[min(75vw,420px)] mx-auto flex items-center justify-center"
               style={{
                 aspectRatio: '1/1',
               }}
             >
-              <Logo3D size={140} interactive={true} />
+              <Logo3D size={160} interactive={true} />
             </div>
-            <div className="text-center space-y-2 w-full">
+            <div className="text-center space-y-1.5 w-full">
               <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent text-center w-full"
                 style={{
-                  fontSize: 'clamp(28px, 5vw, 42px)',
+                  fontSize: 'clamp(32px, 6vw, 48px)',
                   lineHeight: 1.1,
                 }}
               >
@@ -144,7 +142,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="font-bold text-yellow-400/80 tracking-widest uppercase text-center w-full"
                 style={{
-                  fontSize: 'clamp(11px, 2.5vw, 14px)',
+                  fontSize: 'clamp(12px, 2.8vw, 16px)',
                   letterSpacing: '0.3em',
                 }}
               >
@@ -160,12 +158,12 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
             transition={{ delay: 0.4, duration: 0.6 }}
             className="relative rounded-[24px] bg-black/60 backdrop-blur-xl border border-yellow-600/30 w-full max-w-md mx-auto"
             style={{
-              padding: 'clamp(20px, 5vw, 32px)',
+              padding: 'clamp(24px, 6vw, 36px)',
               background: 'radial-gradient(120% 120% at 0% 0%, rgba(26, 18, 8, 0.8) 0%, rgba(11, 14, 20, 0.6) 60%)',
               boxShadow: '0 0 30px rgba(255, 200, 70, 0.15) inset, 0 0 40px rgba(255, 200, 70, 0.08), 0 20px 60px rgba(0, 0, 0, 0.8)',
             }}
           >
-            <div className="space-y-6 flex flex-col items-center">
+            <div className="space-y-5 flex flex-col items-center">
               {/* Shield Icon - Centered */}
               <div className="flex justify-center w-full">
                 <motion.div
@@ -208,57 +206,59 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 </div>
               )}
 
-              {/* Verify Button - Centered */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleVerify}
-                disabled={isVerifying}
-                className="w-full rounded-[16px] bg-gradient-to-b from-[#f7c948] to-[#d08b26] text-black font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-                style={{
-                  height: '56px',
-                  fontSize: 'clamp(16px, 3.5vw, 18px)',
-                  letterSpacing: '0.2px',
-                  boxShadow: '0 10px 30px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-                }}
-              >
-                {isVerifying ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-5 h-5" />
-                    <span>Verify</span>
-                  </>
+              {/* Action Buttons - Side by Side */}
+              <div className="w-full flex flex-col sm:flex-row gap-3">
+                {/* Verify Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleVerify}
+                  disabled={isVerifying}
+                  className="flex-1 rounded-[16px] bg-gradient-to-b from-[#f7c948] to-[#d08b26] text-black font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                  style={{
+                    height: '56px',
+                    fontSize: 'clamp(16px, 3.5vw, 18px)',
+                    letterSpacing: '0.2px',
+                    boxShadow: '0 10px 30px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                  }}
+                >
+                  {isVerifying ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-5 h-5" />
+                      <span>Verify</span>
+                    </>
+                  )}
+                </motion.button>
+
+                {/* "เปิด MiniKit" Button - Only show if NOT in MiniKit environment */}
+                {typeof window !== 'undefined' && !(window as any).MiniKit && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      alert('กรุณาเปิดแอปใน World App เพื่อใช้งาน MiniKit');
+                    }}
+                    className="flex-1 rounded-[16px] bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg"
+                    style={{
+                      height: '56px',
+                      fontSize: 'clamp(16px, 3.5vw, 18px)',
+                      letterSpacing: '0.2px',
+                      boxShadow: '0 4px 12px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)',
+                    }}
+                  >
+                    <span>เปิด MiniKit</span>
+                  </motion.button>
                 )}
-              </motion.button>
+              </div>
             </div>
           </motion.div>
         </section>
       </div>
-
-      {/* "เปิด MiniKit" Button - Only show if NOT in MiniKit environment */}
-      {typeof window !== 'undefined' && !(window as any).MiniKit && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          onClick={() => {
-            alert('กรุณาเปิดแอปใน World App เพื่อใช้งาน MiniKit');
-          }}
-          className="fixed z-40 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold text-xs rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-          style={{
-            right: `max(16px, var(--safe-right))`,
-            bottom: `calc(16px + var(--safe-bottom))`,
-            boxShadow: '0 4px 12px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)',
-            maxWidth: 'calc(100vw - 2rem - var(--safe-left) - var(--safe-right))',
-          }}
-        >
-          <span>เปิด MiniKit</span>
-        </motion.button>
-      )}
     </div>
   );
 }
