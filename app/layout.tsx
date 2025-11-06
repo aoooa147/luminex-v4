@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { MiniKitProvider } from '@worldcoin/minikit-js/minikit-provider';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import BrandStyle from '@/components/BrandStyle';
 
 const inter = Inter({ subsets: ['latin'] });

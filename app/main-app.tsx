@@ -11,7 +11,7 @@ import { MiniKit, tokenToDecimals, Tokens } from '@worldcoin/minikit-js';
 import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS, TREASURY_ADDRESS as TREASURY_ADDRESS_FROM_CONSTANTS } from '@/lib/utils/constants';
 import { POWERS, BASE_APY, getPowerByCode, getPowerBoost, type PowerCode } from '@/lib/utils/powerConfig';
 import { useMiniKit as useMiniKitVerify } from '@/hooks/useMiniKit';
-const MiniKitPanel = dynamic(() => import('@/components/MiniKitPanel'), { ssr: false });
+const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { ssr: false });
 const GameLauncherCard = dynamic(() => import('@/components/game/GameLauncherCard'), { ssr: false });
 import { 
   Wallet, Shield, Coins, TrendingUp, Settings, Gift, Users, Zap, Lock, Unlock, 
@@ -22,8 +22,8 @@ import {
   X, MoreVertical
 } from "lucide-react";
 import QRCodeSVG from 'react-qr-code';
-import Logo3D from '@/components/Logo3D';
-import WorldIDVerification from '@/components/WorldIDVerification';
+import Logo3D from '@/components/ui/Logo3D';
+import WorldIDVerification from '@/components/world/WorldIDVerification';
 
 const LOGO_URL = "https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu8gdggu8-1.png";
 const TOKEN_NAME = "LUX";

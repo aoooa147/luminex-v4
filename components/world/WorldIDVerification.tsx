@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Loader2 } from 'lucide-react';
-import Logo3D from './Logo3D';
+import Logo3D from '@/components/ui/Logo3D';
 
 interface WorldIDVerificationProps {
   onVerify: () => void;
