@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import QRCodeSVG from 'react-qr-code';
 import Logo3D from '@/components/Logo3D';
+import WorldIDVerification from '@/components/WorldIDVerification';
 
 const LOGO_URL = "https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu8gdggu8-1.png";
 const TOKEN_NAME = "LUX";
@@ -3259,19 +3260,20 @@ const LuminexApp = () => {
               </motion.button>
               {/* Admin Button - Only visible to admin users */}
               {isAdmin && (
-                <motion.a
-                  href="/admin"
+                <motion.button
+                  type="button"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    router.push('/admin');
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.assign('/admin');
+                    }
                   }}
                   className="flex flex-col items-center space-y-1 relative text-yellow-400 hover:text-yellow-300"
                 >
                   <Shield className="w-6 h-6 relative z-10" />
                   <span className="text-xs font-bold relative z-10">Admin</span>
-                </motion.a>
+                </motion.button>
               )}
               </div>
             </div>

@@ -68,10 +68,14 @@ const Logo3D: React.FC<Logo3DProps> = ({
       ref={containerRef}
       className={`relative ${className}`}
       style={{
-        width: size,
-        height: size,
+        width: `min(${size}px, 92vw)`,
+        height: `min(${size}px, 92vw)`,
+        maxWidth: '520px',
+        maxHeight: '520px',
+        aspectRatio: '1/1',
         perspective: '1000px',
         transformStyle: 'preserve-3d',
+        margin: '0 auto',
       }}
     >
       <motion.div

@@ -12,7 +12,12 @@ export const metadata: Metadata = {
   description: 'Premium DeFi staking platform for World App with up to 500% APY',
   manifest: '/manifest.json',
   themeColor: '#9333ea',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: 'cover',
+  },
   icons: {
     icon: '/icon-192.png',
     apple: '/icon-512.png',
@@ -33,6 +38,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="miniapp-verify-action" content="luminexstaking" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preload" as="image" href="https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu8gdggu8-1.png" />

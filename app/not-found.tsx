@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AlertCircle, Home } from 'lucide-react';
 
@@ -26,16 +25,20 @@ export default function NotFound() {
           The page you're looking for doesn't exist or has been moved.
         </p>
         
-        <Link href="/">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 mx-auto"
-          >
-            <Home className="w-5 h-5" />
-            Back to Home
-          </motion.button>
-        </Link>
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.location.assign('/');
+            }
+          }}
+          className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 mx-auto"
+        >
+          <Home className="w-5 h-5" />
+          Back to Home
+        </motion.button>
       </motion.div>
     </div>
   );

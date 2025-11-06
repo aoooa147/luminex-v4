@@ -216,14 +216,19 @@ const AdminPage = () => {
                 Connected: {walletAddress?.slice(0, 10)}...{walletAddress?.slice(-8)}
               </p>
             </div>
-            <motion.a
-              href="/"
+            <motion.button
+              type="button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.assign('/');
+                }
+              }}
               className="inline-block btn-premium text-white font-semibold px-6 py-3 rounded-lg glow-purple-sm"
             >
               Back to App
-            </motion.a>
+            </motion.button>
           </motion.div>
         </div>
       </div>
@@ -269,15 +274,20 @@ const AdminPage = () => {
                 <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
                 <span className="text-sm">Refresh</span>
               </motion.button>
-              <motion.a
-                href="/"
+              <motion.button
+                type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.location.assign('/');
+                  }
+                }}
                 className="glass-card glass-card-hover rounded-xl px-4 py-2 flex items-center space-x-2 text-white border border-purple-400/30"
               >
                 <LogOut className="w-5 h-5" />
                 <span className="text-sm">Back to App</span>
-              </motion.a>
+              </motion.button>
             </div>
           </div>
         </div>
