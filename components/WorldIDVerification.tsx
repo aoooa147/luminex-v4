@@ -12,6 +12,9 @@ interface WorldIDVerificationProps {
 export default function WorldIDVerification({ onVerify }: WorldIDVerificationProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  
+  // Check if running in MiniKit environment
+  const isMiniKit = typeof window !== 'undefined' && !!(window as any).MiniKit;
 
   const handleVerify = async () => {
     setIsVerifying(true);
@@ -68,11 +71,13 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
 
   return (
     <div 
-      className="min-h-[100dvh] bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden"
+      className="min-h-[100dvh] bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col"
       style={{
         minHeight: 'calc(100dvh - var(--safe-top) - var(--safe-bottom))',
         paddingTop: 'var(--safe-top)',
-        paddingBottom: 'calc(var(--safe-bottom) + var(--minikit-gap))',
+        paddingBottom: isMiniKit 
+          ? 'calc(var(--safe-bottom) + 16px)' 
+          : 'calc(var(--safe-bottom) + var(--minikit-gap))',
         paddingLeft: 'var(--safe-left)',
         paddingRight: 'var(--safe-right)',
       }}
@@ -122,9 +127,8 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
 
       {/* Main Content - Grid Layout with Safe Area */}
       <div 
-        className="flex flex-col items-center justify-center"
+        className="flex flex-col items-center justify-center flex-1"
         style={{
-          minHeight: 'calc(100dvh - 56px - var(--safe-top) - var(--safe-bottom) - var(--minikit-gap))',
           padding: 'clamp(16px, 4vw, 24px)',
         }}
       >
@@ -142,8 +146,8 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
           />
         </div>
 
-        {/* Hero Section - Grid Layout */}
-        <section className="w-full max-w-md grid gap-6 grid-cols-1">
+        {/* Hero Section - Flex Layout (No absolute positioning) */}
+        <section className="w-full max-w-md flex flex-col gap-6">
           {/* Logo Section */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
@@ -152,11 +156,9 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
             className="flex flex-col items-center space-y-4"
           >
             <div 
-              className="w-full max-w-[min(92vw,520px)] mx-auto"
+              className="w-full max-w-[min(92vw,520px)] mx-auto flex items-center justify-center"
               style={{
                 aspectRatio: '1/1',
-                display: 'grid',
-                placeItems: 'center',
               }}
             >
               <Logo3D size={120} interactive={true} />
@@ -275,28 +277,26 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         </section>
       </div>
 
-      {/* "เปิด MiniKit" Button - Fixed with Safe Area */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-        onClick={() => {
-          if (typeof window !== 'undefined' && (window as any).MiniKit) {
-            handleVerify();
-          } else {
+      {/* "เปิด MiniKit" Button - Only show if NOT in MiniKit environment */}
+      {typeof window !== 'undefined' && !(window as any).MiniKit && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          onClick={() => {
             alert('กรุณาเปิดแอปใน World App เพื่อใช้งาน MiniKit');
-          }
-        }}
-        className="fixed z-40 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold text-xs rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-        style={{
-          right: `max(16px, var(--safe-right))`,
-          bottom: `calc(16px + var(--safe-bottom) + var(--minikit-gap))`,
-          boxShadow: '0 4px 12px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)',
-          maxWidth: 'calc(100vw - 2rem - var(--safe-left) - var(--safe-right))',
-        }}
-      >
-        <span>เปิด MiniKit</span>
-      </motion.button>
+          }}
+          className="fixed z-40 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold text-xs rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+          style={{
+            right: `max(16px, var(--safe-right))`,
+            bottom: `calc(16px + var(--safe-bottom))`,
+            boxShadow: '0 4px 12px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)',
+            maxWidth: 'calc(100vw - 2rem - var(--safe-left) - var(--safe-right))',
+          }}
+        >
+          <span>เปิด MiniKit</span>
+        </motion.button>
+      )}
     </div>
   );
 }
