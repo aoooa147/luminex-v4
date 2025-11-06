@@ -65,8 +65,10 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    // 3. Total Revenue: Calculate from power license purchases
+    // 3. Total Revenue: Calculate from power license purchases (paid only)
     let totalRevenue = 0;
+    let paidMemberships = 0;
+    let freeMemberships = 0;
     try {
       // Read power data from file storage
       const powerFileData = readJSON<{
@@ -88,15 +90,21 @@ export async function GET(req: NextRequest) {
       
       const WLD_TO_USD = 2.5; // Approximate conversion rate
       
-      // Calculate from user powers
+      // Calculate from user powers (only count paid purchases)
       Object.values(userPowers).forEach((userPower: any) => {
         if (userPower?.code) {
-          const priceWLD = powerPrices[userPower.code.toLowerCase()] || 0;
-          totalRevenue += priceWLD * WLD_TO_USD;
+          const isPaid = userPower.isPaid !== false; // Default to true for backward compatibility
+          if (isPaid) {
+            const priceWLD = powerPrices[userPower.code.toLowerCase()] || 0;
+            totalRevenue += priceWLD * WLD_TO_USD;
+            paidMemberships++;
+          } else {
+            freeMemberships++;
+          }
         }
       });
       
-      // Also check power drafts (completed purchases)
+      // Also check power drafts (completed purchases - all are paid)
       Object.values(powerDrafts).forEach((draft: any) => {
         if (draft?.status === 'used' && draft?.amountWLD) {
           const amountWLD = parseFloat(String(draft.amountWLD)) || 0;
@@ -208,6 +216,11 @@ export async function GET(req: NextRequest) {
         totalStaking: Math.round(totalStaking), // Round to avoid decimals
         totalRevenue: Math.round(totalRevenue * 100) / 100, // Round to 2 decimals
         totalReferrals,
+        memberships: {
+          paid: paidMemberships,
+          free: freeMemberships,
+          total: paidMemberships + freeMemberships,
+        },
         trends: {
           users: Math.round(userTrend * 10) / 10, // Round to 1 decimal
           staking: Math.round(stakingTrend * 10) / 10,

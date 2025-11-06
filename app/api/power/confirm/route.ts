@@ -95,12 +95,13 @@ export async function POST(req: NextRequest) {
     // Get current power to check if upgrade is valid
     const current = await getUserPower(draft.userId);
 
-    // Update or create user power
+    // Update or create user power (paid purchase)
     const userPower = await setUserPower(
       draft.userId,
       draft.targetCode,
       payload.transaction_id,
-      payload.reference
+      payload.reference,
+      true // isPaid = true for purchased powers
     );
 
     // Mark draft as used

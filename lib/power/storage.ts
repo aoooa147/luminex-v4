@@ -16,9 +16,10 @@ const isServerless = () => {
 export type UserPower = {
   userId: string; // wallet address
   code: PowerCode; // Current power level
-  txId: string; // Transaction ID from latest purchase/upgrade
-  reference: string; // MiniKit reference used for this tx
+  txId: string; // Transaction ID from latest purchase/upgrade (or 'free' for free powers)
+  reference: string; // MiniKit reference used for this tx (or 'free' for free powers)
   acquiredAt: string; // ISO datetime
+  isPaid: boolean; // true = paid purchase, false = free/promotional
 };
 
 export type PowerDraft = {
@@ -113,6 +114,7 @@ export async function getUserPower(userId: string): Promise<UserPower | null> {
           txId: userPower.txId,
           reference: userPower.reference,
           acquiredAt: userPower.acquiredAt.toISOString(),
+          isPaid: userPower.isPaid ?? true, // Default to true for backward compatibility
         };
       }
       return null;
@@ -122,10 +124,17 @@ export async function getUserPower(userId: string): Promise<UserPower | null> {
   }
   
   // Fallback to in-memory
-  return userPowers.get(key) || null;
+  const power = userPowers.get(key);
+  if (power) {
+    return {
+      ...power,
+      isPaid: power.isPaid ?? true, // Default to true for backward compatibility
+    };
+  }
+  return null;
 }
 
-export async function setUserPower(userId: string, code: PowerCode, txId: string, reference: string): Promise<UserPower> {
+export async function setUserPower(userId: string, code: PowerCode, txId: string, reference: string, isPaid: boolean = true): Promise<UserPower> {
   const key = userId.toLowerCase();
   const now = new Date().toISOString();
   
@@ -135,6 +144,7 @@ export async function setUserPower(userId: string, code: PowerCode, txId: string
     txId,
     reference,
     acquiredAt: now,
+    isPaid,
   };
   
   if (await useDatabase()) {
@@ -146,6 +156,7 @@ export async function setUserPower(userId: string, code: PowerCode, txId: string
           txId,
           reference,
           acquiredAt: new Date(now),
+          isPaid,
         },
         create: {
           userId: key,
@@ -153,6 +164,7 @@ export async function setUserPower(userId: string, code: PowerCode, txId: string
           txId,
           reference,
           acquiredAt: new Date(now),
+          isPaid,
         },
       });
       return userPower;
@@ -165,6 +177,12 @@ export async function setUserPower(userId: string, code: PowerCode, txId: string
   userPowers.set(key, userPower);
   saveToFile();
   return userPower;
+}
+
+// Function to grant free power (for promotions, referrals, etc.)
+export async function grantFreePower(userId: string, code: PowerCode): Promise<UserPower> {
+  const reference = `free-${crypto.randomUUID()}`;
+  return await setUserPower(userId, code, 'free', reference, false);
 }
 
 export async function createPowerDraft(reference: string, userId: string, targetCode: PowerCode, amountWLD: string): Promise<PowerDraft> {

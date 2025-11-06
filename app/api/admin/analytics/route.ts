@@ -46,6 +46,11 @@ export async function GET(req: NextRequest) {
         thisMonth: 0,
         byPower: {} as Record<string, number>,
       },
+      memberships: {
+        paid: 0,
+        free: 0,
+        total: 0,
+      },
       referrals: {
         total: 0,
         thisMonth: 0,
@@ -104,10 +109,18 @@ export async function GET(req: NextRequest) {
     Object.values(userPowers).forEach((userPower: any) => {
       if (userPower?.code) {
         const code = userPower.code.toLowerCase();
-        const priceWLD = powerPrices[code] || 0;
-        const revenue = priceWLD * WLD_TO_USD;
-        analytics.revenue.total += revenue;
-        analytics.revenue.byPower[code] = (analytics.revenue.byPower[code] || 0) + revenue;
+        const isPaid = userPower.isPaid !== false; // Default to true for backward compatibility
+        
+        if (isPaid) {
+          const priceWLD = powerPrices[code] || 0;
+          const revenue = priceWLD * WLD_TO_USD;
+          analytics.revenue.total += revenue;
+          analytics.revenue.byPower[code] = (analytics.revenue.byPower[code] || 0) + revenue;
+          analytics.memberships.paid++;
+        } else {
+          analytics.memberships.free++;
+        }
+        analytics.memberships.total++;
       }
     });
     

@@ -25,6 +25,7 @@ model UserPower {
   txId       String   @db.VarChar(66)
   reference  String   @unique
   acquiredAt DateTime @default(now())
+  isPaid     Boolean  @default(true) // true = paid purchase, false = free/promotional
 
   @@map("user_powers")
 }
