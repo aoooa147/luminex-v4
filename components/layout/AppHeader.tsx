@@ -90,11 +90,11 @@ const AppHeader = memo(({
                   e.stopPropagation();
                   setShowLanguageMenu(!showLanguageMenu);
                 }}
-                className="flex items-center space-x-1 bg-black/40 rounded-lg px-2 py-1 border border-white/10 hover:border-yellow-500/50 transition-colors cursor-pointer z-[9999] relative"
+                className="flex items-center space-x-1 bg-gradient-to-br from-purple-600/80 to-purple-800/80 rounded-lg px-3 py-1.5 border border-purple-400/30 hover:border-purple-400/50 transition-all cursor-pointer z-[9999] relative shadow-lg"
                 style={{ userSelect: 'none', pointerEvents: 'auto' }}
               >
                 <span className="text-white text-xs font-semibold whitespace-nowrap">
-                  {activeLanguage.flag} {activeLanguage.code.toUpperCase()}
+                  {activeLanguage.code.toUpperCase()} {activeLanguage.code.toUpperCase()}
                 </span>
                 <svg 
                   className={`w-3 h-3 text-white/70 transition-transform ${showLanguageMenu ? 'rotate-180' : ''}`} 
@@ -113,7 +113,7 @@ const AppHeader = memo(({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-yellow-600/30 shadow-2xl py-2 z-[9999]"
+                    className="absolute right-0 mt-2 w-40 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-400/30 shadow-2xl py-2 z-[9999]"
                   >
                     {LANGUAGES.map((lang) => (
                       <button
@@ -126,8 +126,8 @@ const AppHeader = memo(({
                           localStorage.setItem('preferredLanguage', lang.code);
                           setShowLanguageMenu(false);
                         }}
-                        className={`w-full px-4 py-2 text-left hover:bg-yellow-500/10 transition-colors flex items-center space-x-2 cursor-pointer ${
-                          language === lang.code ? 'bg-yellow-500/15 text-yellow-400' : 'text-gray-300'
+                        className={`w-full px-4 py-2 text-left hover:bg-purple-500/10 transition-colors flex items-center space-x-2 cursor-pointer ${
+                          language === lang.code ? 'bg-purple-500/15 text-purple-300' : 'text-gray-300'
                         }`}
                       >
                         <span className="text-lg">{lang.flag}</span>
