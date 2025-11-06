@@ -979,7 +979,7 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
     }
   };
 
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
       {/* Header Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-yellow-600/30">
