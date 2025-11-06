@@ -2,7 +2,14 @@
 
 export default function GameLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div 
+      className="min-h-screen bg-black text-white overflow-y-auto"
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <header className="sticky top-0 z-10 bg-zinc-950/80 backdrop-blur border-b border-zinc-800">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
           <button

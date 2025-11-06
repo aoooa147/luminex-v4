@@ -237,7 +237,14 @@ const AdminPage = () => {
 
   // Admin Dashboard
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-pink-950 relative main-container">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-pink-950 relative main-container overflow-y-auto"
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       {/* Enhanced Animated background particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl float-animation"></div>
