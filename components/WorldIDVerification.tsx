@@ -83,13 +83,15 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         overflowY: 'hidden',
       }}
     >
-      {/* Main Content - Full Screen Layout */}
+      {/* Main Content - Full Screen Layout - Centered */}
       <div 
         className="flex flex-col items-center justify-center flex-1 overflow-y-auto"
         style={{
           padding: 'clamp(16px, 4vw, 32px)',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         {/* Background Effects */}
@@ -106,17 +108,17 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
           />
         </div>
 
-        {/* Hero Section - Flex Layout (No absolute positioning) */}
-        <section className="w-full max-w-lg flex flex-col gap-6">
-          {/* Logo Section */}
+        {/* Hero Section - Centered Layout */}
+        <section className="w-full max-w-lg flex flex-col items-center justify-center gap-8 mx-auto">
+          {/* Logo Section - Centered */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center space-y-4"
+            className="flex flex-col items-center justify-center space-y-4 w-full"
           >
             <div 
-              className="w-full max-w-[min(90vw,500px)] mx-auto flex items-center justify-center"
+              className="w-full max-w-[min(85vw,480px)] mx-auto flex items-center justify-center"
               style={{
                 aspectRatio: '1/1',
               }}
@@ -128,7 +130,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent"
+                className="font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent text-center w-full"
                 style={{
                   fontSize: 'clamp(28px, 5vw, 42px)',
                   lineHeight: 1.1,
@@ -151,21 +153,21 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
             </div>
           </motion.div>
 
-          {/* Verification Card */}
+          {/* Verification Card - Centered */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="relative rounded-[24px] bg-black/60 backdrop-blur-xl border border-yellow-600/30"
+            className="relative rounded-[24px] bg-black/60 backdrop-blur-xl border border-yellow-600/30 w-full max-w-md mx-auto"
             style={{
               padding: 'clamp(20px, 5vw, 32px)',
               background: 'radial-gradient(120% 120% at 0% 0%, rgba(26, 18, 8, 0.8) 0%, rgba(11, 14, 20, 0.6) 60%)',
               boxShadow: '0 0 30px rgba(255, 200, 70, 0.15) inset, 0 0 40px rgba(255, 200, 70, 0.08), 0 20px 60px rgba(0, 0, 0, 0.8)',
             }}
           >
-            <div className="space-y-6">
-              {/* Shield Icon */}
-              <div className="flex justify-center">
+            <div className="space-y-6 flex flex-col items-center">
+              {/* Shield Icon - Centered */}
+              <div className="flex justify-center w-full">
                 <motion.div
                   animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -178,9 +180,9 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 </motion.div>
               </div>
 
-              {/* Title */}
+              {/* Title - Centered */}
               <h2 
-                className="font-bold text-center bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent"
+                className="font-bold text-center bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent w-full"
                 style={{
                   fontSize: 'clamp(24px, 5vw, 32px)',
                 }}
@@ -188,9 +190,9 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 Verify Humanity
               </h2>
 
-              {/* Description */}
+              {/* Description - Centered */}
               <p 
-                className="text-gray-300 text-center leading-relaxed px-2"
+                className="text-gray-300 text-center leading-relaxed px-2 w-full"
                 style={{
                   fontSize: 'clamp(14px, 3.5vw, 18px)',
                   opacity: 0.9,
@@ -199,14 +201,14 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 You must verify your humanity to access the application.
               </p>
 
-              {/* Error Message */}
+              {/* Error Message - Centered */}
               {verifyError && (
-                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-sm">
+                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-sm w-full">
                   {verifyError}
                 </div>
               )}
 
-              {/* Verify Button */}
+              {/* Verify Button - Centered */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
