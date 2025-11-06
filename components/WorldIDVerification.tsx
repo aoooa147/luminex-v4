@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, MoreVertical, AlertTriangle, Shield, Loader2 } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 import Logo3D from './Logo3D';
 
 interface WorldIDVerificationProps {
@@ -74,65 +74,20 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
       className="h-[100dvh] bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col"
       style={{
         height: '100dvh',
-        paddingTop: 'var(--safe-top)',
+        paddingTop: 'calc(var(--safe-top) + clamp(16px, 4vw, 24px))',
         paddingBottom: isMiniKit 
-          ? 'var(--safe-bottom)' 
-          : 'calc(var(--safe-bottom) + 16px)',
+          ? 'calc(var(--safe-bottom) + clamp(16px, 4vw, 24px))' 
+          : 'calc(var(--safe-bottom) + clamp(16px, 4vw, 24px))',
         paddingLeft: 'var(--safe-left)',
         paddingRight: 'var(--safe-right)',
         overflowY: 'hidden',
       }}
     >
-      {/* Header Bar - Single Header Only (No nested headers) */}
-      <div 
-        className="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-yellow-600/30"
-        style={{
-          marginTop: 'calc(-1 * var(--safe-top))',
-          marginLeft: 'calc(-1 * var(--safe-left))',
-          marginRight: 'calc(-1 * var(--safe-right))',
-          paddingTop: 'calc(14px + var(--safe-top))',
-          paddingBottom: '14px',
-          paddingLeft: 'calc(16px + var(--safe-left))',
-          paddingRight: 'calc(16px + var(--safe-right))',
-        }}
-      >
-        <div className="flex items-center justify-between h-14">
-          <button
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                if (window.history.length > 1) {
-                  window.history.back();
-                } else {
-                  window.location.assign('/');
-                }
-              }
-            }}
-            className="w-9 h-9 flex items-center justify-center text-white hover:text-yellow-400 transition-colors rounded-lg hover:bg-white/5"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50">
-              <span className="text-black font-black text-xs">L</span>
-            </div>
-            <span className="text-white font-semibold text-sm">Luminex Staking</span>
-            <AlertTriangle className="w-4 h-4 text-yellow-400" />
-          </div>
-
-          <button className="w-9 h-9 flex items-center justify-center text-white hover:text-yellow-400 transition-colors rounded-lg hover:bg-white/5">
-            <MoreVertical className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content - Grid Layout with Safe Area */}
+      {/* Main Content - Full Screen Layout */}
       <div 
         className="flex flex-col items-center justify-center flex-1 overflow-y-auto"
         style={{
-          padding: 'clamp(12px, 3vw, 20px)',
-          paddingTop: 'clamp(8px, 2vw, 16px)',
-          paddingBottom: 'clamp(8px, 2vw, 16px)',
+          padding: 'clamp(16px, 4vw, 32px)',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
@@ -152,30 +107,30 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         </div>
 
         {/* Hero Section - Flex Layout (No absolute positioning) */}
-        <section className="w-full max-w-md flex flex-col gap-4">
+        <section className="w-full max-w-lg flex flex-col gap-6">
           {/* Logo Section */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center space-y-2"
+            className="flex flex-col items-center space-y-4"
           >
             <div 
-              className="w-full max-w-[min(80vw,400px)] mx-auto flex items-center justify-center"
+              className="w-full max-w-[min(90vw,500px)] mx-auto flex items-center justify-center"
               style={{
                 aspectRatio: '1/1',
               }}
             >
-              <Logo3D size={100} interactive={true} />
+              <Logo3D size={140} interactive={true} />
             </div>
-            <div className="text-center space-y-1 w-full">
+            <div className="text-center space-y-2 w-full">
               <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent"
                 style={{
-                  fontSize: 'clamp(20px, 4vw, 32px)',
+                  fontSize: 'clamp(28px, 5vw, 42px)',
                   lineHeight: 1.1,
                 }}
               >
@@ -187,8 +142,8 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="font-bold text-yellow-400/80 tracking-widest uppercase text-center w-full"
                 style={{
-                  fontSize: 'clamp(9px, 2vw, 11px)',
-                  letterSpacing: '0.25em',
+                  fontSize: 'clamp(11px, 2.5vw, 14px)',
+                  letterSpacing: '0.3em',
                 }}
               >
                 STAKING PLATFORM
@@ -201,25 +156,25 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="relative rounded-[20px] bg-black/60 backdrop-blur-xl border border-yellow-600/30"
+            className="relative rounded-[24px] bg-black/60 backdrop-blur-xl border border-yellow-600/30"
             style={{
-              padding: 'clamp(12px, 3vw, 20px)',
+              padding: 'clamp(20px, 5vw, 32px)',
               background: 'radial-gradient(120% 120% at 0% 0%, rgba(26, 18, 8, 0.8) 0%, rgba(11, 14, 20, 0.6) 60%)',
               boxShadow: '0 0 30px rgba(255, 200, 70, 0.15) inset, 0 0 40px rgba(255, 200, 70, 0.08), 0 20px 60px rgba(0, 0, 0, 0.8)',
             }}
           >
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Shield Icon */}
               <div className="flex justify-center">
                 <motion.div
                   animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg"
+                  className="w-20 h-20 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg"
                   style={{
                     boxShadow: '0 10px 30px rgba(234, 179, 8, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.2)',
                   }}
                 >
-                  <Shield className="w-7 h-7 text-black" />
+                  <Shield className="w-10 h-10 text-black" />
                 </motion.div>
               </div>
 
@@ -227,7 +182,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
               <h2 
                 className="font-bold text-center bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent"
                 style={{
-                  fontSize: 'clamp(18px, 3.5vw, 22px)',
+                  fontSize: 'clamp(24px, 5vw, 32px)',
                 }}
               >
                 Verify Humanity
@@ -237,7 +192,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
               <p 
                 className="text-gray-300 text-center leading-relaxed px-2"
                 style={{
-                  fontSize: 'clamp(12px, 3vw, 14px)',
+                  fontSize: 'clamp(14px, 3.5vw, 18px)',
                   opacity: 0.9,
                 }}
               >
@@ -246,7 +201,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
 
               {/* Error Message */}
               {verifyError && (
-                <div className="p-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-xs">
+                <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-sm">
                   {verifyError}
                 </div>
               )}
@@ -257,22 +212,22 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                 whileTap={{ scale: 0.98 }}
                 onClick={handleVerify}
                 disabled={isVerifying}
-                className="w-full rounded-[14px] bg-gradient-to-b from-[#f7c948] to-[#d08b26] text-black font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                className="w-full rounded-[16px] bg-gradient-to-b from-[#f7c948] to-[#d08b26] text-black font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
                 style={{
-                  height: '48px',
-                  fontSize: 'clamp(13px, 3vw, 15px)',
+                  height: '56px',
+                  fontSize: 'clamp(16px, 3.5vw, 18px)',
                   letterSpacing: '0.2px',
                   boxShadow: '0 10px 30px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                 }}
               >
                 {isVerifying ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Verifying...</span>
                   </>
                 ) : (
                   <>
-                    <Shield className="w-4 h-4" />
+                    <Shield className="w-5 h-5" />
                     <span>Verify</span>
                   </>
                 )}
