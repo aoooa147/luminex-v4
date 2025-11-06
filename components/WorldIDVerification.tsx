@@ -152,16 +152,16 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         </div>
 
         {/* Hero Section - Centered Layout */}
-        <section className="w-full max-w-lg flex flex-col items-center justify-center gap-6 mx-auto">
+        <section className="w-full max-w-lg flex flex-col items-center justify-center gap-2 mx-auto">
           {/* Logo Section - Centered with Grid + Aspect Ratio */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center space-y-3 w-full"
+            className="flex flex-col items-center justify-center space-y-2 w-full"
           >
             <div 
-              className="mx-auto mb-[18px] grid place-items-center"
+              className="mx-auto mb-2 grid place-items-center"
               style={{
                 maxWidth: '520px',
                 width: 'min(92vw, 520px)',
@@ -170,7 +170,7 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
             >
               <Logo3D size={160} interactive={true} />
             </div>
-            <div className="text-center space-y-1.5 w-full">
+            <div className="text-center space-y-1 w-full">
               <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
