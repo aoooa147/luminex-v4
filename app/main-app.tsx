@@ -993,10 +993,10 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
           <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center border border-yellow-500/50 flex-shrink-0">
               <span className="text-black font-black text-sm">L</span>
-            </div>
+      </div>
             <span className="text-white font-semibold text-sm whitespace-nowrap">Luminex Staking</span>
             <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-          </div>
+  </div>
           <button className="w-8 h-8 flex items-center justify-center text-white hover:text-yellow-400 transition-colors flex-shrink-0">
             <MoreVertical className="w-5 h-5" />
           </button>
@@ -1270,9 +1270,8 @@ const WorldIDVerification = ({ onVerify }: { onVerify: () => void }) => {
                 </>
               )}
             </motion.button>
-          </motion.div>
-        </div>
-      </div>
+          </div>
+        </motion.div>
 
       {/* "เปิด MiniKit" Button - Bottom Right Corner */}
       <motion.button
