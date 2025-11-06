@@ -17,7 +17,7 @@ export default function InvitePage() {
     
     if (!referralCode) {
       // No referral code, redirect to main app
-      window.location.href = '/';
+      window.location.assign('/');
       return;
     }
 
