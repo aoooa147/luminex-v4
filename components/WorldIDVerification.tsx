@@ -131,9 +131,6 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
         className="flex flex-col items-center justify-center flex-1 overflow-y-auto"
         style={{
           padding: 'clamp(20px, 5vw, 40px)',
-          scrollbarWidth: 'none', // Firefox
-          msOverflowStyle: 'none', // IE and Edge
-          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
           justifyContent: 'center',
           alignItems: 'center',
         }}
