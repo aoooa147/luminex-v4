@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readJSON } from '@/lib/game/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -112,7 +113,7 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (error) {
-      console.warn('Error calculating revenue from power licenses:', error);
+      logger.warn('Error calculating revenue from power licenses', error, 'admin/stats');
     }
 
     // 4. Total Referrals: Count all successful referrals
@@ -179,7 +180,7 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (error) {
-      console.warn('Error calculating previous month revenue:', error);
+      logger.warn('Error calculating previous month revenue', error, 'admin/stats');
     }
     
     // Previous month referrals
@@ -231,7 +232,7 @@ export async function GET(req: NextRequest) {
       timestamp: Date.now(),
     });
   } catch (error: any) {
-    console.error('[admin/stats] Error:', error);
+    logger.error('Admin stats error', error, 'admin/stats');
     return NextResponse.json({
       success: false,
       error: error?.message || 'Failed to fetch admin stats',

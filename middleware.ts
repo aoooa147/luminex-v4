@@ -17,9 +17,13 @@ export function middleware(request: NextRequest) {
     "img-src 'self' data: blob: https:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
-    "connect-src 'self' https://developer.worldcoin.org https://*.optimism.io wss://*.optimism.io; " +
+    "connect-src 'self' https://developer.worldcoin.org https://*.optimism.io https://*.alchemy.com https://worldchain-mainnet.g.alchemy.com wss://*.optimism.io wss://*.alchemy.com; " +
     "frame-src 'self' https://verify.worldcoin.org;"
   )
+  
+  // Additional security headers
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   
   return response
 }

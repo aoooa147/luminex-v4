@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readJSON } from '@/lib/game/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -151,7 +152,7 @@ export async function GET(req: NextRequest) {
       timestamp: Date.now(),
     });
   } catch (error: any) {
-    console.error('[admin/analytics] Error:', error);
+    logger.error('Admin analytics error', error, 'admin/analytics');
     return NextResponse.json({
       success: false,
       error: error?.message || 'Failed to fetch analytics',

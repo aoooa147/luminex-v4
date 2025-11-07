@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPowerDraft, markDraftAsUsed, setUserPower, getUserPower } from '@/lib/power/storage';
 import { getPowerByCode } from '@/lib/utils/powerConfig';
 import { WORLD_API_KEY, WORLD_APP_ID } from '@/lib/utils/constants';
+import { logger } from '@/lib/utils/logger';
 
 interface ConfirmPowerRequest {
   payload: {
@@ -24,7 +25,7 @@ async function verifyTransactionWithWorldcoin(transactionId: string, reference: 
     );
 
     if (!response.ok) {
-      console.error('Worldcoin API error:', response.status, response.statusText);
+      logger.error('Worldcoin API error', { status: response.status, statusText: response.statusText }, 'power/confirm');
       return false;
     }
 
@@ -32,13 +33,13 @@ async function verifyTransactionWithWorldcoin(transactionId: string, reference: 
     
     // Verify reference matches
     if (data.reference !== reference) {
-      console.error('Reference mismatch:', { expected: reference, got: data.reference });
+      logger.error('Reference mismatch', { expected: reference, got: data.reference }, 'power/confirm');
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error verifying transaction:', error);
+    logger.error('Error verifying transaction', error, 'power/confirm');
     return false;
   }
 }
@@ -115,12 +116,12 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log('✅ Power purchase confirmed:', {
+    logger.success('Power purchase confirmed', {
       userId: draft.userId,
       targetCode: draft.targetCode,
       transactionId: payload.transaction_id,
       previousCode: current?.code || 'none',
-    });
+    }, 'power/confirm');
 
     return NextResponse.json({
       success: true,
@@ -132,7 +133,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('❌ Error confirming power purchase:', error);
+    logger.error('Error confirming power purchase', error, 'power/confirm');
     return NextResponse.json({
       success: false,
       error: error.message || 'Failed to confirm power purchase',

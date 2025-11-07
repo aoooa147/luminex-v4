@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { grantFreePower, getUserPower } from '@/lib/power/storage';
 import { getPowerByCode, type PowerCode } from '@/lib/utils/powerConfig';
+import { logger } from '@/lib/utils/logger';
+import { isValidAddress, isValidPowerCode } from '@/lib/utils/validation';
+import { validateBody, createErrorResponse, createSuccessResponse, withErrorHandler } from '@/lib/utils/apiHandler';
 
 interface GrantFreePowerRequest {
   userId: string;
@@ -8,33 +11,33 @@ interface GrantFreePowerRequest {
 }
 
 export async function POST(req: NextRequest) {
-  try {
+  return withErrorHandler(async (req: NextRequest) => {
     const body = await req.json() as GrantFreePowerRequest;
     const { userId, code } = body;
 
-    if (!userId || !code) {
-      return NextResponse.json({
-        success: false,
-        error: 'userId and code are required',
-      }, { status: 400 });
+    // Validate required fields
+    const bodyValidation = validateBody(body, ['userId', 'code']);
+    if (!bodyValidation.valid) {
+      return createErrorResponse(
+        `Missing required fields: ${bodyValidation.missing?.join(', ')}`,
+        'MISSING_FIELDS',
+        400
+      );
     }
 
     // Validate wallet address format
-    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!addressRegex.test(userId)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid wallet address format',
-      }, { status: 400 });
+    if (!isValidAddress(userId)) {
+      return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
     }
 
     // Validate power code
+    if (!isValidPowerCode(code)) {
+      return createErrorResponse('Invalid power code', 'INVALID_POWER_CODE', 400);
+    }
+
     const power = getPowerByCode(code);
     if (!power) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid power code',
-      }, { status: 400 });
+      return createErrorResponse('Power code not found', 'POWER_NOT_FOUND', 404);
     }
 
     // Check if user already has a power
@@ -48,10 +51,7 @@ export async function POST(req: NextRequest) {
         
         // Only allow upgrade (target price > current price)
         if (targetPrice <= currentPrice) {
-          return NextResponse.json({
-            success: false,
-            error: 'Cannot downgrade or grant same level',
-          }, { status: 400 });
+          return createErrorResponse('Cannot downgrade or grant same level', 'INVALID_UPGRADE', 400);
         }
       }
     }
@@ -59,14 +59,13 @@ export async function POST(req: NextRequest) {
     // Grant free power
     const userPower = await grantFreePower(userId, code);
 
-    console.log('✅ Free power granted:', {
+    logger.success('Free power granted', {
       userId,
       code,
       previousCode: current?.code || 'none',
-    });
+    }, 'power/grant-free');
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       power: {
         code: power.code,
         name: power.name,
@@ -74,12 +73,6 @@ export async function POST(req: NextRequest) {
         isPaid: false,
       },
     });
-  } catch (error: any) {
-    console.error('❌ Error granting free power:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to grant free power',
-    }, { status: 500 });
-  }
+  }, 'power/grant-free')(req);
 }
 
