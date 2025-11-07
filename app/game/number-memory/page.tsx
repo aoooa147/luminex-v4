@@ -33,7 +33,7 @@ export default function NumberMemoryPage() {
       const j = await r.json();
       if (j.ok) setEnergy(j.energy);
     } catch (e) {
-      console.error('Failed to load energy:', e);
+      // Silent error handling
     }
   }
 
@@ -160,7 +160,7 @@ export default function NumberMemoryPage() {
       
       loadEnergy(address);
     } catch (e) {
-      console.error('Failed to submit score:', e);
+      // Silent error handling
     }
   }
 

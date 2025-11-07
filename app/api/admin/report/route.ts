@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readJSON } from '@/lib/game/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/lib/utils/apiHandler';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -8,9 +10,8 @@ export const runtime = 'nodejs';
  * Admin Report API
  * Generates a comprehensive report
  */
-export async function GET(req: NextRequest) {
-  try {
-    const period = req.nextUrl.searchParams.get('period') || 'month'; // month, week, all
+export const GET = withErrorHandler(async (req: NextRequest) => {
+  const period = req.nextUrl.searchParams.get('period') || 'month'; // month, week, all
     
     // Calculate time range
     let startTime = 0;
@@ -82,17 +83,8 @@ export async function GET(req: NextRequest) {
       periodEnd: new Date(now).toISOString(),
     };
     
-    return NextResponse.json({
-      success: true,
-      report,
-    });
-  } catch (error: any) {
-    console.error('[admin/report] Error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error?.message || 'Failed to generate report',
-      report: null,
-    }, { status: 500 });
-  }
-}
+  logger.info('Report generated', { period, report }, 'admin/report');
+
+  return createSuccessResponse({ report });
+}, 'admin/report');
 

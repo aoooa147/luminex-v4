@@ -67,7 +67,7 @@ export default function CoinFlipPage() {
         setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
       }
     } catch (e) {
-      console.error('Failed to check cooldown:', e);
+      // Silent error handling
     }
   }
 
@@ -77,7 +77,7 @@ export default function CoinFlipPage() {
       const j = await r.json();
       if (j.ok) setEnergy(j.energy);
     } catch (e) {
-      console.error('Failed to load energy:', e);
+      // Silent error handling
     }
   }
 
@@ -134,7 +134,6 @@ export default function CoinFlipPage() {
     // Anti-cheat: Check action speed
     const cheatCheck = antiCheat.checkAction(address, 'guess_coin', { side });
     if (cheatCheck.suspicious) {
-      console.warn('Suspicious activity detected:', cheatCheck.reason);
       if (cheatCheck.blocked) {
         alert('Cheating detected. Access blocked.');
         setGameState('gameover');
@@ -283,7 +282,6 @@ export default function CoinFlipPage() {
       // Anti-cheat: Validate score
       const scoreCheck = antiCheat.validateScore(address, score, gameDuration, actionsCount, GAME_ID);
       if (scoreCheck.suspicious || scoreCheck.blocked) {
-        console.warn('Suspicious score detected:', scoreCheck.reason);
         alert('Score validation failed. Please try again.');
         setGameState('gameover');
         return;
@@ -303,7 +301,6 @@ export default function CoinFlipPage() {
       try {
         signature = await signMessageWithMiniKit(message);
       } catch (e: any) {
-        console.error('Failed to sign score:', e);
         alert('Failed to sign score. Please try again.');
         return;
       }
@@ -326,7 +323,7 @@ export default function CoinFlipPage() {
         setIsOnCooldown(true);
         await checkCooldown();
       } catch (e) {
-        console.error('Failed to submit score:', e);
+        // Silent error handling
       }
     }
 

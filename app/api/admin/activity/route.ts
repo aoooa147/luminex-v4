@@ -3,6 +3,8 @@ import { readJSON } from '@/lib/game/storage';
 import { getUserPower, getPowerDraft } from '@/lib/power/storage';
 import { getReferralRecord, getReferralData } from '@/lib/referral/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/lib/utils/apiHandler';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -22,9 +24,8 @@ interface Activity {
  * Admin Activity API
  * Returns recent activities from all sources (referrals, powers, games)
  */
-export async function GET(req: NextRequest) {
-  try {
-    const limit = parseInt(req.nextUrl.searchParams.get('limit') || '20', 10);
+export const GET = withErrorHandler(async (req: NextRequest) => {
+  const limit = parseInt(req.nextUrl.searchParams.get('limit') || '20', 10);
     
     const activities: Activity[] = [];
 
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (error) {
-      console.warn('[admin/activity] Error loading referrals:', error);
+      logger.warn('Error loading referrals', error, 'admin/activity');
     }
 
     // 2. Get Power/Membership Activities
@@ -105,7 +106,7 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (error) {
-      console.warn('[admin/activity] Error loading powers:', error);
+      logger.warn('Error loading powers', error, 'admin/activity');
     }
 
     // 3. Get Staking Activities
@@ -161,7 +162,7 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (error) {
-      console.warn('[admin/activity] Error loading staking:', error);
+      logger.warn('Error loading staking', error, 'admin/activity');
     }
 
     // 4. Get Game Activities (from scores)
@@ -189,27 +190,20 @@ export async function GET(req: NextRequest) {
           });
         });
     } catch (error) {
-      console.warn('[admin/activity] Error loading games:', error);
+      logger.warn('Error loading games', error, 'admin/activity');
     }
 
-    // Sort by timestamp (newest first) and limit
-    activities.sort((a, b) => b.timestamp - a.timestamp);
-    const limitedActivities = activities.slice(0, limit);
+  // Sort by timestamp (newest first) and limit
+  activities.sort((a, b) => b.timestamp - a.timestamp);
+  const limitedActivities = activities.slice(0, limit);
 
-    return NextResponse.json({
-      success: true,
-      activities: limitedActivities,
-      total: activities.length,
-    });
-  } catch (error: any) {
-    console.error('[admin/activity] Error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error?.message || 'Failed to fetch activities',
-      activities: [],
-    }, { status: 500 });
-  }
-}
+  logger.info('Activities fetched', { count: limitedActivities.length, total: activities.length }, 'admin/activity');
+
+  return createSuccessResponse({
+    activities: limitedActivities,
+    total: activities.length,
+  });
+}, 'admin/activity');
 
 function formatTimeAgo(timestamp: number): string {
   const now = Date.now();

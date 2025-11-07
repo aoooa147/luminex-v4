@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { takeToken } from '@/lib/utils/rateLimit';
+import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/lib/utils/apiHandler';
+import { logger } from '@/lib/utils/logger';
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const ip = (request.headers.get('x-forwarded-for') || 'anon').split(',')[0].trim();
   
   if (!takeToken(ip, 20, 2)) {
-    return NextResponse.json({ ok: false, error: 'Too many requests' }, { status: 429 });
+    return createErrorResponse('Too many requests', 'RATE_LIMIT', 429);
   }
   
-  try {
-    const body = await request.json();
-    console.log('[payment-webhook] body=', body);
-    return NextResponse.json({ ok: true });
-  } catch (error: any) {
-    console.error('[payment-webhook] error:', error);
-    return NextResponse.json({ ok: false, error: 'Bad request' }, { status: 400 });
-  }
-}
+  const body = await request.json();
+  logger.info('Payment webhook received', { body, ip }, 'payment-webhook');
+  
+  return NextResponse.json({ ok: true });
+}, 'payment-webhook');

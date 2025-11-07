@@ -64,7 +64,7 @@ export default function NumberRushPage() {
         setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
       }
     } catch (e) {
-      console.error('Failed to check cooldown:', e);
+      // Silent error handling
     }
   }
 
@@ -238,7 +238,7 @@ export default function NumberRushPage() {
       setIsOnCooldown(true);
       await checkCooldown();
     } catch (e) {
-      console.error('Failed to process game over:', e);
+      // Silent error handling
     }
   }
 

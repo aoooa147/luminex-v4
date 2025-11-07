@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addReferral, hasBeenReferred } from '@/lib/referral/storage';
 import { referralAntiCheat } from '@/lib/referral/anticheat';
 import { takeToken } from '@/lib/utils/rateLimit';
+import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
+import { isValidAddress } from '@/lib/utils/validation';
+import { logger } from '@/lib/utils/logger';
 
 interface ProcessReferralRequest {
   newUserAddress: string; // Wallet address of new user
@@ -12,36 +15,31 @@ interface ProcessReferralRequest {
  * Process referral and credit rewards
  * This endpoint takes the referrer address directly (simpler than reverse lookup from code)
  */
-export async function POST(req: NextRequest) {
-  try {
-    // Rate limiting
-    const ip = referralAntiCheat.getClientIP(req);
-    if (!takeToken(ip, 5, 0.5)) {
-      return NextResponse.json({
-        success: false,
-        error: 'rate_limit',
-        message: 'Too many requests. Please try again later.',
-      }, { status: 429 });
-    }
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Rate limiting
+  const ip = referralAntiCheat.getClientIP(req);
+  if (!takeToken(ip, 5, 0.5)) {
+    return createErrorResponse('Too many requests. Please try again later.', 'RATE_LIMIT', 429);
+  }
 
-    const { newUserAddress, referrerAddress } = await req.json() as ProcessReferralRequest;
+  const body = await req.json() as ProcessReferralRequest;
+  const { newUserAddress, referrerAddress } = body;
 
-    if (!newUserAddress || !referrerAddress) {
-      return NextResponse.json({
-        success: false,
-        error: 'newUserAddress and referrerAddress are required',
-      }, { status: 400 });
-    }
+  // Validate required fields
+  const bodyValidation = validateBody(body, ['newUserAddress', 'referrerAddress']);
+  if (!bodyValidation.valid) {
+    return createErrorResponse(
+      `Missing required fields: ${bodyValidation.missing?.join(', ')}`,
+      'MISSING_FIELDS',
+      400
+    );
+  }
 
-    // Validate wallet address format
-    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!addressRegex.test(newUserAddress) || !addressRegex.test(referrerAddress)) {
-      referralAntiCheat.recordAttempt(ip, referrerAddress, newUserAddress, false, 'invalid_address');
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid wallet address format',
-      }, { status: 400 });
-    }
+  // Validate wallet address format
+  if (!isValidAddress(newUserAddress) || !isValidAddress(referrerAddress)) {
+    referralAntiCheat.recordAttempt(ip, referrerAddress, newUserAddress, false, 'invalid_address');
+    return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
+  }
 
     // Comprehensive anti-cheat validation
     const validation = referralAntiCheat.validateReferral(ip, referrerAddress, newUserAddress);
@@ -105,28 +103,18 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Record successful referral
-    referralAntiCheat.recordAttempt(ip, referrerAddress, newUserAddress, true);
+  // Record successful referral
+  referralAntiCheat.recordAttempt(ip, referrerAddress, newUserAddress, true);
 
-    console.log('✅ Referral processed:', {
-      newUserAddress,
-      referrerAddress,
-      referrerReward: REFERRER_REWARD,
-      ip,
-    });
+  logger.success('Referral processed', {
+    newUserAddress,
+    referrerAddress,
+    referrerReward: REFERRER_REWARD,
+    ip,
+  }, 'referral/process');
 
-    return NextResponse.json({
-      success: true,
-      referrerReward: REFERRER_REWARD,
-      message: 'Referral processed successfully',
-    });
-  } catch (error: any) {
-    const ip = referralAntiCheat.getClientIP(req);
-    console.error('❌ Error processing referral:', error);
-    referralAntiCheat.recordAttempt(ip, '', '', false, 'server_error');
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to process referral',
-    }, { status: 500 });
-  }
-}
+  return createSuccessResponse({
+    referrerReward: REFERRER_REWARD,
+    message: 'Referral processed successfully',
+  });
+}, 'referral/process');

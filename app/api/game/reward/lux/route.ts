@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readJSON, writeJSON } from '@/lib/game/storage';
 import { LUX_TOKEN_ADDRESS } from '@/lib/utils/constants';
+import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
+import { isValidAddress } from '@/lib/utils/validation';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -55,16 +58,19 @@ function calculateLuxReward(score: number): number {
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const { address, gameId, score } = await request.json();
-    
-    if (!address || !gameId || typeof score !== 'number') {
-      return NextResponse.json({ 
-        ok: false, 
-        error: 'Missing address, gameId, or score' 
-      }, { status: 400 });
-    }
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const body = await request.json();
+  const { address, gameId, score } = body;
+  
+  // Validate required fields
+  if (!address || !gameId || typeof score !== 'number') {
+    return createErrorResponse('Missing address, gameId, or score', 'MISSING_FIELDS', 400);
+  }
+
+  // Validate address format
+  if (!isValidAddress(address)) {
+    return createErrorResponse('Invalid address format', 'INVALID_ADDRESS', 400);
+  }
     
     // Check if user has already claimed reward for this game session
     const rewards = readJSON<Record<string, Record<string, { amount: number; timestamp: number }>>>('game_rewards', {});
@@ -98,18 +104,18 @@ export async function POST(request: NextRequest) {
     };
     writeJSON('game_rewards', rewards);
     
-    return NextResponse.json({
-      ok: true,
-      luxReward: luxAmount,
-      score,
-      gameId,
-      message: luxAmount === 5 ? '🎉 EXTREME RARE! 5 LUX!' : `Received ${luxAmount} LUX reward`
-    });
-  } catch (e: any) {
-    console.error('[reward/lux] Error:', e?.message);
-    return NextResponse.json({ 
-      ok: false, 
-      error: e?.message || 'Failed to process reward' 
-    }, { status: 500 });
-  }
-}
+  logger.success('LUX reward processed', {
+    address: addressLower,
+    gameId,
+    score,
+    luxReward: luxAmount
+  }, 'game/reward/lux');
+
+  return NextResponse.json({
+    ok: true,
+    luxReward: luxAmount,
+    score,
+    gameId,
+    message: luxAmount === 5 ? '🎉 EXTREME RARE! 5 LUX!' : `Received ${luxAmount} LUX reward`
+  });
+}, 'game/reward/lux');

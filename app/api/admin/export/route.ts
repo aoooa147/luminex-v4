@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readJSON } from '@/lib/game/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/lib/utils/apiHandler';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -8,9 +10,8 @@ export const runtime = 'nodejs';
  * Admin Export API
  * Exports all data as JSON
  */
-export async function GET(req: NextRequest) {
-  try {
-    const format = req.nextUrl.searchParams.get('format') || 'json';
+export const GET = withErrorHandler(async (req: NextRequest) => {
+  const format = req.nextUrl.searchParams.get('format') || 'json';
     
     // Get all data
     const referralFileData = readJSON<{
@@ -65,18 +66,13 @@ export async function GET(req: NextRequest) {
       });
     }
     
-    // JSON format
-    return NextResponse.json(exportData, {
-      headers: {
-        'Content-Disposition': `attachment; filename="luminex-export-${Date.now()}.json"`,
-      },
-    });
-  } catch (error: any) {
-    console.error('[admin/export] Error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error?.message || 'Failed to export data',
-    }, { status: 500 });
-  }
-}
+  // JSON format
+  logger.info('Data exported', { format, exportDate: exportData.exportDate }, 'admin/export');
+
+  return NextResponse.json(exportData, {
+    headers: {
+      'Content-Disposition': `attachment; filename="luminex-export-${Date.now()}.json"`,
+    },
+  });
+}, 'admin/export');
 

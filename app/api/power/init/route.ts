@@ -2,52 +2,53 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPowerByCode, POWERS, type PowerCode } from '@/lib/utils/powerConfig';
 import { getUserPower, createPowerDraft } from '@/lib/power/storage';
 import { TREASURY_ADDRESS } from '@/lib/utils/constants';
+import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
+import { isValidAddress } from '@/lib/utils/validation';
+import { isValidPowerCode } from '@/lib/utils/validation';
+import { logger } from '@/lib/utils/logger';
 
 interface InitPowerRequest {
   targetCode: PowerCode;
   userId?: string; // Optional, will use header if not provided
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json() as InitPowerRequest;
-    const { targetCode } = body;
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const body = await req.json() as InitPowerRequest;
+  const { targetCode } = body;
 
-    if (!targetCode) {
-      return NextResponse.json({
-        success: false,
-        error: 'targetCode is required',
-      }, { status: 400 });
-    }
+  // Validate required fields
+  const bodyValidation = validateBody(body, ['targetCode']);
+  if (!bodyValidation.valid) {
+    return createErrorResponse(
+      `Missing required fields: ${bodyValidation.missing?.join(', ')}`,
+      'MISSING_FIELDS',
+      400
+    );
+  }
 
-    // Get target power config
-    const target = getPowerByCode(targetCode);
-    if (!target) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid targetCode',
-      }, { status: 400 });
-    }
+  // Validate power code
+  if (!isValidPowerCode(targetCode)) {
+    return createErrorResponse('Invalid targetCode', 'INVALID_POWER_CODE', 400);
+  }
 
-    // Get user ID from headers (set by middleware) or request
-    // For now, we'll get it from query/body - in production, use session/auth
-    const userId = req.headers.get('x-user-id') || body.userId;
-    
-    if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'User ID is required',
-      }, { status: 401 });
-    }
+  // Get target power config
+  const target = getPowerByCode(targetCode);
+  if (!target) {
+    return createErrorResponse('Power code not found', 'POWER_NOT_FOUND', 404);
+  }
 
-    // Validate wallet address format
-    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!addressRegex.test(userId)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid user ID format',
-      }, { status: 400 });
-    }
+  // Get user ID from headers (set by middleware) or request
+  // For now, we'll get it from query/body - in production, use session/auth
+  const userId = req.headers.get('x-user-id') || body.userId;
+  
+  if (!userId) {
+    return createErrorResponse('User ID is required', 'MISSING_USER_ID', 401);
+  }
+
+  // Validate wallet address format
+  if (!isValidAddress(userId)) {
+    return createErrorResponse('Invalid user ID format', 'INVALID_ADDRESS', 400);
+  }
 
         // Get current power (if any)
     const current = await getUserPower(userId);
@@ -70,10 +71,7 @@ export async function POST(req: NextRequest) {
 
         // Prevent downgrade (difference < 0)
         if (difference === 0) {
-          return NextResponse.json({
-            success: false,
-            error: 'Cannot downgrade or purchase same level',
-          }, { status: 400 });
+          return createErrorResponse('Cannot downgrade or purchase same level', 'INVALID_UPGRADE', 400);
         }
 
         amountWLD = difference.toString();
@@ -86,16 +84,15 @@ export async function POST(req: NextRequest) {
     // Create draft
     await createPowerDraft(reference, userId, targetCode, amountWLD);
 
-    console.log('✅ Power purchase initialized:', {
+    logger.success('Power purchase initialized', {
       userId,
       targetCode,
       currentCode: current?.code || 'none',
       amountWLD,
       reference,
-    });
+    }, 'power/init');
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       reference,
       amountWLD,
       to: TREASURY_ADDRESS,
@@ -106,11 +103,4 @@ export async function POST(req: NextRequest) {
         totalAPY: target.totalAPY,
       },
     });
-  } catch (error: any) {
-    console.error('❌ Error initializing power purchase:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to initialize power purchase',
-    }, { status: 500 });
-  }
-}
+}, 'power/init');

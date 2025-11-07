@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addReferral, hasBeenReferred, getReferrerAddressFromCode } from '@/lib/referral/storage';
 import { referralAntiCheat } from '@/lib/referral/anticheat';
 import { takeToken } from '@/lib/utils/rateLimit';
+import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
+import { isValidAddress, isValidReferralCode } from '@/lib/utils/validation';
+import { logger } from '@/lib/utils/logger';
 
 interface ProcessReferralRequest {
   newUserId: string; // Wallet address of new user
@@ -13,72 +16,52 @@ interface ProcessReferralRequest {
  * Format: LUX + 6 hex characters from address (last 6 chars of address without 0x)
  * Example: LUX123456 means address ends with ...123456...
  */
-export async function POST(req: NextRequest) {
-  try {
-    // Rate limiting
-    const ip = referralAntiCheat.getClientIP(req);
-    if (!takeToken(ip, 5, 0.5)) {
-      return NextResponse.json({
-        success: false,
-        reason: 'rate_limit',
-        message: 'Too many requests. Please try again later.',
-      }, { status: 429 });
-    }
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Rate limiting
+  const ip = referralAntiCheat.getClientIP(req);
+  if (!takeToken(ip, 5, 0.5)) {
+    return createErrorResponse('Too many requests. Please try again later.', 'RATE_LIMIT', 429);
+  }
 
-    const { newUserId, referrerCode } = await req.json() as ProcessReferralRequest;
+  const body = await req.json() as ProcessReferralRequest;
+  const { newUserId, referrerCode } = body;
 
-    if (!newUserId || !referrerCode) {
-      return NextResponse.json({
-        success: false,
-        reason: 'missing_parameters',
-        message: 'newUserId and referrerCode are required',
-      }, { status: 400 });
-    }
+  // Validate required fields
+  const bodyValidation = validateBody(body, ['newUserId', 'referrerCode']);
+  if (!bodyValidation.valid) {
+    return createErrorResponse(
+      `Missing required fields: ${bodyValidation.missing?.join(', ')}`,
+      'MISSING_PARAMETERS',
+      400
+    );
+  }
 
-    // Validate wallet address format
-    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!addressRegex.test(newUserId)) {
-      referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_address');
-      return NextResponse.json({
-        success: false,
-        reason: 'invalid_address',
-        message: 'Invalid wallet address format',
-      }, { status: 400 });
-    }
+  // Validate wallet address format
+  if (!isValidAddress(newUserId)) {
+    referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_address');
+    return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
+  }
 
-    // Check if new user was already referred (prevent duplicate referrals)
-    if (hasBeenReferred(newUserId)) {
-      referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'already_referred');
-      return NextResponse.json({
-        success: false,
-        reason: 'already_referred',
-        message: 'User has already been referred',
-      }, { status: 400 });
-    }
+  // Check if new user was already referred (prevent duplicate referrals)
+  if (hasBeenReferred(newUserId)) {
+    referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'already_referred');
+    return createErrorResponse('User has already been referred', 'ALREADY_REFERRED', 400);
+  }
 
-    // Extract referrer address from referral code
-    // Format: LUX + 6 hex characters (positions 2-8 of address)
-    let referrerAddress: string | null = null;
-    
-    if (referrerCode.startsWith('LUX') && referrerCode.length === 9) {
-      referrerAddress = getReferrerAddressFromCode(referrerCode);
-      
-      if (!referrerAddress) {
-        referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'referrer_not_found');
-        return NextResponse.json({
-          success: false,
-          reason: 'referrer_not_found',
-          message: 'Referrer not found for this code. The referrer may not exist yet.',
-        }, { status: 400 });
-      }
-    } else {
-      referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_code_format');
-      return NextResponse.json({
-        success: false,
-        reason: 'invalid_code_format',
-        message: 'Invalid referral code format. Expected: LUX + 6 hex characters',
-      }, { status: 400 });
-    }
+  // Validate referral code format
+  if (!isValidReferralCode(referrerCode)) {
+    referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_code_format');
+    return createErrorResponse('Invalid referral code format. Expected: LUX + 6 hex characters', 'INVALID_CODE_FORMAT', 400);
+  }
+
+  // Extract referrer address from referral code
+  // Format: LUX + 6 hex characters (positions 2-8 of address)
+  const referrerAddress = getReferrerAddressFromCode(referrerCode);
+  
+  if (!referrerAddress) {
+    referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'referrer_not_found');
+    return createErrorResponse('Referrer not found for this code. The referrer may not exist yet.', 'REFERRER_NOT_FOUND', 400);
+  }
 
     // Comprehensive anti-cheat validation
     const validation = referralAntiCheat.validateReferral(ip, referrerAddress, newUserId);
@@ -134,30 +117,19 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Record successful referral
-    referralAntiCheat.recordAttempt(ip, referrerAddress, newUserId, true);
+  // Record successful referral
+  referralAntiCheat.recordAttempt(ip, referrerAddress, newUserId, true);
 
-    console.log('✅ Referral processed:', {
-      newUserId,
-      referrerCode,
-      referrerAddress,
-      referrerReward: REFERRER_REWARD,
-      ip,
-    });
+  logger.success('Referral processed', {
+    newUserId,
+    referrerCode,
+    referrerAddress,
+    referrerReward: REFERRER_REWARD,
+    ip,
+  }, 'process-referral');
 
-    return NextResponse.json({
-      success: true,
-      referrerReward: REFERRER_REWARD,
-      message: 'Referral processed successfully',
-    });
-  } catch (error: any) {
-    const ip = referralAntiCheat.getClientIP(req);
-    console.error('❌ Error processing referral:', error);
-    referralAntiCheat.recordAttempt(ip, '', '', false, 'server_error');
-    return NextResponse.json({
-      success: false,
-      reason: 'server_error',
-      message: error.message || 'Failed to process referral',
-    }, { status: 500 });
-  }
-}
+  return createSuccessResponse({
+    referrerReward: REFERRER_REWARD,
+    message: 'Referral processed successfully',
+  });
+}, 'process-referral');
