@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { takeToken } from '@/lib/utils/rateLimit';
 import { env } from '@/lib/utils/env';
 import { requestId } from '@/lib/utils/requestId';
+import { logger } from '@/lib/utils/logger';
 
 const BodySchema = z.object({ 
   payload: z.union([
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     const transactionId = payloadAny.transaction_id || payloadAny.transactionId;
     
     if (!transactionId) {
-      console.warn(`[confirm-payment] missing_transaction_id rid=%s payload=%s`, rid, JSON.stringify(payloadAny));
+      logger.warn('Missing transaction_id in payload', { payload: payloadAny }, 'confirm-payment');
       return NextResponse.json({
         success: false,
         error: 'Missing transaction_id in payload',
@@ -66,11 +67,17 @@ export async function POST(request: NextRequest) {
         if (r.ok) {
           const data = await r.json();
           const ref = payloadAny.reference || payloadAny.referenceId || 'unknown';
-          console.log(`[confirm-payment] rid=%s ip=%s tx=%s ref=%s status=%s attempt=%d`, rid, ip, transactionId, ref, data?.transaction_status || data?.status, attempt);
+          logger.info('Payment confirmed', { 
+            transactionId, 
+            ref, 
+            status: data?.transaction_status || data?.status, 
+            attempt,
+            ip 
+          }, 'confirm-payment');
           return NextResponse.json({ success: true, transaction: data, rid });
         } else if (r.status >= 400 && r.status < 500) {
           const text = await r.text();
-          console.warn(`[confirm-payment] client_error rid=%s status=%d body=%s`, rid, r.status, text);
+          logger.warn('Client error from Developer API', { status: r.status, body: text }, 'confirm-payment');
           return NextResponse.json({ 
             success: false, 
             error: 'Developer API 4xx', 
@@ -83,15 +90,19 @@ export async function POST(request: NextRequest) {
         }
       } catch (e: any) {
         lastErr = e;
-        console.warn(`[confirm-payment] attempt=%d error rid=%s %s`, attempt, rid, e?.message);
+        logger.warn(`Payment confirmation attempt ${attempt} failed`, e, 'confirm-payment');
       }
       await new Promise(r => setTimeout(r, attempt * 500));
     }
     const ref = payloadAny.reference || payloadAny.referenceId || 'unknown';
-    console.error(`[confirm-payment] failed rid=%s tx=%s ref=%s err=%s`, rid, transactionId, ref, lastErr?.message);
+    logger.error('Payment confirmation failed after all attempts', { 
+      transactionId, 
+      ref, 
+      error: lastErr?.message 
+    }, 'confirm-payment');
     return NextResponse.json({ success: false, error: 'Developer API error or timeout', rid }, { status: 502 });
   } catch (e: any) {
-    console.error(`[confirm-payment] bad_request rid=%s err=%s`, rid, e?.message);
+    logger.error('Bad request in payment confirmation', e, 'confirm-payment');
     return NextResponse.json({ success: false, error: e?.message || 'Bad request', rid }, { status: 400 });
   }
 }

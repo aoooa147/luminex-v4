@@ -1,4 +1,6 @@
 // App Constants
+import { Lock, Unlock } from 'lucide-react';
+
 export const LOGO_URL = "https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu8gdggu8-1.png";
 export const TOKEN_NAME = "LUX";
 export const BRAND_NAME = process.env.NEXT_PUBLIC_BRAND_NAME || "Luminex";
@@ -64,4 +66,38 @@ export const MEMBERSHIP_TIERS = [
   { id: 'platinum', name: 'Platinum', apy: 325, price: '50 WLD', icon: '💎' },
   { id: 'diamond', name: 'Diamond', apy: 500, price: '200 WLD', icon: '👑' },
 ];
+
+// Pool icons and colors (for UI styling)
+export const POOL_ICONS = [Unlock, Lock, Lock, Lock, Lock] as const;
+export const POOL_COLORS = [
+  "from-blue-400 to-cyan-400",
+  "from-green-400 to-emerald-400",
+  "from-purple-400 to-pink-400",
+  "from-orange-400 to-red-400",
+  "from-red-500 to-pink-500",
+] as const;
+export const POOL_BG_COLORS = [
+  "bg-blue-500/10",
+  "bg-green-500/10",
+  "bg-purple-500/10",
+  "bg-orange-500/10",
+  "bg-red-500/10",
+] as const;
+
+// Membership tier colors (for UI styling)
+export const MEMBERSHIP_COLORS: Record<string, string> = {
+  bronze: 'from-amber-700 to-orange-700',
+  silver: 'from-slate-400 to-gray-500',
+  gold: 'from-yellow-400 to-yellow-600',
+  platinum: 'from-cyan-400 to-blue-400',
+  diamond: 'from-indigo-400 to-purple-500',
+};
+
+export const MEMBERSHIP_SPARKLE: Record<string, boolean> = {
+  bronze: false,
+  silver: false,
+  gold: false,
+  platinum: true,
+  diamond: true,
+};
 

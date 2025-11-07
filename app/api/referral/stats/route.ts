@@ -1,41 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getReferralStats } from '@/lib/referral/storage';
+import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/lib/utils/apiHandler';
+import { isValidAddress } from '@/lib/utils/validation';
 
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const address = searchParams.get('address');
+export const GET = withErrorHandler(async (req: NextRequest) => {
+  const { searchParams } = new URL(req.url);
+  const address = searchParams.get('address');
 
-    if (!address) {
-      return NextResponse.json({
-        success: false,
-        error: 'address parameter is required',
-      }, { status: 400 });
-    }
-
-    // Validate wallet address format
-    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!addressRegex.test(address)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid wallet address format',
-      }, { status: 400 });
-    }
-
-    const stats = getReferralStats(address);
-
-    return NextResponse.json({
-      success: true,
-      stats: {
-        totalReferrals: stats.totalReferrals,
-        totalEarnings: stats.totalEarnings,
-      },
-    });
-  } catch (error: any) {
-    console.error('❌ Error fetching referral stats:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to fetch referral stats',
-    }, { status: 500 });
+  if (!address) {
+    return createErrorResponse('address parameter is required', 'MISSING_ADDRESS', 400);
   }
-}
+
+  // Validate wallet address format
+  if (!isValidAddress(address)) {
+    return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
+  }
+
+  const stats = getReferralStats(address);
+
+  return createSuccessResponse({
+    stats: {
+      totalReferrals: stats.totalReferrals,
+      totalEarnings: stats.totalEarnings,
+    },
+  });
+}, 'referral/stats');

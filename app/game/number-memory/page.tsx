@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
 import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
 
 type GameState = 'idle' | 'showing' | 'inputting' | 'result' | 'gameover' | 'victory';
@@ -18,6 +19,7 @@ export default function NumberMemoryPage() {
   const [currentDisplayIndex, setCurrentDisplayIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [round, setRound] = useState(0);
+  const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled());
 
   useEffect(() => {
     const a = sessionStorage.getItem('verifiedAddress') || localStorage.getItem('user_address') || '';
@@ -44,6 +46,7 @@ export default function NumberMemoryPage() {
       alert('Energy depleted');
       return;
     }
+    if (soundEnabled) playSound('click');
     setGameState('showing');
     setLevel(1);
     setScore(0);
@@ -85,6 +88,7 @@ export default function NumberMemoryPage() {
   function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value.replace(/\D/g, ''); // Only numbers
     setUserInput(value);
+    if (soundEnabled && value.length > 0) playSound('click');
     
     if (value.length === numberSequence.length) {
       checkAnswer(value);
@@ -101,6 +105,7 @@ export default function NumberMemoryPage() {
     const shouldLose = antiCheat.shouldForceLoss(address, isCorrect);
 
     if (isCorrect && !shouldLose) {
+      if (soundEnabled) playSound('correct');
       const newRound = round + 1;
       const newScore = score + (level * 100);
       setRound(newRound);
@@ -116,17 +121,20 @@ export default function NumberMemoryPage() {
         }, 1500);
       }
     } else {
+      if (soundEnabled) playSound('wrong');
       setTimeout(() => handleGameOver(), 1000);
     }
   }
 
     async function handleVictory() {
       setGameState('victory');
+      if (soundEnabled) playSound('victory');
       
       // Apply 80% loss rate: 80% chance of losing even if victory reached
       const shouldLose = antiCheat.shouldForceLoss(address, true);
       if (shouldLose) {
         setGameState('gameover');
+        if (soundEnabled) playSound('wrong');
         alert('Better luck next time!');
         return;
       }
@@ -158,6 +166,7 @@ export default function NumberMemoryPage() {
 
   function handleGameOver() {
     setGameState('gameover');
+    if (soundEnabled) playSound('gameover');
   }
 
   function resetGame() {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { takeToken } from '@/lib/utils/rateLimit';
 import { WALLET_RPC_URL, WLD_TOKEN_ADDRESS } from '@/lib/utils/constants';
 import { ethers } from 'ethers';
+import { logger } from '@/lib/utils/logger';
 
 // Force Node.js runtime for this API route
 export const runtime = 'nodejs';
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     // Validate that token address is configured
     if (!WLD_TOKEN_ADDRESS || WLD_TOKEN_ADDRESS === '') {
-      console.error('[wld-balance] WLD_TOKEN_ADDRESS is not configured');
+      logger.error('WLD_TOKEN_ADDRESS is not configured', null, 'wld-balance');
       return NextResponse.json({ 
         success: false,
         error: 'WLD token address not configured',
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     
     // Validate RPC URL is configured
     if (!WALLET_RPC_URL || WALLET_RPC_URL === '') {
-      console.error('[wld-balance] WALLET_RPC_URL is not configured');
+      logger.error('WALLET_RPC_URL is not configured', null, 'wld-balance');
       return NextResponse.json({ 
         success: false,
         error: 'Worldchain RPC URL not configured',
@@ -50,8 +51,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { address } = BodySchema.parse(body);
     
-    console.log('[wld-balance] Fetching balance for:', address);
-    console.log('[wld-balance] Config:', { WLD_TOKEN_ADDRESS, WALLET_RPC_URL });
+    logger.debug('Fetching WLD balance', { address, WLD_TOKEN_ADDRESS, WALLET_RPC_URL }, 'wld-balance');
     
     // Create provider for Worldchain
     const provider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
       const decimalsBN = await wldContract.decimals();
       decimals = Number(decimalsBN); // Convert BigInt to number
     } catch (e) {
-      console.warn('[wld-balance] Could not fetch decimals, using default 18');
+      logger.warn('Could not fetch decimals, using default 18', e, 'wld-balance');
     }
     
     // Format balance
     const balance = parseFloat(ethers.formatUnits(wldBalanceBN, decimals));
     
-    console.log('[wld-balance] Balance fetched:', balance, 'WLD');
+    logger.info('WLD balance fetched', { address, balance }, 'wld-balance');
     
     return NextResponse.json({ 
       success: true,
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (e: any) {
-    console.error('[wld-balance] Error:', e?.message);
+    logger.error('Error fetching WLD balance', e, 'wld-balance');
     return NextResponse.json({ 
       success: false,
       error: e?.message || 'Failed to fetch balance',

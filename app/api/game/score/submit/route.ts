@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'; 
 import { readJSON, writeJSON } from '@/lib/game/storage'; 
 import { verifyScoreSignature } from '@/lib/game/verify';
+import { logger } from '@/lib/utils/logger';
 
 export const runtime = 'nodejs';
 
@@ -43,7 +44,11 @@ export async function POST(req: NextRequest){
   if (typeof gameDuration === 'number' && gameDuration > 0) {
     const scoreCheck = antiCheat.validateScore(addressLower, score, gameDuration, actionsCount || 0, gameId);
     if (scoreCheck.suspicious || scoreCheck.blocked) {
-      console.warn(`[anti-cheat] ${addressLower}: ${scoreCheck.reason || 'suspicious_score'} (confidence: ${scoreCheck.confidence})`);
+      logger.warn('Anti-cheat: suspicious score detected', { 
+        address: addressLower, 
+        reason: scoreCheck.reason || 'suspicious_score', 
+        confidence: scoreCheck.confidence 
+      }, 'game/score/submit');
       return Response.json({ok:false,error:scoreCheck.reason || 'suspicious_score'},{status:400});
     }
 
@@ -51,13 +56,20 @@ export async function POST(req: NextRequest){
     // Check 1: Score too high relative to game duration
     const scorePerSecond = score / gameDuration;
     if (scorePerSecond > MAX_SCORE_PER_SECOND) {
-      console.warn(`[anti-cheat] ${addressLower}: Score too high per second: ${scorePerSecond.toFixed(2)}`);
+      logger.warn('Anti-cheat: score too high per second', { 
+        address: addressLower, 
+        scorePerSecond: scorePerSecond.toFixed(2) 
+      }, 'game/score/submit');
       return Response.json({ok:false,error:'suspicious_score_rate'},{status:400});
     }
 
     // Check 2: High score with suspiciously short duration
     if (score > HIGH_SCORE_THRESHOLD && gameDuration < MIN_GAME_DURATION_FOR_HIGH_SCORE) {
-      console.warn(`[anti-cheat] ${addressLower}: High score (${score}) in short duration (${gameDuration}s)`);
+      logger.warn('Anti-cheat: high score in short duration', { 
+        address: addressLower, 
+        score, 
+        gameDuration 
+      }, 'game/score/submit');
       return Response.json({ok:false,error:'suspicious_score_duration'},{status:400});
     }
   }
@@ -66,7 +78,10 @@ export async function POST(req: NextRequest){
   if (typeof actionsCount === 'number' && actionsCount > 0) {
     const scorePerAction = score / actionsCount;
     if (scorePerAction > MAX_SCORE_PER_ACTION) {
-      console.warn(`[anti-cheat] ${addressLower}: Score per action too high: ${scorePerAction.toFixed(2)}`);
+      logger.warn('Anti-cheat: score per action too high', { 
+        address: addressLower, 
+        scorePerAction: scorePerAction.toFixed(2) 
+      }, 'game/score/submit');
       return Response.json({ok:false,error:'suspicious_score_per_action'},{status:400});
     }
   }

@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { MiniKit, tokenToDecimals, Tokens } from '@worldcoin/minikit-js';
-import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS, TREASURY_ADDRESS as TREASURY_ADDRESS_FROM_CONSTANTS, LANGUAGES } from '@/lib/utils/constants';
+import { WORLD_APP_ID as ENV_WORLD_APP_ID, WORLD_ACTION as ENV_WORLD_ACTION, WALLET_RPC_URL, WALLET_CHAIN_ID, CONTRACT_RPC_URL, CONTRACT_CHAIN_ID, LUX_TOKEN_ADDRESS as LUX_TOKEN_ADDRESS_FROM_CONSTANTS, STAKING_CONTRACT_ADDRESS as STAKING_CONTRACT_ADDRESS_FROM_CONSTANTS, WLD_TOKEN_ADDRESS as WLD_TOKEN_ADDRESS_FROM_CONSTANTS, TREASURY_ADDRESS as TREASURY_ADDRESS_FROM_CONSTANTS, LANGUAGES, POOLS as POOLS_FROM_CONSTANTS, MEMBERSHIP_TIERS as MEMBERSHIP_TIERS_FROM_CONSTANTS, POOL_ICONS, POOL_COLORS, POOL_BG_COLORS, MEMBERSHIP_COLORS, MEMBERSHIP_SPARKLE, LOGO_URL as LOGO_URL_FROM_CONSTANTS, TOKEN_NAME as TOKEN_NAME_FROM_CONSTANTS } from '@/lib/utils/constants';
 import { POWERS, BASE_APY, getPowerByCode, getPowerBoost, type PowerCode } from '@/lib/utils/powerConfig';
 import { useMiniKit as useMiniKitVerify } from '@/hooks/useMiniKit';
 const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { ssr: false });
@@ -33,8 +33,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import StakeModal from '@/components/modals/StakeModal';
 import QRModal from '@/components/modals/QRModal';
 
-const LOGO_URL = "https://i.postimg.cc/wvJqhSYW/Gemini-Generated-Image-ggu8gdggu8gdggu8-1.png";
-const TOKEN_NAME = "LUX";
+const LOGO_URL = LOGO_URL_FROM_CONSTANTS;
+const TOKEN_NAME = TOKEN_NAME_FROM_CONSTANTS;
 // Use TREASURY_ADDRESS from constants.ts (can be overridden by NEXT_PUBLIC_TREASURY_ADDRESS env variable)
 const TREASURY_ADDRESS = TREASURY_ADDRESS_FROM_CONSTANTS; // Default: 0xdc6c9ac4c8ced68c9d8760c501083cd94dcea4e8
 // Admin wallet address - configure this in .env.local as NEXT_PUBLIC_ADMIN_WALLET_ADDRESS
@@ -73,8 +73,6 @@ const getRpcUrlForChainId = (chainId: number | null): string => {
   }
 };
 
-// Optimism Sepolia testnet RPC (legacy)
-const RPC_URL = "https://sepolia.optimism.io";
 
 // ERC20 ABI for balance checking and approvals
 const ERC20_ABI = [
@@ -419,21 +417,20 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
-const POOLS = [
-  { id: 0, name: "Flexible", lockDays: 0, apy: 50, icon: Unlock, color: "from-blue-400 to-cyan-400", bgColor: "bg-blue-500/10", desc: "No lock required" },
-  { id: 1, name: "30 Days", lockDays: 30, apy: 75, icon: Lock, color: "from-green-400 to-emerald-400", bgColor: "bg-green-500/10", desc: "Lock for 30 days" },
-  { id: 2, name: "90 Days", lockDays: 90, apy: 125, icon: Lock, color: "from-purple-400 to-pink-400", bgColor: "bg-purple-500/10", desc: "Lock for 90 days" },
-  { id: 3, name: "180 Days", lockDays: 180, apy: 175, icon: Lock, color: "from-orange-400 to-red-400", bgColor: "bg-orange-500/10", desc: "Lock for 180 days" },
-  { id: 4, name: "365 Days", lockDays: 365, apy: 325, icon: Lock, color: "from-red-500 to-pink-500", bgColor: "bg-red-500/10", desc: "Maximum APY!" },
-];
+// Use POOLS from constants and add UI styling
+const POOLS = POOLS_FROM_CONSTANTS.map((pool, index) => ({
+  ...pool,
+  icon: POOL_ICONS[index],
+  color: POOL_COLORS[index],
+  bgColor: POOL_BG_COLORS[index],
+}));
 
-const MEMBERSHIP_TIERS = [
-  { id: 'bronze', name: 'Bronze', apy: 75, price: '1 WLD', color: 'from-amber-700 to-orange-700', icon: '🥉' },
-  { id: 'silver', name: 'Silver', apy: 125, price: '5 WLD', color: 'from-slate-400 to-gray-500', icon: '🥈' },
-  { id: 'gold', name: 'Gold', apy: 175, price: '10 WLD', color: 'from-yellow-400 to-yellow-600', icon: '🥇' },
-  { id: 'platinum', name: 'Platinum', apy: 325, price: '50 WLD', color: 'from-cyan-400 to-blue-400', sparkle: true, icon: '💎' },
-  { id: 'diamond', name: 'Diamond', apy: 500, price: '200 WLD', color: 'from-indigo-400 to-purple-500', sparkle: true, icon: '👑' },
-];
+// Use MEMBERSHIP_TIERS from constants and add UI styling
+const MEMBERSHIP_TIERS = MEMBERSHIP_TIERS_FROM_CONSTANTS.map((tier) => ({
+  ...tier,
+  color: MEMBERSHIP_COLORS[tier.id],
+  sparkle: MEMBERSHIP_SPARKLE[tier.id],
+}));
 
 const useWorldID = () => {
   const [isVerified, setIsVerified] = useState(false);
@@ -461,7 +458,6 @@ const useMiniKit = () => {
     try {
       // Check if running in World App with MiniKit
       if (typeof window !== 'undefined' && (window as any).MiniKit) {
-        console.log('🔗 Connecting to World App MiniKit wallet...');
         const MiniKit = (window as any).MiniKit;
         
         // Use MiniKit.commandsAsync.walletAuth (new API)
@@ -470,47 +466,33 @@ const useMiniKit = () => {
           const result = await MiniKit.commandsAsync.walletAuth({ nonce });
           const walletData = result.finalPayload;
           
-          console.log('🔍 Wallet auth result:', { result, finalPayload: walletData });
-          console.log('🔍 Full walletData object keys:', walletData ? Object.keys(walletData) : 'no data');
           
         if (walletData?.address) {
-            console.log('🔍 Setting wallet state with address:', walletData.address);
             setWallet({ address: walletData.address });
     setIsConnected(true);
             
             // Try to get username from MiniKit.user.username first
             let foundUsername: string | null = null;
-            console.log('🔍 Checking MiniKit.user:', MiniKit.user);
-            console.log('🔍 Checking MiniKit methods:', Object.keys(MiniKit));
             try {
               if (MiniKit.user?.username) {
                 foundUsername = MiniKit.user.username;
-                console.log('✅ Found username from MiniKit.user.username:', foundUsername);
         } else {
-                console.log('⚠️ MiniKit.user.username is empty or undefined');
               }
             } catch (e: any) {
-              console.log('⚠️ MiniKit.user.username not available:', e?.message);
             }
             
             // If not found, try getUserByAddress
             if (!foundUsername) {
-              console.log('🔍 Trying MiniKit.getUserByAddress for:', walletData.address);
               try {
                 if (MiniKit.getUserByAddress) {
                   const worldIdUser = await MiniKit.getUserByAddress(walletData.address);
-                  console.log('🔍 getUserByAddress result:', worldIdUser);
                   if (worldIdUser?.username) {
                     foundUsername = worldIdUser.username;
-                    console.log('✅ Found username from MiniKit.getUserByAddress:', foundUsername);
               } else {
-                    console.log('⚠️ getUserByAddress returned no username');
                   }
               } else {
-                  console.log('⚠️ MiniKit.getUserByAddress method not available');
                 }
               } catch (e: any) {
-                console.log('⚠️ Error calling MiniKit.getUserByAddress:', e?.message);
               }
             }
             
@@ -520,17 +502,13 @@ const useMiniKit = () => {
                 name: walletData.name || foundUsername, 
                 username: walletData.username || foundUsername
               });
-              console.log('✅ Found user info from walletData:', { name: walletData.name, username: walletData.username });
             } else if (foundUsername) {
               setUserInfo({ name: foundUsername, username: foundUsername });
-              console.log('✅ Using username from MiniKit:', foundUsername);
           } else {
               setUserInfo(null);
-              console.log('⚠️ No user info found in MiniKit');
             }
             
             // Always use Worldchain for World App MiniKit
-            console.log('🔗 Using Worldchain RPC URL:', WALLET_RPC_URL);
             
             // Create provider for reading blockchain data from Worldchain
             const rpcProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
@@ -555,19 +533,13 @@ const useMiniKit = () => {
   };
 
   const requestPayment = async (params: { amount: string; currency: string; description: string }) => {
-    console.log("💳 Payment request:", params);
-    console.log("🔍 DEBUG → params.amount:", params.amount, "type:", typeof params.amount);
-    
     try {
             // Ensure amount is a valid string first
       const amountStr = String(params.amount || '0').trim();
-      console.log("🔍 DEBUG → amountStr after String():", amountStr);
       
       const amount = parseFloat(amountStr);
-      console.log("🔍 DEBUG → amount after parseFloat():", amount);
 
       if (!amount || amount <= 0 || isNaN(amount)) {
-        console.error("❌ Invalid amount:", { amount, amountStr, original: params.amount });
         return { success: false, error: 'Invalid amount' };
       }
 
@@ -1562,7 +1534,7 @@ const LuminexApp = () => {
     try {
       const amount = Number(stakeAmount);
       const amountWei = ethers.parseUnits(amount.toString(), 18);
-      const lockPeriod = POOLS[selectedPool].lockDays * 24 * 60 * 60; // Convert days to seconds
+      const lockPeriod = POOLS_FROM_CONSTANTS[selectedPool].lockDays * 24 * 60 * 60; // Convert days to seconds
 
       // Check if MiniKit is available
       const MiniKit = (window as any).MiniKit;
@@ -2042,7 +2014,7 @@ const LuminexApp = () => {
     );
   }
 
-  const currentPool = POOLS[selectedPool];
+  const currentPool = POOLS_FROM_CONSTANTS[selectedPool];
   const baseApy = BASE_APY; // Base APY is now 50% (from powerConfig)
   const powerBoost = currentPower ? getPowerBoost(getPowerByCode(currentPower.code) || null) : 0;
   const totalApy = currentPower ? currentPower.totalAPY : baseApy;
