@@ -43,7 +43,10 @@ export async function runTask(taskId: string): Promise<void> {
     task.lastRun = new Date();
     logger.success('Task completed', { taskId: task.id, taskName: task.name }, 'scheduler');
   } catch (error: any) {
-    logger.error('Task failed', error, 'scheduler', { taskId: task.id, taskName: task.name });
+    const errorWithContext = error instanceof Error 
+      ? Object.assign(error, { taskId: task.id, taskName: task.name })
+      : { error, taskId: task.id, taskName: task.name };
+    logger.error('Task failed', errorWithContext, 'scheduler');
     throw error;
   }
 }
@@ -157,7 +160,10 @@ export function startScheduler(): void {
       
       if (shouldRun) {
         runTask(task.id).catch(error => {
-          logger.error('Scheduled task error', error, 'scheduler', { taskId: task.id });
+          const errorWithContext = error instanceof Error 
+            ? Object.assign(error, { taskId: task.id })
+            : { error, taskId: task.id };
+          logger.error('Scheduled task error', errorWithContext, 'scheduler');
         });
       }
     }
