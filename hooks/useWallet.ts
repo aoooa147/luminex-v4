@@ -54,60 +54,104 @@ export function useWallet(verifiedAddress: string | null) {
 
   const connectWallet = useCallback(async () => {
     try {
-      if (typeof window !== 'undefined' && (window as any).MiniKit) {
-        const MiniKit = (window as any).MiniKit;
+      // Check if MiniKit is available
+      if (typeof window === 'undefined') {
+        console.warn('Wallet connection: Window is not available');
+        return;
+      }
+
+      const MiniKit = (window as any).MiniKit;
+      
+      // Check if MiniKit is installed (only available in World App)
+      if (!MiniKit) {
+        console.warn('Wallet connection: MiniKit is not available. Please open this app in World App.');
+        return;
+      }
+
+      // Check if MiniKit.isInstalled() is available
+      if (MiniKit.isInstalled && !MiniKit.isInstalled()) {
+        console.warn('Wallet connection: MiniKit is not installed. Please open this app in World App.');
+        return;
+      }
+
+      if (!MiniKit.commandsAsync?.walletAuth) {
+        console.warn('Wallet connection: walletAuth is not available');
+        return;
+      }
+
+      try {
+        const nonce = crypto.randomUUID().replace(/-/g, '');
+        const result = await MiniKit.commandsAsync.walletAuth({ nonce });
+        const walletData = result.finalPayload;
         
-        if (MiniKit.commandsAsync?.walletAuth) {
-          const nonce = crypto.randomUUID().replace(/-/g, '');
-          const result = await MiniKit.commandsAsync.walletAuth({ nonce });
-          const walletData = result.finalPayload;
-          
-          if (walletData?.address) {
-            setWallet({ address: walletData.address });
-            setIsConnected(true);
-            
-            // Track wallet connection
-            trackWalletConnect(walletData.address);
-            setUserId(walletData.address);
-            
-            // Try to get username from MiniKit
-            let foundUsername: string | null = null;
-            try {
-              if (MiniKit.user?.username) {
-                foundUsername = MiniKit.user.username;
-              }
-            } catch (e) {
-              // Silent error handling
-            }
-            
-            if (!foundUsername) {
-              try {
-                if (MiniKit.getUserByAddress) {
-                  const worldIdUser = await MiniKit.getUserByAddress(walletData.address);
-                  if (worldIdUser?.username) {
-                    foundUsername = worldIdUser.username;
-                  }
-                }
-              } catch (e) {
-                // Silent error handling
+        if (!walletData?.address) {
+          console.error('Wallet connection: No address in wallet data', walletData);
+          return;
+        }
+        
+        setWallet({ address: walletData.address });
+        setIsConnected(true);
+        
+        // Track wallet connection
+        trackWalletConnect(walletData.address);
+        setUserId(walletData.address);
+        
+        // Try to get username from MiniKit
+        let foundUsername: string | null = null;
+        try {
+          if (MiniKit.user?.username) {
+            foundUsername = MiniKit.user.username;
+          }
+        } catch (e) {
+          // Silent error handling
+        }
+        
+        if (!foundUsername) {
+          try {
+            if (MiniKit.getUserByAddress) {
+              const worldIdUser = await MiniKit.getUserByAddress(walletData.address);
+              if (worldIdUser?.username) {
+                foundUsername = worldIdUser.username;
               }
             }
-            
-            if (walletData?.name || walletData?.username) {
-              setUserInfo({ 
-                name: walletData.name || foundUsername, 
-                username: walletData.username || foundUsername
-              });
-            } else if (foundUsername) {
-              setUserInfo({ name: foundUsername, username: foundUsername });
-            } else {
-              setUserInfo(null);
-            }
-            
-            const rpcProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
-            setProvider(rpcProvider);
+          } catch (e) {
+            // Silent error handling
           }
         }
+        
+        if (walletData?.name || walletData?.username) {
+          setUserInfo({ 
+            name: walletData.name || foundUsername, 
+            username: walletData.username || foundUsername
+          });
+        } else if (foundUsername) {
+          setUserInfo({ name: foundUsername, username: foundUsername });
+        } else {
+          setUserInfo(null);
+        }
+        
+        const rpcProvider = new ethers.JsonRpcProvider(WALLET_RPC_URL);
+        setProvider(rpcProvider);
+      } catch (authError: any) {
+        // Handle user cancellation
+        const errorMsg = String(authError?.message || '').toLowerCase();
+        const errorCode = String(authError?.code || authError?.error_code || '').toLowerCase();
+        
+        if (
+          errorCode.includes('user_rejected') ||
+          errorCode.includes('cancelled') ||
+          errorCode.includes('cancel') ||
+          errorMsg.includes('cancel') ||
+          errorMsg.includes('rejected') ||
+          errorMsg.includes('user')
+        ) {
+          // User cancelled - don't log as error
+          console.info('Wallet connection: User cancelled');
+          return;
+        }
+        
+        console.error('Wallet connection error:', authError);
+        throw authError;
       }
     } catch (error: any) {
       // Error connecting wallet - log but don't show to user

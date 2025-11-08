@@ -17,19 +17,73 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const { payload, action } = BodySchema.parse(body);
 
-  const { verifyCloudProof } = await import('@worldcoin/minikit-js');
+  // Check environment variables
   if (!env.NEXT_PUBLIC_WORLD_APP_ID) {
-    logger.error('Missing NEXT_PUBLIC_WORLD_APP_ID', null, 'verify');
+    logger.error('Missing NEXT_PUBLIC_WORLD_APP_ID', { action, ip }, 'verify');
     return createErrorResponse('Missing NEXT_PUBLIC_WORLD_APP_ID', 'MISSING_CONFIG', 500);
   }
 
-  const out = await verifyCloudProof(payload, env.NEXT_PUBLIC_WORLD_APP_ID as `app_${string}`, action);
+  // Validate WORLD_APP_ID format
+  if (!env.NEXT_PUBLIC_WORLD_APP_ID.startsWith('app_')) {
+    logger.error('Invalid NEXT_PUBLIC_WORLD_APP_ID format', { 
+      appId: env.NEXT_PUBLIC_WORLD_APP_ID, 
+      action, 
+      ip 
+    }, 'verify');
+    return createErrorResponse('Invalid NEXT_PUBLIC_WORLD_APP_ID format', 'INVALID_CONFIG', 500);
+  }
 
-  logger.info('World ID verification', { success: out.success, action, ip }, 'verify');
+  try {
+    const { verifyCloudProof } = await import('@worldcoin/minikit-js');
+    
+    // Validate payload
+    if (!payload || typeof payload !== 'object') {
+      logger.warn('Invalid payload format', { action, ip, payloadType: typeof payload }, 'verify');
+      return createErrorResponse('Invalid payload format', 'INVALID_PAYLOAD', 400);
+    }
 
-  if (out.success) {
-    return createSuccessResponse({ success: true, detail: out });
-  } else {
-    return createErrorResponse('Verification failed', 'VERIFICATION_FAILED', 400);
+    const out = await verifyCloudProof(
+      payload, 
+      env.NEXT_PUBLIC_WORLD_APP_ID as `app_${string}`, 
+      action
+    );
+
+    logger.info('World ID verification', { 
+      success: out.success, 
+      action, 
+      ip,
+      error: out.error || null,
+      detail: out.detail || null
+    }, 'verify');
+
+    if (out.success) {
+      return createSuccessResponse({ success: true, detail: out });
+    } else {
+      // Provide more detailed error message
+      const errorMessage = out.error || out.detail?.error || 'Verification failed';
+      logger.warn('World ID verification failed', { 
+        action, 
+        ip, 
+        error: errorMessage,
+        detail: out.detail 
+      }, 'verify');
+      return createErrorResponse(
+        errorMessage || 'Verification failed', 
+        'VERIFICATION_FAILED', 
+        400
+      );
+    }
+  } catch (error: any) {
+    logger.error('World ID verification error', { 
+      action, 
+      ip, 
+      error: error.message,
+      stack: error.stack 
+    }, 'verify');
+    return createErrorResponse(
+      error.message || 'Verification error', 
+      'VERIFICATION_ERROR', 
+      500
+    );
   }
 }, 'verify');
