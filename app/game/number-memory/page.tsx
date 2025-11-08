@@ -184,6 +184,12 @@ export default function NumberMemoryPage() {
     if (soundEnabled) playSound('gameover');
   }
 
+  function toggleSound() {
+    const newState = !soundEnabled;
+    setSoundEnabledState(newState);
+    setSoundEnabled(newState);
+  }
+
   function resetGame() {
     setGameState('idle');
     setUserInput('');
