@@ -109,8 +109,10 @@ export function useWallet(verifiedAddress: string | null) {
           }
         }
       }
-    } catch (error) {
-      // Error connecting wallet - silent error handling
+    } catch (error: any) {
+      // Error connecting wallet - log but don't show to user
+      // The error will be handled by the calling component if needed
+      console.error('Wallet connection error:', error);
     }
   }, []);
 
@@ -180,6 +182,8 @@ export function useWallet(verifiedAddress: string | null) {
       setIsLoadingBalance(false);
       balanceFetchInProgress.current = false;
     } catch (error: any) {
+      // Silently handle balance fetch errors - don't show to user
+      // Balance will remain at 0 or previous value
       setWldBalance(0);
       setBalance(0);
       setIsLoadingBalance(false);

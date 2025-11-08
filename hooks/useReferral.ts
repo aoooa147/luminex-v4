@@ -67,7 +67,8 @@ export function useReferral(
         setTotalReferrals(0);
         setTotalEarnings(0);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Silently handle fetch errors - don't show to user
       setTotalReferrals(0);
       setTotalEarnings(0);
     }

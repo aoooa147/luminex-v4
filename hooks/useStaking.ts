@@ -102,8 +102,13 @@ export function useStaking(
       }
       
       stakingDataFetchInProgress.current = false;
-    } catch (error) {
+    } catch (error: any) {
       stakingDataFetchInProgress.current = false;
+      // Silently handle fetch errors - don't show to user
+      // Reset to default values on error
+      setStakedAmount(0);
+      setPendingRewards(0);
+      setTimeElapsed({ days: 0, hours: 0, minutes: 0, seconds: 0 });
     }
   }, [provider, actualAddress, selectedPool]);
 
@@ -184,7 +189,34 @@ export function useStaking(
       trackStaking('stake', amountNum, selectedPool);
     } catch (error: any) {
       setIsStaking(false);
-      onError?.(error?.message || 'Staking failed');
+      
+      // Handle user cancellation
+      const errorMsg = String(error?.message || '').toLowerCase();
+      const errorCode = String(error?.code || error?.error_code || '').toLowerCase();
+      
+      if (
+        errorCode.includes('user_rejected') ||
+        errorCode.includes('cancelled') ||
+        errorCode.includes('cancel') ||
+        errorMsg.includes('cancel') ||
+        errorMsg.includes('rejected') ||
+        errorMsg.includes('user')
+      ) {
+        // User cancelled - don't show error
+        return;
+      }
+      
+      // Provide user-friendly error messages
+      const errorMessages: Record<string, string> = {
+        'token approval failed': 'Failed to approve tokens. Please try again.',
+        'staking transaction failed': 'Staking transaction failed. Please check your balance and try again.',
+        'please use world app to stake tokens': 'Please open this app in World App to stake tokens.',
+        'provider not available': 'Wallet provider not available. Please reconnect your wallet.',
+        'insufficient balance': 'Insufficient balance. Please check your LUX balance.',
+      };
+      
+      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Staking failed. Please try again.';
+      onError?.(friendlyMessage);
     }
   }, [actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 
@@ -231,7 +263,32 @@ export function useStaking(
       trackStaking('claim', rewardsValue, selectedPool);
     } catch (error: any) {
       setIsClaiming(false);
-      onError?.(error?.message || 'Claim failed');
+      
+      // Handle user cancellation
+      const errorMsg = String(error?.message || '').toLowerCase();
+      const errorCode = String(error?.code || error?.error_code || '').toLowerCase();
+      
+      if (
+        errorCode.includes('user_rejected') ||
+        errorCode.includes('cancelled') ||
+        errorCode.includes('cancel') ||
+        errorMsg.includes('cancel') ||
+        errorMsg.includes('rejected') ||
+        errorMsg.includes('user')
+      ) {
+        // User cancelled - don't show error
+        return;
+      }
+      
+      // Provide user-friendly error messages
+      const errorMessages: Record<string, string> = {
+        'claim rewards transaction failed': 'Failed to claim rewards. Please try again.',
+        'please use world app to claim rewards': 'Please open this app in World App to claim rewards.',
+        'no rewards to claim': 'No rewards available to claim.',
+      };
+      
+      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Claim failed. Please try again.';
+      onError?.(friendlyMessage);
     }
   }, [pendingRewards, actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 
@@ -291,7 +348,33 @@ export function useStaking(
       trackStaking('withdraw', withdrawnAmount, selectedPool);
     } catch (error: any) {
       setIsWithdrawing(false);
-      onError?.(error?.message || 'Withdrawal failed');
+      
+      // Handle user cancellation
+      const errorMsg = String(error?.message || '').toLowerCase();
+      const errorCode = String(error?.code || error?.error_code || '').toLowerCase();
+      
+      if (
+        errorCode.includes('user_rejected') ||
+        errorCode.includes('cancelled') ||
+        errorCode.includes('cancel') ||
+        errorMsg.includes('cancel') ||
+        errorMsg.includes('rejected') ||
+        errorMsg.includes('user')
+      ) {
+        // User cancelled - don't show error
+        return;
+      }
+      
+      // Provide user-friendly error messages
+      const errorMessages: Record<string, string> = {
+        'withdrawal transaction failed': 'Failed to withdraw. Please try again.',
+        'please use world app to withdraw balance': 'Please open this app in World App to withdraw.',
+        'no staked balance to withdraw': 'No staked balance available to withdraw.',
+        'provider not available': 'Wallet provider not available. Please reconnect your wallet.',
+      };
+      
+      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Withdrawal failed. Please try again.';
+      onError?.(friendlyMessage);
     }
   }, [stakedAmount, actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 

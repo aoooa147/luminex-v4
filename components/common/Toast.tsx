@@ -50,10 +50,32 @@ Toast.displayName = 'Toast';
  */
 export function useToast() {
   const [toast, setToast] = React.useState<ToastState>({ message: '', type: null });
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const showToast = React.useCallback((message: string, type: 'success' | 'error') => {
+    // Clear existing timeout if any
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     setToast({ message, type });
-    setTimeout(() => setToast({ message: '', type: null }), 3000);
+    
+    // Set new timeout and store reference
+    timeoutRef.current = setTimeout(() => {
+      setToast({ message: '', type: null });
+      timeoutRef.current = null;
+    }, 3000);
+  }, []);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
   }, []);
 
   return {

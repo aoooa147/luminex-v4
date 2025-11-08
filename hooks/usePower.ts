@@ -52,6 +52,7 @@ export function usePower(
         setCurrentPower(null);
       }
     } catch (error: any) {
+      // Silently handle fetch errors - don't show to user
       setCurrentPower(null);
     }
   }, [actualAddress]);
@@ -171,7 +172,33 @@ export function usePower(
         onError?.(payError?.message || 'Payment failed');
       }
     } catch (error: any) {
-      onError?.(error.message || 'Failed to purchase power');
+      // Handle user cancellation
+      const errorMsg = String(error?.message || '').toLowerCase();
+      const errorCode = String(error?.code || error?.error_code || '').toLowerCase();
+      
+      if (
+        errorCode.includes('user_rejected') ||
+        errorCode.includes('cancelled') ||
+        errorCode.includes('cancel') ||
+        errorMsg.includes('cancel') ||
+        errorMsg.includes('rejected') ||
+        errorMsg.includes('user')
+      ) {
+        // User cancelled - don't show error
+        setIsPurchasingPower(false);
+        return;
+      }
+      
+      // Provide user-friendly error messages
+      const errorMessages: Record<string, string> = {
+        'failed to initialize power purchase': 'Failed to start purchase. Please try again.',
+        'world app is required': 'Please open this app in World App to purchase power.',
+        'payment failed': 'Payment failed. Please check your balance and try again.',
+        'insufficient balance': 'Insufficient WLD balance. Please add more WLD to your wallet.',
+      };
+      
+      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Failed to purchase power. Please try again.';
+      onError?.(friendlyMessage);
     } finally {
       setIsPurchasingPower(false);
     }
