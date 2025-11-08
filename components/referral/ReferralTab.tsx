@@ -1,7 +1,6 @@
 'use client';
 
 import React, { memo } from 'react';
-import { motion } from 'framer-motion';
 import { UserPlus, Coins, Share2, Copy, Check, QrCode } from 'lucide-react';
 import { TOKEN_NAME } from '@/lib/utils/constants';
 import { trackReferral } from '@/lib/utils/analytics';
@@ -29,24 +28,13 @@ const ReferralTab = memo(({
   t,
 }: ReferralTabProps) => {
   return (
-    <motion.div
-      key="referral"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-3"
-      style={{ willChange: 'transform, opacity' }}
-    >
+    <div className="space-y-3">
       {/* Hero Section */}
       <TronCard glowColor="purple" className="p-8 text-center">
         <div className="relative z-10">
-          <motion.div
-            animate={{ rotate: [0, 15, -15, 0] }}
-            transition={{ duration: 5, repeat: Infinity }}
-            className="text-7xl mb-4"
-          >
+          <div className="text-7xl mb-4">
             🎁🎊
-          </motion.div>
+          </div>
           <h1 className="text-2xl font-extrabold font-orbitron text-tron-purple mb-2 neon-text">
             Invite Friends!
           </h1>
@@ -164,7 +152,7 @@ const ReferralTab = memo(({
           </li>
         </ul>
       </TronCard>
-    </motion.div>
+    </div>
   );
 });
 

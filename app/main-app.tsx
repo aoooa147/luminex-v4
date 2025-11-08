@@ -3,7 +3,6 @@
 /// <reference path="../luminex-unified-app.ts" />
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { ethers } from "ethers";
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -647,14 +646,9 @@ const LuminexApp = () => {
         <div className="flex min-h-screen items-center justify-center px-4 py-10">
           <div className="text-center relative z-10 max-w-md w-full">
             {/* Large Logo - 3D */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative inline-block mb-6 flex justify-center"
-            >
+            <div className="relative inline-block mb-6 flex justify-center">
               <Logo3D size={120} interactive={false} />
-            </motion.div>
+            </div>
           
             {/* AI-like loading state */}
             <AILoadingState 
@@ -766,7 +760,7 @@ const LuminexApp = () => {
 
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-3 sm:px-4 pb-20 sm:pb-24 pt-2 sm:pt-4 min-h-0">
         <BroadcastMessage />
-        <AnimatePresence mode="wait" initial={false}>
+        <div>
           {activeTab === 'staking' && (
             <StakingTab
               selectedPool={selectedPool}
@@ -815,7 +809,7 @@ const LuminexApp = () => {
           )}
 
           {activeTab === 'game' && <GameTab />}
-        </AnimatePresence>
+        </div>
       </main>
 
       <StakeModal

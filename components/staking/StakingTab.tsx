@@ -1,7 +1,6 @@
 'use client';
 
 import React, { memo } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Coins, TrendingUp, TrendingDown, BarChart3, DollarSign as DollarIcon,
   Zap, Timer, Loader2, Gift, Sparkles, Lock, Unlock
@@ -75,14 +74,7 @@ const StakingTab = memo(({
   t,
 }: StakingTabProps) => {
   return (
-    <motion.div
-      key="staking"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="space-y-2"
-    >
+    <div className="space-y-2">
       {/* Pool Selection */}
       <div className="grid grid-cols-5 gap-1.5">
         {POOLS.map((pool) => {
@@ -100,13 +92,11 @@ const StakingTab = memo(({
           };
           
           return (
-            <motion.button
+            <button
               key={pool.id}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedPool(pool.id)}
-              className={`relative p-1.5 rounded-lg border-2 transition-all overflow-hidden backdrop-blur-lg font-orbitron min-h-[60px] ${colorClasses[tronColor as keyof typeof colorClasses]}`}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className={`relative p-1.5 rounded-lg border-2 transition-all duration-150 overflow-hidden backdrop-blur-sm font-orbitron min-h-[60px] hover:scale-105 active:scale-95 ${colorClasses[tronColor as keyof typeof colorClasses]}`}
+              style={{ transform: 'translateZ(0)' }}
             >
               <div className="relative">
                 <div className={`flex justify-center mb-0.5 ${isActive ? '' : 'opacity-60'}`}>
@@ -115,7 +105,7 @@ const StakingTab = memo(({
                 <p className="font-bold text-[9px] leading-tight text-center">{pool.name}</p>
                 <p className={`text-[8px] font-semibold mt-0.5 text-center ${isActive ? 'opacity-100' : 'opacity-50'}`}>{pool.apy}%</p>
               </div>
-            </motion.button>
+            </button>
           );
         })}
       </div>
@@ -239,7 +229,7 @@ const StakingTab = memo(({
           <Sparkles className="w-3.5 h-3.5 inline ml-1.5" />
         </TronButton>
       </div>
-    </motion.div>
+    </div>
   );
 });
 

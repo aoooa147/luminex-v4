@@ -2,7 +2,6 @@
 
 import React, { memo } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { TronCard, TronButton } from '@/components/tron';
 
 const GAMES = [
@@ -61,40 +60,30 @@ const GameLauncherCard = memo(() => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        {GAMES.map((game, index) => (
-          <motion.div
+        {GAMES.map((game) => (
+          <TronCard
             key={game.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              duration: 0.3, 
-              delay: index * 0.05,
-              ease: 'easeOut'
-            }}
+            glowColor={game.glowColor === 'cyan' ? 'red' : game.glowColor}
+            className="p-3 sm:p-4 flex flex-col min-h-[140px] h-full"
           >
-            <TronCard
-              glowColor={game.glowColor === 'cyan' ? 'red' : game.glowColor}
-              className="p-3 sm:p-4 flex flex-col min-h-[140px] h-full"
-            >
-              <div className="flex-1 mb-3">
-                <div className="text-sm sm:text-base font-semibold font-orbitron text-white mb-1.5 line-clamp-2">
-                  {game.name}
-                </div>
-                <div className="text-xs sm:text-sm opacity-70 text-gray-300 font-orbitron line-clamp-2">
-                  {game.description}
-                </div>
+            <div className="flex-1 mb-3">
+              <div className="text-sm sm:text-base font-semibold font-orbitron text-white mb-1.5 line-clamp-2">
+                {game.name}
               </div>
-              <Link href={game.href} className="mt-auto">
-                <TronButton
-                  variant={game.glowColor === 'orange' ? 'danger' : game.glowColor === 'purple' ? 'success' : 'primary'}
-                  size="sm"
-                  className="w-full text-xs sm:text-sm"
-                >
-                  Play Now
-                </TronButton>
-              </Link>
-            </TronCard>
-          </motion.div>
+              <div className="text-xs sm:text-sm opacity-70 text-gray-300 font-orbitron line-clamp-2">
+                {game.description}
+              </div>
+            </div>
+            <Link href={game.href} className="mt-auto">
+              <TronButton
+                variant={game.glowColor === 'orange' ? 'danger' : game.glowColor === 'purple' ? 'success' : 'primary'}
+                size="sm"
+                className="w-full text-xs sm:text-sm"
+              >
+                Play Now
+              </TronButton>
+            </Link>
+          </TronCard>
         ))}
       </div>
     </div>

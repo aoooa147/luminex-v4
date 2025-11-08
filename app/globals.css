@@ -117,7 +117,7 @@ body {
   background: var(--bg-primary);
 }
 
-/* 🌌 City Nightscape Background - Tron Ares Style - Optimized */
+/* 🌌 City Nightscape Background - Static (No Animation) */
 body::before {
   content: '';
   position: fixed;
@@ -130,16 +130,13 @@ body::before {
     linear-gradient(0deg, var(--grid-color) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: 0 0;
-  animation: gridScroll 30s linear infinite;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.2;
-  will-change: background-position;
+  opacity: 0.1;
   transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
-/* 🌆 City Skyline & Red Neon Glow - Optimized */
+/* 🌆 City Skyline & Red Neon Glow - Static (No Animation) */
 body::after {
   content: '';
   position: fixed;
@@ -148,14 +145,12 @@ body::after {
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.15) 0%, transparent 40%),
-    linear-gradient(180deg, rgba(255, 26, 42, 0.08) 0%, rgba(0, 0, 0, 0.9) 100%);
+    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.08) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255, 26, 42, 0.04) 0%, rgba(0, 0, 0, 0.95) 100%);
   pointer-events: none;
   z-index: 0;
-  mix-blend-mode: screen;
   transform: translateZ(0);
-  will-change: opacity;
 }
 
 @keyframes gridScroll {
@@ -205,20 +200,16 @@ a {
   text-decoration: none;
 }
 
-/* 💠 TRON ARES Grid - Red Neon - Optimized */
+/* 💠 TRON ARES Grid - Red Neon - Static (No Animation) */
 .tron-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(0deg, rgba(255, 26, 42, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 26, 42, 0.1) 1px, transparent 1px);
+    linear-gradient(0deg, rgba(255, 26, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 26, 42, 0.06) 1px, transparent 1px);
   background-size: 120px 120px;
-  animation: tronGridDrift 25s linear infinite;
-  opacity: 0.15;
-  mix-blend-mode: screen;
-  will-change: background-position;
+  opacity: 0.08;
   transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 .tron-grid-secondary {
@@ -227,17 +218,17 @@ a {
   animation-duration: 28s;
 }
 
-/* 🔴 Red Neon Energy Stream */
+/* 🔴 Red Neon Energy Stream - Static (No Animation) */
 .tron-energy-stream {
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(circle at 70% 20%, rgba(255, 26, 42, 0.5), transparent 60%),
-    radial-gradient(circle at 30% 40%, rgba(255, 0, 102, 0.3), transparent 65%),
-    linear-gradient(120deg, rgba(255, 26, 42, 0.25) 0%, rgba(26, 26, 26, 0.1) 100%);
-  filter: blur(90px);
-  opacity: 0.6;
-  animation: redNeonPulse 8s ease-in-out infinite;
+    radial-gradient(circle at 70% 20%, rgba(255, 26, 42, 0.2), transparent 60%),
+    radial-gradient(circle at 30% 40%, rgba(255, 0, 102, 0.12), transparent 65%),
+    linear-gradient(120deg, rgba(255, 26, 42, 0.1) 0%, rgba(26, 26, 26, 0.1) 100%);
+  filter: blur(60px);
+  opacity: 0.3;
+  transform: translateZ(0);
 }
 
 @keyframes redNeonPulse {
@@ -251,17 +242,15 @@ a {
   }
 }
 
-/* 🌫️ City Fog Effect - Optimized */
+/* 🌫️ City Fog Effect - Static (No Animation) */
 .tron-fog {
   position: absolute;
   inset: 0;
   background: 
-    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.3), transparent 65%),
-    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05), transparent 50%);
-  filter: blur(50px);
-  opacity: 0.3;
-  animation: fogDrift 30s ease-in-out infinite;
-  will-change: transform, opacity;
+    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.2), transparent 65%),
+    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.03), transparent 50%);
+  filter: blur(40px);
+  opacity: 0.2;
   transform: translateZ(0);
 }
 
@@ -285,36 +274,28 @@ a {
   }
 }
 
-/* 🎨 Tron Ares Glass Effects - Red Neon */
+/* 🎨 Tron Ares Glass Effects - Red Neon - Optimized */
 .glass-tron {
   background: linear-gradient(
     135deg,
-    rgba(255, 26, 42, 0.08) 0%,
-    rgba(26, 26, 26, 0.95) 100%
+    rgba(255, 26, 42, 0.06) 0%,
+    rgba(26, 26, 26, 0.98) 100%
   );
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 26, 42, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 26, 42, 0.25);
   box-shadow: 
-    0 0 20px rgba(255, 26, 42, 0.15),
-    inset 0 0 20px rgba(255, 26, 42, 0.08);
+    0 0 15px rgba(255, 26, 42, 0.1),
+    inset 0 0 15px rgba(255, 26, 42, 0.05);
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: auto;
 }
 
+/* Disable shine animation for performance */
 .glass-tron::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 26, 42, 0.15),
-    transparent
-  );
-  animation: shine 3s infinite;
+  display: none;
 }
 
 @keyframes shine {
@@ -1049,41 +1030,50 @@ img {
 }
 
 /* ⚡ Performance Optimizations - Prevent Lag & Flickering */
-.motion-div,
-[class*="motion"],
-[class*="animate"],
-[class*="neon"] {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: transform, opacity;
-  isolation: isolate;
+/* Disable will-change to prevent memory leaks and reduce flickering */
+* {
+  will-change: auto !important;
 }
 
-/* GPU acceleration for smooth animations */
-[class*="motion"],
-.animate-fadeIn,
-.animate-slideUp,
-.animate-zoomIn {
-  transform: translate3d(0, 0, 0);
-  will-change: transform, opacity;
-}
-
-/* Prevent repaints during animations */
+/* GPU acceleration for critical elements only */
 .neon-card,
 .neon-button,
 .glass-tron {
-  contain: layout style paint;
   transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style;
 }
 
-/* Optimize transitions */
+/* Optimize transitions - minimal and fast */
 button,
 a,
 [role="button"] {
-  transition-property: transform, opacity, background-color, border-color;
-  transition-duration: 0.2s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background-color, border-color, opacity, color;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-out;
+}
+
+/* Disable expensive effects and animations */
+.neon-card::before,
+.neon-button::before,
+.glass-tron::before {
+  display: none !important;
+}
+
+/* Reduce blur effects for performance */
+.backdrop-blur-xl {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
 }
 
 /* 🚀 Lazy Loading for Images */

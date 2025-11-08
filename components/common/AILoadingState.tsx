@@ -54,66 +54,37 @@ export function AILoadingState({
 
   return (
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
-      {/* AI-like pulsing circle */}
-      <motion.div
-        className={`relative ${sizes[size]}`}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.7, 1, 0.7],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      >
+      {/* AI-like pulsing circle - Static for performance */}
+      <div className={`relative ${sizes[size]}`}>
         <div className="absolute inset-0 rounded-full bg-tron-red/30 blur-md" />
         <div className="absolute inset-0 rounded-full bg-tron-red border-2 border-tron-red-bright" />
-        <motion.div
-          className="absolute inset-0 rounded-full border-2 border-tron-red"
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
+        <div
+          className="absolute inset-0 rounded-full border-2 border-tron-red animate-spin"
           style={{
             borderTopColor: 'transparent',
             borderRightColor: 'transparent',
+            animationDuration: '2s',
+            transform: 'translateZ(0)'
           }}
         />
-      </motion.div>
+      </div>
 
-      {/* Message with smooth transition */}
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={currentMessage}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="text-sm font-orbitron text-tron-red text-center"
-        >
-          {currentMessage}
-        </motion.p>
-      </AnimatePresence>
+      {/* Message - Static */}
+      <p className="text-sm font-orbitron text-tron-red text-center">
+        {currentMessage}
+      </p>
 
-      {/* Loading dots */}
+      {/* Loading dots - Static pulsing with CSS */}
       {showDots && (
         <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
-            <motion.div
+            <div
               key={i}
-              className={`rounded-full bg-tron-red ${dotSizes[size]}`}
-              animate={{
-                opacity: [0.3, 1, 0.3],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: 'easeInOut',
+              className={`rounded-full bg-tron-red ${dotSizes[size]} animate-pulse`}
+              style={{
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: '1.5s',
+                transform: 'translateZ(0)'
               }}
             />
           ))}
@@ -131,20 +102,12 @@ export function AILoadingOverlay({
   isVisible: boolean
   message?: string 
 }) {
+  if (!isVisible) return null;
+  
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-        >
-          <AILoadingState message={message} size="lg" />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-200">
+      <AILoadingState message={message} size="lg" />
+    </div>
   )
 }
 

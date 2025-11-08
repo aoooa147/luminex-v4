@@ -1,7 +1,6 @@
 'use client';
 
 import React, { memo } from 'react';
-import { motion } from 'framer-motion';
 import { Zap, Loader2 } from 'lucide-react';
 import { POWERS, BASE_APY, getPowerByCode, type PowerCode } from '@/lib/utils/powerConfig';
 import { TronCard, TronButton, TronBadge } from '@/components/tron';
@@ -20,14 +19,7 @@ const MembershipTab = memo(({
   handlePurchasePower,
 }: MembershipTabProps) => {
   return (
-    <motion.div
-      key="membership"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center space-x-2">
@@ -110,7 +102,7 @@ const MembershipTab = memo(({
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 });
 

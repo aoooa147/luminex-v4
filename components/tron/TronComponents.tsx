@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
 import { Zap, Shield, Sparkles, TrendingUp } from 'lucide-react'
 
 // 🎨 Tron Button Component
@@ -34,31 +33,22 @@ export function TronButton({
   }
 
   return (
-    <motion.button
+    <button
       onClick={onClick}
       disabled={disabled}
       className={`
         neon-button relative overflow-hidden
         border-2 rounded-lg font-orbitron font-semibold uppercase tracking-wider
-        transition-all duration-300
+        transition-all duration-150
         ${variants[variant]}
         ${sizes[size]}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105 active:scale-95'}
         ${className}
       `}
-      whileHover={disabled ? {} : { scale: 1.05, y: -2 }}
-      whileTap={disabled ? {} : { scale: 0.95 }}
+      style={{ transform: 'translateZ(0)' }}
     >
       <span className="relative z-10">{children}</span>
-      {!disabled && (
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          initial={{ x: '-100%' }}
-          animate={{ x: '100%' }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-        />
-      )}
-    </motion.button>
+    </button>
   )
 }
 
@@ -109,30 +99,21 @@ export function TronCard({
   }
 
   return (
-    <motion.div
+    <div
       className={`
         neon-card relative
         bg-gradient-to-br from-bg-tertiary/90 to-bg-secondary/90
-        backdrop-blur-xl rounded-2xl p-6
+        backdrop-blur-sm rounded-2xl p-6
         border ${glowColors[glowColor]}
+        transition-all duration-200
         ${className}
       `}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, scale: 1.01 }}
-      transition={{ 
-        duration: 0.25, 
-        ease: 'easeOut',
-        layout: { duration: 0.2 }
-      }}
-      layout
+      style={{ transform: 'translateZ(0)' }}
     >
-      {/* Top border animation */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 overflow-hidden">
-        <motion.div
-          className={`h-full w-1/3 bg-gradient-to-r from-transparent ${borderGradients[glowColor]} to-transparent`}
-          animate={{ x: ['-100%', '300%'] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      {/* Top border - Static (no animation) */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 overflow-hidden opacity-30">
+        <div
+          className={`h-full w-full bg-gradient-to-r from-transparent ${borderGradients[glowColor]} to-transparent`}
         />
       </div>
 
@@ -159,7 +140,7 @@ export function TronCard({
       <div className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none">
         <div className="hex-pattern absolute inset-0" />
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -249,23 +230,14 @@ export function TronProgressBar({
         {/* Background glow */}
         <div className="absolute inset-0 bg-gradient-to-r from-tron-red/5 to-tron-red-bright/5" />
         
-        {/* Progress */}
-        <motion.div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-tron-red to-tron-red-bright rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+        {/* Progress - CSS transition only */}
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-tron-red to-tron-red-bright rounded-full transition-all duration-500 ease-out"
           style={{
-            boxShadow: '0 0 20px rgba(255, 26, 42, 0.6), inset 0 0 20px rgba(255, 26, 42, 0.3)',
+            width: `${percentage}%`,
+            boxShadow: '0 0 15px rgba(255, 26, 42, 0.5), inset 0 0 15px rgba(255, 26, 42, 0.25)',
+            transform: 'translateZ(0)'
           }}
-        />
-        
-        {/* Animated shine */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-          animate={{ x: ['-100%', '200%'] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>
@@ -335,32 +307,30 @@ export function TronTabs({
         const isActive = activeTab === tab.id
 
         return (
-          <motion.button
+          <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
               relative flex items-center gap-2 px-6 py-3 rounded-lg border
               font-orbitron font-semibold uppercase tracking-wide text-sm
-              transition-all duration-300
+              transition-all duration-150
               ${isActive 
                 ? 'text-tron-red bg-tron-red/10 border-tron-red/50' 
                 : 'text-gray-400 hover:text-tron-red/70 border-transparent'
               }
             `}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            style={{ transform: 'translateZ(0)' }}
           >
             {Icon && <Icon className="w-4 h-4" />}
             {tab.label}
             
             {isActive && (
-              <motion.div
+              <div
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-tron-red"
-                layoutId="activeTab"
-                style={{ boxShadow: '0 0 10px rgba(255, 26, 42, 0.8)' }}
+                style={{ boxShadow: '0 0 8px rgba(255, 26, 42, 0.6)' }}
               />
             )}
-          </motion.button>
+          </button>
         )
       })}
     </div>
@@ -388,15 +358,14 @@ export function TronAlert({
   const Icon = config.icon
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+    <div
       className={`
         relative flex items-start gap-3 p-4 rounded-xl
         border ${config.border} ${config.bg}
-        backdrop-blur-xl
+        backdrop-blur-sm
+        transition-opacity duration-200
       `}
+      style={{ transform: 'translateZ(0)' }}
     >
       <Icon className={`w-5 h-5 ${config.text} flex-shrink-0 mt-0.5`} />
       <div className="flex-1 text-sm text-gray-200">
@@ -410,7 +379,7 @@ export function TronAlert({
           ✕
         </button>
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -467,13 +436,9 @@ export function TronInput({
           `}
         />
         
-        {/* Animated border */}
-        <div className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden">
-          <motion.div
-            className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-tron-red to-transparent"
-            animate={{ x: ['-100%', '200%'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-          />
+        {/* Static border - no animation */}
+        <div className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden opacity-30">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-tron-red to-transparent" />
         </div>
       </div>
       
@@ -495,13 +460,9 @@ export function TronUIShowcase() {
     <div className="min-h-screen p-8 space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4">
-        <motion.h1
-          className="text-6xl font-orbitron font-bold gradient-text"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <h1 className="text-6xl font-orbitron font-bold gradient-text">
           LUMINEX
-        </motion.h1>
+        </h1>
         <p className="text-xl text-gray-400 font-exo">
           Tron-Inspired Interface Design
         </p>
