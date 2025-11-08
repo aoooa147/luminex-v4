@@ -61,29 +61,36 @@ const GameLauncherCard = memo(() => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {GAMES.map((game) => (
-          <TronCard
-            key={game.id}
-            glowColor={game.glowColor === 'cyan' ? 'red' : game.glowColor}
-            className="p-3 sm:p-4 flex flex-col min-h-[140px] h-full"
-          >
-            <div className="flex-1 mb-3">
-              <div className="text-sm sm:text-base font-semibold font-orbitron text-white mb-1.5 line-clamp-2">
-                {game.name}
+          <Link key={game.id} href={game.href}>
+            <TronCard
+              glowColor={game.glowColor === 'cyan' ? 'orange' : game.glowColor === 'orange' ? 'orange' : game.glowColor}
+              className="p-4 sm:p-5 flex flex-col min-h-[160px] h-full cursor-pointer hover:scale-105 transition-transform duration-200 relative overflow-hidden"
+            >
+              {/* Hover glow effect */}
+              <div 
+                className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-200"
+                style={{
+                  background: `radial-gradient(circle at center, ${game.glowColor === 'orange' ? 'rgba(255, 107, 53, 0.2)' : 'rgba(255, 26, 42, 0.2)'}, transparent 70%)`,
+                }}
+              />
+              
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex-1 mb-4">
+                  <div className="text-lg sm:text-xl font-bold font-orbitron text-white mb-2 line-clamp-2">
+                    {game.name}
+                  </div>
+                  <div className="text-xs sm:text-sm opacity-70 text-gray-300 font-orbitron line-clamp-2 leading-relaxed">
+                    {game.description}
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <div className="w-full py-2.5 px-4 rounded-lg border-2 border-tron-orange/50 bg-tron-orange/10 text-tron-orange hover:bg-tron-orange/20 transition-colors font-orbitron text-sm uppercase tracking-wider text-center font-bold">
+                    PLAY NOW
+                  </div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm opacity-70 text-gray-300 font-orbitron line-clamp-2">
-                {game.description}
-              </div>
-            </div>
-            <Link href={game.href} className="mt-auto">
-              <TronButton
-                variant={game.glowColor === 'orange' ? 'danger' : game.glowColor === 'purple' ? 'success' : 'primary'}
-                size="sm"
-                className="w-full text-xs sm:text-sm"
-              >
-                Play Now
-              </TronButton>
-            </Link>
-          </TronCard>
+            </TronCard>
+          </Link>
         ))}
       </div>
     </div>

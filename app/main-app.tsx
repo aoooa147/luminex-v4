@@ -19,6 +19,10 @@ import { useReferral } from '@/hooks/useReferral';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Toast, useToast } from '@/components/common/Toast';
 import { AILoadingState } from '@/components/common/AILoadingState';
+import { SplashScreen } from '@/components/common/SplashScreen';
+import { WelcomeCard } from '@/components/common/WelcomeCard';
+import { QuickActionCard } from '@/components/common/QuickActionCard';
+import { Zap as ZapIcon, Gamepad2 as Gamepad2Icon, Users as UsersIcon, Coins as CoinsIcon } from 'lucide-react';
 const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { 
   ssr: false,
   loading: () => <AILoadingState message="Loading panel..." size="sm" />
@@ -639,25 +643,14 @@ const LuminexApp = () => {
     };
   }, []);
 
-  // Show AI-like loading screen first (optimized)
+  // Show Splash Screen with Booting Sequence
   if (isInitialLoading) {
     return (
-      <TronShell showEnergyStream={false} className="bg-[#050505]">
-        <div className="flex min-h-screen items-center justify-center px-4 py-10">
-          <div className="text-center relative z-10 max-w-md w-full">
-            {/* Large Logo - 3D */}
-            <div className="relative inline-block mb-6 flex justify-center">
-              <Logo3D size={120} interactive={false} />
-            </div>
-          
-            {/* AI-like loading state */}
-            <AILoadingState 
-              message="Initializing system..." 
-              size="lg" 
-            />
-          </div>
-        </div>
-      </TronShell>
+      <SplashScreen 
+        onComplete={() => {
+          setIsInitialLoading(false);
+        }}
+      />
     );
   }
 
@@ -760,6 +753,51 @@ const LuminexApp = () => {
 
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-3 sm:px-4 pb-20 sm:pb-24 pt-2 sm:pt-4 min-h-0">
         <BroadcastMessage />
+        
+        {/* User HUD - Quick Actions (only show on staking tab as home dashboard) */}
+        {activeTab === 'staking' && (
+          <div className="space-y-3 mb-4">
+            <WelcomeCard 
+              username={userInfo?.username || userInfo?.name}
+              address={actualAddress || undefined}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <QuickActionCard
+                title="Power"
+                description="Upgrade license"
+                icon={ZapIcon}
+                href="#"
+                glowColor="red"
+                onClick={() => setActiveTab('membership')}
+              />
+              <QuickActionCard
+                title="Games"
+                description="Play & earn"
+                icon={Gamepad2Icon}
+                href="#"
+                glowColor="orange"
+                onClick={() => setActiveTab('game')}
+              />
+              <QuickActionCard
+                title="Referral"
+                description="Invite friends"
+                icon={UsersIcon}
+                href="#"
+                glowColor="purple"
+                onClick={() => setActiveTab('referral')}
+              />
+              <QuickActionCard
+                title="Staking"
+                description="Stake tokens"
+                icon={CoinsIcon}
+                href="#"
+                glowColor="cyan"
+                onClick={() => setActiveTab('staking')}
+              />
+            </div>
+          </div>
+        )}
+
         <div>
           {activeTab === 'staking' && (
             <StakingTab

@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import { Zap, Loader2 } from 'lucide-react';
 import { POWERS, BASE_APY, getPowerByCode, type PowerCode } from '@/lib/utils/powerConfig';
 import { TronCard, TronButton, TronBadge } from '@/components/tron';
+import { EnergyCoreVisualization } from './EnergyCoreVisualization';
 
 interface MembershipTabProps {
   currentPower: { code: PowerCode; name: string; totalAPY: number } | null;
@@ -18,13 +19,16 @@ const MembershipTab = memo(({
   isPurchasingPower,
   handlePurchasePower,
 }: MembershipTabProps) => {
+  // Calculate power boost
+  const powerBoost = currentPower ? totalApy - BASE_APY : 0;
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 px-2">
         <div className="flex items-center space-x-2">
-          <Zap className="w-5 h-5 text-tron-cyan" style={{ filter: 'drop-shadow(0 0 5px var(--tron-cyan))' }} />
-          <span className="text-tron-cyan font-bold text-sm font-orbitron uppercase tracking-wider neon-text">POWER LICENSES</span>
+          <Zap className="w-5 h-5 text-tron-red" style={{ filter: 'drop-shadow(0 0 5px rgba(255, 26, 42, 0.8))' }} />
+          <span className="text-tron-red font-bold text-sm font-orbitron uppercase tracking-wider neon-text">ENERGY CORE</span>
         </div>
         {currentPower && (
           <TronBadge variant="success" size="md">
@@ -33,6 +37,14 @@ const MembershipTab = memo(({
           </TronBadge>
         )}
       </div>
+
+      {/* Energy Core Visualization - Radial Chart */}
+      <EnergyCoreVisualization
+        currentPower={currentPower}
+        totalApy={totalApy}
+        baseApy={BASE_APY}
+        powerBoost={powerBoost}
+      />
 
       {/* Power Tiers */}
       <div className="space-y-3">
