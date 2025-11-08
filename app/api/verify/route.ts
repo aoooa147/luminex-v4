@@ -48,24 +48,26 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       action
     );
 
+    // Type assertion to access properties safely
+    const outAny = out as any;
+
     logger.info('World ID verification', { 
       success: out.success, 
       action, 
       ip,
-      error: out.error || null,
-      detail: out.detail || null
+      detail: outAny.detail || null
     }, 'verify');
 
     if (out.success) {
       return createSuccessResponse({ success: true, detail: out });
     } else {
       // Provide more detailed error message
-      const errorMessage = out.error || out.detail?.error || 'Verification failed';
+      const errorMessage = outAny.error || outAny.detail?.error || 'Verification failed';
       logger.warn('World ID verification failed', { 
         action, 
         ip, 
         error: errorMessage,
-        detail: out.detail 
+        detail: outAny.detail 
       }, 'verify');
       return createErrorResponse(
         errorMessage || 'Verification failed', 
