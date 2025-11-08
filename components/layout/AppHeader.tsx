@@ -42,7 +42,7 @@ const AppHeader = memo(({
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 26, 42, 0.15), inset 0 1px 0 rgba(255, 26, 42, 0.1)'
       }}
     >
-      <div className="max-w-md mx-auto px-4 py-4">
+      <div className="max-w-md mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-2">
             <img src={LOGO_URL} alt="LUX" className="w-8 h-8 rounded-full ring-2 ring-purple-400/50" />
@@ -110,9 +110,10 @@ const AppHeader = memo(({
               <AnimatePresence>
                 {showLanguageMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
                     className="absolute right-0 mt-2 w-40 bg-bg-tertiary/95 backdrop-blur-xl rounded-xl border border-tron-purple/30 shadow-2xl py-2 z-[9999]"
                     style={{
                       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(168, 85, 247, 0.2)'

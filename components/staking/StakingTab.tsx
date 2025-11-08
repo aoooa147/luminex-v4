@@ -21,8 +21,8 @@ const POOL_ICONS: Record<number, typeof Unlock> = {
 };
 
 // Map pool IDs to Tron colors
-const POOL_COLORS: Record<number, 'cyan' | 'blue' | 'purple' | 'orange' | 'pink'> = {
-  0: "cyan",
+const POOL_COLORS: Record<number, 'red' | 'cyan' | 'blue' | 'purple' | 'orange' | 'pink'> = {
+  0: "red",
   1: "blue",
   2: "purple",
   3: "orange",
@@ -77,20 +77,21 @@ const StakingTab = memo(({
   return (
     <motion.div
       key="staking"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       className="space-y-2"
-      style={{ willChange: 'transform, opacity' }}
     >
       {/* Pool Selection */}
       <div className="grid grid-cols-5 gap-1.5">
         {POOLS.map((pool) => {
           const Icon = POOL_ICONS[pool.id] || Unlock;
-          const tronColor = POOL_COLORS[pool.id] || "cyan";
+          const tronColor = POOL_COLORS[pool.id] || "red";
           const isActive = selectedPool === pool.id;
           
           const colorClasses = {
+            red: isActive ? 'border-tron-red bg-tron-red/20 text-tron-red shadow-neon-red' : 'border-tron-red/30 text-gray-400',
             cyan: isActive ? 'border-tron-cyan bg-tron-cyan/20 text-tron-cyan shadow-neon-cyan' : 'border-tron-cyan/30 text-gray-400',
             blue: isActive ? 'border-tron-blue bg-tron-blue/20 text-tron-blue shadow-neon-blue' : 'border-tron-blue/30 text-gray-400',
             purple: isActive ? 'border-tron-purple bg-tron-purple/20 text-tron-purple shadow-neon-purple' : 'border-tron-purple/30 text-gray-400',
@@ -104,15 +105,15 @@ const StakingTab = memo(({
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedPool(pool.id)}
-              className={`relative p-1.5 rounded-lg border-2 transition-all overflow-hidden backdrop-blur-lg font-orbitron ${colorClasses[tronColor]}`}
-              style={{ willChange: 'transform' }}
+              className={`relative p-1.5 rounded-lg border-2 transition-all overflow-hidden backdrop-blur-lg font-orbitron min-h-[60px] ${colorClasses[tronColor as keyof typeof colorClasses]}`}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
             >
               <div className="relative">
                 <div className={`flex justify-center mb-0.5 ${isActive ? '' : 'opacity-60'}`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <p className="font-bold text-[9px] leading-tight">{pool.name}</p>
-                <p className={`text-[8px] font-semibold mt-0.5 ${isActive ? 'opacity-100' : 'opacity-50'}`}>{pool.apy}%</p>
+                <p className="font-bold text-[9px] leading-tight text-center">{pool.name}</p>
+                <p className={`text-[8px] font-semibold mt-0.5 text-center ${isActive ? 'opacity-100' : 'opacity-50'}`}>{pool.apy}%</p>
               </div>
             </motion.button>
           );
@@ -120,19 +121,19 @@ const StakingTab = memo(({
       </div>
 
       {/* Staking Card */}
-      <TronCard glowColor="cyan" className="p-3">
+      <TronCard glowColor="red" className="p-3 sm:p-4">
         <div className="space-y-2">
           {/* Power License Status */}
-          <div className="flex items-center justify-between p-2 bg-bg-tertiary/80 rounded-lg border border-tron-cyan/30 backdrop-blur-lg">
+          <div className="flex items-center justify-between p-2 bg-bg-tertiary/80 rounded-lg border border-tron-red/30 backdrop-blur-lg">
             <div className="flex items-center space-x-1.5">
-              <Zap className="w-3.5 h-3.5 text-tron-cyan" style={{ filter: 'drop-shadow(0 0 5px var(--tron-cyan))' }} />
+              <Zap className="w-3.5 h-3.5 text-tron-red" style={{ filter: 'drop-shadow(0 0 5px rgba(255, 26, 42, 0.8))' }} />
               <span className="text-gray-300 text-[10px] font-orbitron">Power License:</span>
               <TronBadge variant={currentPower ? 'success' : 'default'} size="sm">
                 {currentPower ? currentPower.name : 'None'}
               </TronBadge>
             </div>
             <div className="text-right">
-              <div className="text-tron-cyan font-bold text-xs font-orbitron neon-text">{totalApy}% Total APY</div>
+              <div className="text-tron-red font-bold text-xs font-orbitron neon-text">{totalApy}% Total APY</div>
               <div className="text-gray-400 text-[9px] mt-0.5 font-orbitron">
                 Base {baseApy}% {powerBoost > 0 ? `+ ${powerBoost}%` : ''}
               </div>
@@ -140,39 +141,39 @@ const StakingTab = memo(({
           </div>
 
           {/* Staking Balance */}
-          <div className="p-2 bg-bg-tertiary/80 rounded-lg border border-tron-cyan/30 backdrop-blur-lg">
+          <div className="p-2 bg-bg-tertiary/80 rounded-lg border border-tron-red/30 backdrop-blur-lg">
             <p className="text-gray-300 text-[10px] mb-1 font-orbitron">{t('myStakingBalance')}</p>
             {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
               <div className="flex items-center justify-center py-1">
-                <span className="text-tron-cyan text-[10px] text-center font-orbitron">
+                <span className="text-tron-red text-[10px] text-center font-orbitron">
                   {!actualAddress ? 'Connect wallet' : 'Contract not configured'}
                 </span>
               </div>
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <Coins className="w-4 h-4 text-tron-cyan" style={{ filter: 'drop-shadow(0 0 5px var(--tron-cyan))' }} />
-                  <span className="text-lg font-extrabold text-tron-cyan font-orbitron">{formattedStakedAmount}</span>
+                  <Coins className="w-4 h-4 text-tron-red" style={{ filter: 'drop-shadow(0 0 5px rgba(255, 26, 42, 0.8))' }} />
+                  <span className="text-lg font-extrabold text-tron-red font-orbitron">{formattedStakedAmount}</span>
                   <span className="text-gray-400 text-xs font-orbitron">LUX</span>
                 </div>
-                <TrendingUp className="w-4 h-4 text-tron-blue" style={{ filter: 'drop-shadow(0 0 5px var(--tron-blue))' }} />
+                <TrendingUp className="w-4 h-4 text-tron-red-bright" style={{ filter: 'drop-shadow(0 0 5px rgba(255, 71, 87, 0.8))' }} />
               </div>
             )}
           </div>
 
           {/* Earned Interest */}
-          <div className="p-2 bg-bg-tertiary/80 rounded-lg border border-tron-cyan/30 backdrop-blur-lg">
+          <div className="p-2 bg-bg-tertiary/80 rounded-lg border border-tron-red/30 backdrop-blur-lg">
             <p className="text-gray-300 text-[10px] mb-1 font-orbitron">{t('earnedInterest')}</p>
             <div className="flex items-center justify-between">
-              <span className="text-xl font-extrabold text-tron-cyan font-orbitron neon-text">{formattedPendingRewards}</span>
+              <span className="text-xl font-extrabold text-tron-red font-orbitron neon-text">{formattedPendingRewards}</span>
               <span className="text-gray-400 text-xs font-orbitron">LUX</span>
             </div>
           </div>
 
           {/* Time Elapsed */}
           {timeElapsed.days > 0 || timeElapsed.hours > 0 || timeElapsed.minutes > 0 ? (
-            <div className="flex items-center space-x-1.5 text-[10px] text-gray-300 bg-tron-cyan/10 rounded-lg px-2 py-1 border border-tron-cyan/20 font-orbitron">
-              <Timer className="w-3 h-3 flex-shrink-0 text-tron-cyan" />
+            <div className="flex items-center space-x-1.5 text-[10px] text-gray-300 bg-tron-red/10 rounded-lg px-2 py-1 border border-tron-red/20 font-orbitron">
+              <Timer className="w-3 h-3 flex-shrink-0 text-tron-red" />
               <span className="font-mono">
                 {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m
               </span>

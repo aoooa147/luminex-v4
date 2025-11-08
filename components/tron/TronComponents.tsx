@@ -117,10 +117,15 @@ export function TronCard({
         border ${glowColors[glowColor]}
         ${className}
       `}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.02 }}
-      transition={{ duration: 0.3 }}
+      whileHover={{ y: -2, scale: 1.01 }}
+      transition={{ 
+        duration: 0.25, 
+        ease: 'easeOut',
+        layout: { duration: 0.2 }
+      }}
+      layout
     >
       {/* Top border animation */}
       <div className="absolute top-0 left-0 right-0 h-0.5 overflow-hidden">

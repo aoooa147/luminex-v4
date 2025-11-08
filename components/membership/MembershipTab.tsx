@@ -22,11 +22,11 @@ const MembershipTab = memo(({
   return (
     <motion.div
       key="membership"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       className="space-y-4"
-      style={{ willChange: 'transform, opacity' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3 px-2">
@@ -63,7 +63,7 @@ const MembershipTab = memo(({
             <TronCard 
               key={power.code}
               glowColor={glowColor}
-              className={`p-4 ${isOwned ? 'ring-2 ring-tron-cyan' : ''}`}
+              className={`p-4 ${isOwned ? 'ring-2 ring-tron-red' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 flex-1 min-w-0">

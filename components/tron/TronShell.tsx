@@ -44,14 +44,20 @@ export function TronShell({
         </div>
       )}
 
-      {/* Energy stream */}
+      {/* Energy stream - Optimized for performance */}
       {showEnergyStream && (
         <motion.div
           aria-hidden
           className="absolute inset-0 -z-10 pointer-events-none"
           initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0.35] }}
-          transition={{ duration: 18, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
+          animate={{ opacity: [0, 0.8, 0.3] }}
+          transition={{ 
+            duration: 20, 
+            repeat: Infinity, 
+            repeatType: 'mirror', 
+            ease: 'easeInOut' 
+          }}
+          style={{ willChange: 'opacity' }}
         >
           <div className="tron-energy-stream" />
           <div className="tron-fog" />

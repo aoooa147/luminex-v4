@@ -19,8 +19,15 @@ import { usePower } from '@/hooks/usePower';
 import { useReferral } from '@/hooks/useReferral';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Toast, useToast } from '@/components/common/Toast';
-const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { ssr: false });
-const GameLauncherCard = dynamic(() => import('@/components/game/GameLauncherCard'), { ssr: false });
+import { AILoadingState } from '@/components/common/AILoadingState';
+const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { 
+  ssr: false,
+  loading: () => <AILoadingState message="Loading panel..." size="sm" />
+});
+const GameLauncherCard = dynamic(() => import('@/components/game/GameLauncherCard'), { 
+  ssr: false,
+  loading: () => <AILoadingState message="Loading games..." size="md" />
+});
 import { 
   Wallet, Shield, Coins, TrendingUp, Settings, Gift, Users, Zap, Lock, Unlock, 
   AlertTriangle, ExternalLink, Copy, Check, Loader2, Clock, Star, Droplet,
@@ -604,126 +611,59 @@ const LuminexApp = () => {
   }, [setUserInfo]);
 
 
-  // Initial loading screen - show before verification
+  // Initial loading screen - show before verification (optimized)
   useEffect(() => {
     let timer: NodeJS.Timeout;
     
     const hideLoading = () => {
-      // Wait minimum 1.5 seconds for smooth UX
+      // Reduced loading time for better UX (1 second instead of 1.5)
       timer = setTimeout(() => {
         setIsInitialLoading(false);
-      }, 1500);
+      }, 1000);
     };
 
     // Check if page is already loaded
-    if (document.readyState === 'complete') {
-      hideLoading();
-    } else {
-      // Wait for page to fully load
-      window.addEventListener('load', hideLoading, { once: true });
+    if (typeof window !== 'undefined') {
+      if (document.readyState === 'complete') {
+        hideLoading();
+      } else {
+        // Wait for page to fully load
+        window.addEventListener('load', hideLoading, { once: true });
+      }
     }
     
     return () => {
       if (timer) clearTimeout(timer);
-      window.removeEventListener('load', hideLoading);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('load', hideLoading);
+      }
     };
   }, []);
 
-  // Show loading screen first
+  // Show AI-like loading screen first (optimized)
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex items-center justify-center">
-        {/* Elegant gold background particles */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <motion.div 
-            className="absolute top-20 left-10 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"
-            animate={{ 
-              opacity: [0.1, 0.2, 0.1],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div 
-            className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-amber-500/6 rounded-full blur-3xl"
-            animate={{ 
-              opacity: [0.08, 0.15, 0.08],
-              scale: [1, 1.15, 1]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
-          <motion.div 
-            className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-yellow-400/5 rounded-full blur-3xl"
-            animate={{ 
-              opacity: [0.05, 0.12, 0.05],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
-        </div>
-        
-                  <div className="text-center relative z-10 max-w-md w-full px-4">      
+      <TronShell showEnergyStream={false} className="bg-[#050505]">
+        <div className="flex min-h-screen items-center justify-center px-4 py-10">
+          <div className="text-center relative z-10 max-w-md w-full">
             {/* Large Logo - 3D */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative inline-block mb-8 flex justify-center"
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="relative inline-block mb-6 flex justify-center"
             >
-              <Logo3D size={160} interactive={true} />
+              <Logo3D size={120} interactive={false} />
             </motion.div>
           
-          {/* Gold spinner */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="relative w-20 h-20 mx-auto mb-6"
-          >
-            <div className="absolute inset-0 border-4 border-yellow-600/30 border-t-yellow-500 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-amber-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-            <div className="absolute inset-0 border-4 border-transparent border-r-yellow-400/40 rounded-full animate-spin" style={{ animationDuration: '2s' }}></div>
-          </motion.div>
-          
-          {/* Loading text */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="text-yellow-400/90 text-xl font-medium tracking-wide mb-4"
-            style={{
-              textShadow: '0 0 10px rgba(234, 179, 8, 0.5)'
-            }}
-          >
-            Loading Luminex...
-          </motion.p>
-          
-          {/* Animated dots */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-            className="flex items-center justify-center gap-2"
-          >
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-2 h-2 bg-yellow-500 rounded-full"
-                animate={{
-                  opacity: [0.3, 1, 0.3],
-                  scale: [1, 1.3, 1],
-                  y: [0, -5, 0]
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                  ease: "easeInOut"
-                }}
-              />
-            ))}
-          </motion.div>
+            {/* AI-like loading state */}
+            <AILoadingState 
+              message="Initializing system..." 
+              size="lg" 
+            />
+          </div>
         </div>
-      </div>
+      </TronShell>
     );
   }
 
@@ -824,9 +764,9 @@ const LuminexApp = () => {
         t={t}
       />
 
-      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-24 pt-4">
+      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-3 sm:px-4 pb-20 sm:pb-24 pt-2 sm:pt-4 min-h-0">
         <BroadcastMessage />
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {activeTab === 'staking' && (
             <StakingTab
               selectedPool={selectedPool}

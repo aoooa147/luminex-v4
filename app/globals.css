@@ -117,7 +117,7 @@ body {
   background: var(--bg-primary);
 }
 
-/* 🌌 City Nightscape Background - Tron Ares Style */
+/* 🌌 City Nightscape Background - Tron Ares Style - Optimized */
 body::before {
   content: '';
   position: fixed;
@@ -130,13 +130,16 @@ body::before {
     linear-gradient(0deg, var(--grid-color) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: 0 0;
-  animation: gridScroll 20s linear infinite;
+  animation: gridScroll 30s linear infinite;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.25;
+  opacity: 0.2;
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
-/* 🌆 City Skyline & Red Neon Glow */
+/* 🌆 City Skyline & Red Neon Glow - Optimized */
 body::after {
   content: '';
   position: fixed;
@@ -145,12 +148,14 @@ body::after {
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.2) 0%, transparent 40%),
-    linear-gradient(180deg, rgba(255, 26, 42, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.15) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255, 26, 42, 0.08) 0%, rgba(0, 0, 0, 0.9) 100%);
   pointer-events: none;
   z-index: 0;
   mix-blend-mode: screen;
+  transform: translateZ(0);
+  will-change: opacity;
 }
 
 @keyframes gridScroll {
@@ -162,22 +167,58 @@ body::after {
   }
 }
 
+/* 🚀 Performance Optimizations - Reduce Flickering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent layout shift */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* 💠 TRON ARES Grid - Red Neon */
+/* 💠 TRON ARES Grid - Red Neon - Optimized */
 .tron-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(0deg, rgba(255, 26, 42, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 26, 42, 0.12) 1px, transparent 1px);
+    linear-gradient(0deg, rgba(255, 26, 42, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 26, 42, 0.1) 1px, transparent 1px);
   background-size: 120px 120px;
-  animation: tronGridDrift 18s linear infinite;
-  opacity: 0.2;
+  animation: tronGridDrift 25s linear infinite;
+  opacity: 0.15;
   mix-blend-mode: screen;
+  will-change: background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .tron-grid-secondary {
@@ -210,16 +251,18 @@ a {
   }
 }
 
-/* 🌫️ City Fog Effect */
+/* 🌫️ City Fog Effect - Optimized */
 .tron-fog {
   position: absolute;
   inset: 0;
   background: 
-    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.4), transparent 65%),
-    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.08), transparent 50%);
-  filter: blur(60px);
-  opacity: 0.4;
-  animation: fogDrift 25s ease-in-out infinite;
+    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.3), transparent 65%),
+    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05), transparent 50%);
+  filter: blur(50px);
+  opacity: 0.3;
+  animation: fogDrift 30s ease-in-out infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 @keyframes fogDrift {
@@ -899,28 +942,39 @@ img {
   animation: redNeonPulse 12s ease-in-out infinite;
 }
 
-/* 📱 Mobile Responsive Improvements */
+/* 📱 Mobile Responsive Improvements - Better Screen Fit */
 @media (max-width: 640px) {
   /* Better touch targets */
   button, a[role="button"] {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Improve text readability on mobile */
   body {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    font-size: 14px;
+  }
+  
+  /* Better spacing on mobile */
+  .container,
+  .max-w-md,
+  .max-w-2xl,
+  .max-w-4xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   
   /* Safe area insets for notched devices */
   .safe-area-top {
-    padding-top: max(1rem, env(safe-area-inset-top, 1rem));
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
   }
   
   .safe-area-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
   }
   
   .safe-area-left {
@@ -932,14 +986,53 @@ img {
   }
   
   /* Reduce animation intensity on mobile for performance */
-  @media (prefers-reduced-motion: no-preference) {
-    .tron-grid {
-      animation-duration: 30s;
-    }
-    
-    .tron-energy-stream {
-      animation-duration: 25s;
-    }
+  body::before {
+    opacity: 0.15;
+    background-size: 40px 40px;
+    animation-duration: 40s;
+  }
+  
+  body::after {
+    opacity: 0.8;
+  }
+  
+  .tron-grid {
+    opacity: 0.1;
+    background-size: 100px 100px;
+    animation-duration: 35s;
+  }
+  
+  /* Optimize cards for mobile */
+  .neon-card {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+  
+  /* Better font sizes on mobile */
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+  
+  /* Prevent horizontal scroll */
+  * {
+    max-width: 100%;
+  }
+}
+
+/* 📱 Tablet Responsive */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* 🖥️ Desktop Optimizations */
+@media (min-width: 1025px) {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
   }
 }
 
@@ -955,7 +1048,7 @@ img {
   }
 }
 
-/* ⚡ Performance Optimizations */
+/* ⚡ Performance Optimizations - Prevent Lag & Flickering */
 .motion-div,
 [class*="motion"],
 [class*="animate"],
@@ -963,7 +1056,34 @@ img {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
-  will-change: transform;
+  will-change: transform, opacity;
+  isolation: isolate;
+}
+
+/* GPU acceleration for smooth animations */
+[class*="motion"],
+.animate-fadeIn,
+.animate-slideUp,
+.animate-zoomIn {
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+}
+
+/* Prevent repaints during animations */
+.neon-card,
+.neon-button,
+.glass-tron {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize transitions */
+button,
+a,
+[role="button"] {
+  transition-property: transform, opacity, background-color, border-color;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 🚀 Lazy Loading for Images */
