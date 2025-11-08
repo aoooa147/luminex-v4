@@ -6,6 +6,7 @@ import { withErrorHandler, createErrorResponse, createSuccessResponse, validateB
 import { isValidAddress } from '@/lib/utils/validation';
 import { getClientIP, checkIPRisk } from '@/lib/utils/ipTracking';
 import { enhancedAntiCheat } from '@/lib/game/anticheatEnhanced';
+import { rateLimiters } from '@/lib/cache/rateLimiter';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,16 @@ const MIN_GAME_DURATION_FOR_HIGH_SCORE = 10; // seconds
 const HIGH_SCORE_THRESHOLD = 50000;
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Rate limiting
+  const rateLimitResult = await rateLimiters.gameAction(req);
+  if (!rateLimitResult.allowed) {
+    return createErrorResponse(
+      'Rate limit exceeded. Please try again later.',
+      'RATE_LIMIT_EXCEEDED',
+      429
+    );
+  }
+
   const body = await req.json();
   const { address, payload, sig, deviceId } = body;
   

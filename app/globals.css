@@ -78,6 +78,71 @@
 
 }
 
+/* 💠 Tron Shell Utilities */
+.tron-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.12) 1px, transparent 1px);
+  background-size: 120px 120px;
+  animation: tronGridDrift 18s linear infinite;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+}
+
+.tron-grid-secondary {
+  background-size: 60px 60px;
+  opacity: 0.1;
+  animation-duration: 28s;
+}
+
+.tron-energy-stream {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 26, 42, 0.35), transparent 60%),
+    radial-gradient(circle at 70% 40%, rgba(0, 240, 255, 0.3), transparent 65%),
+    linear-gradient(120deg, rgba(0, 240, 255, 0.25) 0%, rgba(153, 0, 255, 0.08) 100%);
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+.tron-fog {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.12), transparent 65%);
+  filter: blur(45px);
+  opacity: 0.32;
+}
+
+.tron-panel-glow {
+  position: absolute;
+  inset: -120%;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.18), transparent 55%);
+  filter: blur(80px);
+  animation: tronPulse 12s ease-in-out infinite;
+}
+
+@keyframes tronGridDrift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 120px;
+  }
+}
+
+@keyframes tronPulse {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  55% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
 
 
 * {

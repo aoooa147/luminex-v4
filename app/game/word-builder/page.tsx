@@ -5,6 +5,10 @@ import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
 import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
 import { signMessageWithMiniKit } from '@/lib/game/auth';
 import { getDeviceFingerprint } from '@/lib/utils/deviceFingerprint';
+import { GameStatsCard } from '@/components/game/GameStatsCard';
+import { GameButton } from '@/components/game/GameButton';
+import { TronCard, TronPanel } from '@/components/tron';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const WORDS = [
   ['G', 'A', 'M', 'E'], // GAME
@@ -362,86 +366,68 @@ export default function WordBuilderPage() {
   const hintWord = currentTargetWord;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-indigo-950 to-zinc-950 text-white p-4 pb-6">
+    <div className="min-h-screen text-white p-4 pb-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold font-orbitron bg-gradient-to-r from-tron-purple via-tron-blue to-tron-purple bg-clip-text text-transparent neon-text">
             📝 Word Builder
           </h1>
           <button
             onClick={toggleSound}
-            className="p-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+            className="p-2 rounded-lg border border-tron-cyan/30 bg-tron-cyan/10 text-tron-cyan hover:bg-tron-cyan/20 transition-colors"
             aria-label="Toggle sound"
+            style={{ boxShadow: '0 0 10px rgba(0, 229, 255, 0.2)' }}
           >
-            {soundEnabled ? '🔊' : '🔇'}
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3">
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⚡ Energy</div>
-            <div className="text-xl font-bold text-yellow-400">{energy}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⏱️ Time</div>
-            <div className={`text-xl font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-blue-400'}`}>
-              {timeLeft}s
-            </div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🎯 Score</div>
-            <div className="text-xl font-bold text-green-400">{score.toLocaleString()}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">📚 Words</div>
-            <div className="text-xl font-bold text-purple-400">{usedWords.size}</div>
-          </div>
-                  </div>
+          <GameStatsCard label="Energy" value={energy} icon="⚡" color="yellow" />
+          <GameStatsCard 
+            label="Time" 
+            value={`${timeLeft}s`} 
+            icon="⏱️" 
+            color={timeLeft <= 10 ? "red" : "blue"} 
+          />
+          <GameStatsCard label="Score" value={score.toLocaleString()} icon="🎯" color="cyan" />
+          <GameStatsCard label="Words" value={usedWords.size} icon="📚" color="purple" />
+        </div>
 
-          {/* Cooldown Message */}
-          {isOnCooldown && gameState === 'idle' && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
-            >
-              <p className="text-red-300 font-bold">
-                ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
-              </p>
-            </motion.div>
-          )}
+        {/* Cooldown Message */}
+        {isOnCooldown && gameState === 'idle' && (
+          <TronPanel status="danger" padding="md" className="text-center">
+            <p className="text-tron-orange font-bold font-orbitron">
+              ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
+            </p>
+          </TronPanel>
+        )}
 
         {gameState === 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-6"
-          >
-            <div className="rounded-2xl p-8 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border-2 border-indigo-500/30 text-center">
-              <div className="text-6xl mb-4">📝</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">Build words from letters!</h2>
-              <p className="text-white/80 mb-6">
-                Select letters from the given set to build correct words
-              </p>
-              <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ You have 60 seconds</p>
-                <p>🔥 3-letter word: 150 points</p>
-                <p>🔥 4-letter word: 200 points</p>
-                <p>🔥 5-letter word: 250 points</p>
-                <p>💡 Hint will appear automatically after 10 seconds</p>
-              </div>
-                             <motion.button
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={startGame}
-                 disabled={isOnCooldown}
-                 className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl shadow-2xl shadow-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                 ▶ Start Playing
-               </motion.button>
+          <TronCard glowColor="purple" className="text-center">
+            <div className="text-6xl mb-4">📝</div>
+            <h2 className="text-3xl font-bold mb-4 font-orbitron text-white">Build words from letters!</h2>
+            <p className="text-gray-300 mb-6 font-orbitron">
+              Select letters from the given set to build correct words
+            </p>
+            <div className="space-y-2 text-sm text-gray-400 mb-6 font-orbitron">
+              <p>✨ You have 60 seconds</p>
+              <p>🔥 3-letter word: 150 points</p>
+              <p>🔥 4-letter word: 200 points</p>
+              <p>🔥 5-letter word: 250 points</p>
+              <p>💡 Hint will appear automatically after 10 seconds</p>
             </div>
-          </motion.div>
+            <GameButton
+              onClick={startGame}
+              disabled={isOnCooldown}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              ▶ Start Playing
+            </GameButton>
+          </TronCard>
         )}
 
         {gameState === 'playing' && (
@@ -449,16 +435,11 @@ export default function WordBuilderPage() {
             {/* Hint */}
             <AnimatePresence>
               {showHint && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-xl p-4 text-center"
-                >
-                  <p className="text-yellow-300 font-bold">
+                <TronPanel status="warning" padding="md" className="text-center">
+                  <p className="text-yellow-400 font-bold font-orbitron">
                     💡 Hint: The word to find is <span className="text-2xl">{hintWord}</span>
                   </p>
-                </motion.div>
+                </TronPanel>
               )}
             </AnimatePresence>
 
@@ -580,29 +561,25 @@ export default function WordBuilderPage() {
         )}
 
         {gameState === 'gameover' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border-2 border-indigo-500/50 text-center space-y-6"
-          >
+          <TronCard glowColor="purple" className="text-center space-y-6">
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
-            <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 Final score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📚 Words found: <b className="text-indigo-300">{usedWords.size}</b> words</p>
-              <p className="text-green-400 font-bold">💰 Earned 5 Tokens!</p>
+            <h2 className="text-4xl font-bold font-orbitron text-white mb-4">Game Over!</h2>
+            <div className="space-y-3 text-lg font-orbitron">
+              <p className="text-gray-300">🎯 Final score: <b className="text-tron-orange">{score.toLocaleString()}</b></p>
+              <p className="text-gray-300">📚 Words found: <b className="text-tron-purple">{usedWords.size}</b> words</p>
+              <p className="text-tron-purple font-bold">💰 Earned 5 Tokens!</p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <GameButton
               onClick={resetGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 font-bold text-xl"
+              variant="primary"
+              size="lg"
+              className="w-full"
             >
               Back to Home
-            </motion.button>
-          </motion.div>
+            </GameButton>
+          </TronCard>
         )}
       </div>
-    </main>
+    </div>
   );
 }

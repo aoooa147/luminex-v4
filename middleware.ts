@@ -1,35 +1,87 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next()
-  
-  // Security headers
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
-  
-  // Content Security Policy
-  response.headers.set(
-    'Content-Security-Policy',
-    "default-src 'self'; " +
-    "img-src 'self' data: blob: https:; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
-    "connect-src 'self' https://developer.worldcoin.org https://*.optimism.io https://*.alchemy.com https://worldchain-mainnet.g.alchemy.com wss://*.optimism.io wss://*.alchemy.com; " +
-    "frame-src 'self' https://verify.worldcoin.org;"
-  )
-  
-  // Additional security headers
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-  
-  return response
+// Admin wallet address
+const ADMIN_WALLET_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || process.env.TREASURY_ADDRESS || '';
+
+/**
+ * Check if user is admin
+ */
+function isAdmin(userId: string | null): boolean {
+  if (!userId || !ADMIN_WALLET_ADDRESS) return false;
+  return userId.toLowerCase() === ADMIN_WALLET_ADDRESS.toLowerCase();
+}
+
+/**
+ * Middleware to check maintenance mode
+ */
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Skip middleware for API routes (they handle maintenance mode themselves)
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // Skip middleware for static files
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/static/') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Check system status (with fallback to operational)
+  try {
+    const systemStatusResponse = await fetch(
+      `${request.nextUrl.origin}/api/system/status`,
+      {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      }
+    );
+
+    if (systemStatusResponse.ok) {
+      const status = await systemStatusResponse.json();
+      
+      // If maintenance mode is enabled
+      if (status.data?.maintenanceMode) {
+        const userId = request.headers.get('x-user-id') || 
+                       request.cookies.get('user_address')?.value ||
+                       null;
+
+        // Allow admin to access
+        if (isAdmin(userId)) {
+          return NextResponse.next();
+        }
+
+        // Redirect non-admin users to maintenance page
+        if (pathname !== '/maintenance') {
+          const url = request.nextUrl.clone();
+          url.pathname = '/maintenance';
+          return NextResponse.redirect(url);
+        }
+      }
+    }
+  } catch (error) {
+    // On error, allow access (fail open)
+    console.warn('[middleware] Failed to check system status:', error);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-}
+};

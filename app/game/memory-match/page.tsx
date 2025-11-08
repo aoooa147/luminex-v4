@@ -5,6 +5,10 @@ import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
 import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
 import { signMessageWithMiniKit } from '@/lib/game/auth';
 import { getDeviceFingerprint } from '@/lib/utils/deviceFingerprint';
+import { GameStatsCard } from '@/components/game/GameStatsCard';
+import { GameButton } from '@/components/game/GameButton';
+import { TronCard, TronPanel } from '@/components/tron';
+import { Volume2, VolumeX } from 'lucide-react';
 
 type Color = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange';
 type GameState = 'idle' | 'showing' | 'playing' | 'victory' | 'gameover';
@@ -268,93 +272,72 @@ export default function MemoryMatchPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-purple-950 to-zinc-950 text-white p-4 pb-6">
+    <div className="min-h-screen text-white p-4 pb-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold font-orbitron bg-gradient-to-r from-tron-purple via-tron-pink to-tron-purple bg-clip-text text-transparent neon-text">
             🧠 Color Memory Challenge
           </h1>
           <button
             onClick={toggleSound}
-            className="p-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+            className="p-2 rounded-lg border border-tron-cyan/30 bg-tron-cyan/10 text-tron-cyan hover:bg-tron-cyan/20 transition-colors"
+            style={{ boxShadow: '0 0 10px rgba(0, 229, 255, 0.2)' }}
           >
-            {soundEnabled ? '🔊' : '🔇'}
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3">
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">📊 Level</div>
-            <div className="text-xl font-bold text-purple-400">{level}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">❤️ Lives</div>
-            <div className="text-xl font-bold text-red-400">{lives}/3</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🎯 Score</div>
-            <div className="text-xl font-bold text-green-400">{score.toLocaleString()}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🔢 Sequence</div>
-            <div className="text-xl font-bold text-blue-400">{sequence.length}</div>
-          </div>
+          <GameStatsCard label="Level" value={level} icon="📊" color="purple" />
+          <GameStatsCard label="Lives" value={`${lives}/3`} icon="❤️" color="red" />
+          <GameStatsCard label="Score" value={score.toLocaleString()} icon="🎯" color="cyan" />
+          <GameStatsCard label="Sequence" value={sequence.length} icon="🔢" color="blue" />
         </div>
 
         {/* Cooldown Message */}
         {isOnCooldown && gameState === 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
-          >
-            <p className="text-red-300 font-bold">
+          <TronPanel status="danger" padding="md" className="text-center">
+            <p className="text-tron-orange font-bold font-orbitron">
               ⏰ You must wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
             </p>
-          </motion.div>
+          </TronPanel>
         )}
 
         {gameState === 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-6"
-          >
-            <div className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 text-center">
-              <div className="text-6xl mb-4">🧠</div>
-              <h2 className="text-3xl font-bold mb-4 text-white">Remember the color sequence!</h2>
-              <p className="text-white/80 mb-6">
-                Watch the color sequence shown, then tap the colors in the correct order
-              </p>
-              <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ You have 3 lives</p>
-                <p>🔥 Each level gets longer</p>
-                <p>💎 Reward: 0-5 LUX (very rare to get 5!)</p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                disabled={isOnCooldown}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl shadow-2xl shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ▶ Start Playing
-              </motion.button>
+          <TronCard glowColor="purple" className="text-center">
+            <div className="text-6xl mb-4">🧠</div>
+            <h2 className="text-3xl font-bold mb-4 font-orbitron text-white">Remember the color sequence!</h2>
+            <p className="text-gray-300 mb-6 font-orbitron">
+              Watch the color sequence shown, then tap the colors in the correct order
+            </p>
+            <div className="space-y-2 text-sm text-gray-400 mb-6 font-orbitron">
+              <p>✨ You have 3 lives</p>
+              <p>🔥 Each level gets longer</p>
+              <p>💎 Reward: 0-5 LUX (very rare to get 5!)</p>
             </div>
-          </motion.div>
+            <GameButton
+              onClick={startGame}
+              disabled={isOnCooldown}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              ▶ Start Playing
+            </GameButton>
+          </TronCard>
         )}
 
         {(gameState === 'showing' || gameState === 'playing') && (
           <div className="space-y-6">
-            <div className="text-center">
-              <p className="text-white/70 text-lg">
+            <TronPanel padding="md" className="text-center">
+              <p className="text-gray-300 text-lg font-bold font-orbitron">
                 {gameState === 'showing' ? '👀 Watch the sequence carefully...' : '🎮 Tap the colors in order!'}
               </p>
-              <p className="text-white/50 text-sm mt-2">
+              <p className="text-gray-400 text-sm mt-2 font-orbitron">
                 Progress: {playerSequence.length} / {sequence.length}
               </p>
-            </div>
+            </TronPanel>
 
             <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
               {COLORS.map((color) => {
@@ -384,33 +367,29 @@ export default function MemoryMatchPage() {
         )}
 
         {gameState === 'gameover' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-purple-500/30 to-pink-500/30 border-2 border-purple-500/50 text-center space-y-6"
-          >
+          <TronCard glowColor="purple" className="text-center space-y-6">
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
-            <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 Final score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">📊 Highest level: <b className="text-purple-300">{level}</b></p>
+            <h2 className="text-4xl font-bold font-orbitron text-white mb-4">Game Over!</h2>
+            <div className="space-y-3 text-lg font-orbitron">
+              <p className="text-gray-300">🎯 Final score: <b className="text-tron-orange">{score.toLocaleString()}</b></p>
+              <p className="text-gray-300">📊 Highest level: <b className="text-tron-purple">{level}</b></p>
               {luxReward !== null && (
-                <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
+                <div className={`font-bold text-2xl ${luxReward === 5 ? 'text-yellow-400 animate-pulse' : 'text-tron-purple'}`}>
                   {luxReward === 5 ? '🎉 EXTREME RARE! ' : '💰 '}Earned {luxReward} LUX!
                 </div>
               )}
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <GameButton
               onClick={resetGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 font-bold text-xl"
+              variant="primary"
+              size="lg"
+              className="w-full"
             >
               Back to Home
-            </motion.button>
-          </motion.div>
+            </GameButton>
+          </TronCard>
         )}
       </div>
-    </main>
+    </div>
   );
 }

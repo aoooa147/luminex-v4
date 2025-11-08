@@ -11,3 +11,6 @@ export {
   TronUIShowcase,
 } from './TronComponents'
 
+export { TronShell } from './TronShell'
+export { TronPanel } from './TronPanel'
+

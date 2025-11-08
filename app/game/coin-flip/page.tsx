@@ -5,6 +5,10 @@ import { playSound, isSoundEnabled, setSoundEnabled } from '@/lib/game/sounds';
 import { antiCheat, getRandomDifficulty, getDifficultyMultiplier } from '@/lib/game/anticheat';
 import { signMessageWithMiniKit } from '@/lib/game/auth';
 import { getDeviceFingerprint } from '@/lib/utils/deviceFingerprint';
+import { GameStatsCard } from '@/components/game/GameStatsCard';
+import { GameButton } from '@/components/game/GameButton';
+import { TronCard, TronPanel, TronProgressBar } from '@/components/tron';
+import { Volume2, VolumeX } from 'lucide-react';
 
 type CoinSide = 'heads' | 'tails';
 type GameState = 'idle' | 'playing' | 'flipping' | 'result' | 'gameover' | 'victory';
@@ -367,82 +371,61 @@ export default function CoinFlipPage() {
   const showResult = gameState === 'result' || gameState === 'flipping';
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 via-purple-950 to-zinc-950 text-white p-4 pb-6">
+    <div className="min-h-screen text-white p-4 pb-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold font-orbitron bg-gradient-to-r from-tron-cyan via-tron-orange to-tron-cyan bg-clip-text text-transparent neon-text">
             🪙 Coin Flip Challenge
           </h1>
           <button
             onClick={toggleSound}
-            className="p-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+            className="p-2 rounded-lg border border-tron-cyan/30 bg-tron-cyan/10 text-tron-cyan hover:bg-tron-cyan/20 transition-colors"
             aria-label="Toggle sound"
+            style={{ boxShadow: '0 0 10px rgba(0, 229, 255, 0.2)' }}
           >
-            {soundEnabled ? '🔊' : '🔇'}
+            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Stats Bar */}
         <div className="grid grid-cols-4 gap-3">
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">⚡ Energy</div>
-            <div className="text-xl font-bold text-yellow-400">{energy}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🔥 Streak</div>
-            <div className="text-xl font-bold text-orange-400">{streak}/{TARGET_STREAK}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">❤️ Lives</div>
-            <div className="text-xl font-bold text-red-400">{lives}/{MAX_LIVES}</div>
-          </div>
-          <div className="bg-zinc-900/60 rounded-xl p-3 text-center border border-zinc-800">
-            <div className="text-xs text-white/60 mb-1">🎯 Score</div>
-            <div className="text-xl font-bold text-purple-400">{score.toLocaleString()}</div>
-          </div>
-                  </div>
+          <GameStatsCard label="Energy" value={energy} icon="⚡" color="yellow" />
+          <GameStatsCard label="Streak" value={`${streak}/${TARGET_STREAK}`} icon="🔥" color="orange" />
+          <GameStatsCard label="Lives" value={`${lives}/${MAX_LIVES}`} icon="❤️" color="red" />
+          <GameStatsCard label="Score" value={score.toLocaleString()} icon="🎯" color="purple" />
+        </div>
 
-          {/* Cooldown Message */}
-          {isOnCooldown && gameState === 'idle' && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center"
-            >
-              <p className="text-red-300 font-bold">
-                ⏰ You need to wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
-              </p>
-            </motion.div>
-          )}
+        {/* Cooldown Message */}
+        {isOnCooldown && gameState === 'idle' && (
+          <TronPanel status="danger" padding="md" className="text-center">
+            <p className="text-tron-orange font-bold font-orbitron">
+              ⏰ You need to wait {cooldownRemaining.hours} hours {cooldownRemaining.minutes} minutes
+            </p>
+          </TronPanel>
+        )}
 
         {gameState === 'idle' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6"
-            >
-              <div className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 text-center">
-              <div className="text-6xl mb-4">🪙</div>
-                            <h2 className="text-3xl font-bold mb-4 text-white">Ready to challenge!</h2>
-              <p className="text-white/80 mb-6">
-                Guess the coin correctly <b className="text-yellow-300">{TARGET_STREAK} times in a row</b> to win!        
-              </p>
-              <div className="space-y-2 text-sm text-white/70 mb-6">
-                <p>✨ You have {MAX_LIVES} lives</p>
-                <p>🔥 Build a streak to increase your score</p>
-                <p>⚡ Score increases with multiplier!</p>
-              </div>
-                              <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={startGame}
-                  disabled={isOnCooldown}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl shadow-2xl shadow-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  ▶ Start Playing
-                </motion.button>
+          <TronCard glowColor="orange" className="text-center">
+            <div className="text-6xl mb-4">🪙</div>
+            <h2 className="text-3xl font-bold mb-4 font-orbitron text-white">Ready to challenge!</h2>
+            <p className="text-gray-300 mb-6 font-orbitron">
+              Guess the coin correctly <b className="text-tron-orange">{TARGET_STREAK} times in a row</b> to win!
+            </p>
+            <div className="space-y-2 text-sm text-gray-400 mb-6 font-orbitron">
+              <p>✨ You have {MAX_LIVES} lives</p>
+              <p>🔥 Build a streak to increase your score</p>
+              <p>⚡ Score increases with multiplier!</p>
             </div>
-          </motion.div>
+            <GameButton
+              onClick={startGame}
+              disabled={isOnCooldown}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              ▶ Start Playing
+            </GameButton>
+          </TronCard>
         )}
 
         {(gameState === 'playing' || gameState === 'flipping' || gameState === 'result') && (
@@ -489,61 +472,51 @@ export default function CoinFlipPage() {
             {/* Result Message */}
             <AnimatePresence>
               {gameState === 'result' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className={`text-center py-4 rounded-xl font-bold text-2xl ${
-                    isCorrect
-                      ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50'
-                      : 'bg-red-500/20 text-red-400 border-2 border-red-500/50'
-                  }`}
+                <TronPanel
+                  status={isCorrect ? 'success' : 'danger'}
+                  padding="md"
+                  className="text-center"
                 >
-                  {isCorrect ? (
-                    <span>✅ Correct! +{100 * scoreMultiplier} points</span>
-                  ) : (
-                    <span>❌ Wrong! -1 life</span>
-                  )}
-                </motion.div>
+                  <p className="font-bold text-xl font-orbitron">
+                    {isCorrect ? (
+                      <span className="text-tron-purple">✅ Correct! +{100 * scoreMultiplier} points</span>
+                    ) : (
+                      <span className="text-tron-orange">❌ Wrong! -1 life</span>
+                    )}
+                  </p>
+                </TronPanel>
               )}
             </AnimatePresence>
 
             {/* Guess Buttons */}
             {gameState === 'playing' && (
               <div className="grid grid-cols-2 gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <GameButton
                   onClick={() => guessCoin('heads')}
-                  className="py-8 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-2xl shadow-2xl shadow-yellow-500/50 border-2 border-yellow-300/50"
+                  variant="primary"
+                  size="lg"
+                  className="py-8 text-2xl"
                 >
                   👑 Heads
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </GameButton>
+                <GameButton
                   onClick={() => guessCoin('tails')}
-                  className="py-8 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 hover:from-gray-300 hover:to-gray-500 font-bold text-2xl shadow-2xl shadow-gray-400/50 border-2 border-gray-300/50"
+                  variant="secondary"
+                  size="lg"
+                  className="py-8 text-2xl"
                 >
                   ⚜️ Tails
-                </motion.button>
+                </GameButton>
               </div>
             )}
 
             {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-white/70">
-                <span>Progress</span>
-                <span>{streak}/{TARGET_STREAK}</span>
-              </div>
-              <div className="h-4 bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(streak / TARGET_STREAK) * 100}%` }}
-                  className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
-                />
-              </div>
-            </div>
+            <TronProgressBar
+              value={streak}
+              max={TARGET_STREAK}
+              label="Progress"
+              showValue={true}
+            />
 
             {/* Lives Display */}
             <div className="flex justify-center gap-2">
@@ -562,52 +535,44 @@ export default function CoinFlipPage() {
         )}
 
         {gameState === 'victory' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 border-2 border-yellow-500/50 text-center space-y-6"
-          >
+          <TronCard glowColor="orange" className="text-center space-y-6">
             <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-4xl font-bold text-white mb-4">You Win!</h2>
-            <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 Final Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">🔥 Highest Streak: <b className="text-orange-300">{streak}</b></p>
-              <p className="text-green-400 font-bold">💰 Earned 10 Tokens!</p>
+            <h2 className="text-4xl font-bold font-orbitron text-white mb-4">You Win!</h2>
+            <div className="space-y-3 text-lg font-orbitron">
+              <p className="text-gray-300">🎯 Final Score: <b className="text-tron-orange">{score.toLocaleString()}</b></p>
+              <p className="text-gray-300">🔥 Highest Streak: <b className="text-tron-orange">{streak}</b></p>
+              <p className="text-tron-purple font-bold">💰 Earned 10 Tokens!</p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <GameButton
               onClick={resetGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 font-bold text-xl"
+              variant="primary"
+              size="lg"
+              className="w-full"
             >
               Play Again
-            </motion.button>
-          </motion.div>
+            </GameButton>
+          </TronCard>
         )}
 
         {gameState === 'gameover' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-8 bg-gradient-to-br from-red-500/20 to-pink-500/20 border-2 border-red-500/30 text-center space-y-6"
-          >
+          <TronCard glowColor="orange" className="text-center space-y-6">
             <div className="text-7xl mb-4">😢</div>
-            <h2 className="text-4xl font-bold text-white mb-4">Game Over!</h2>
-            <div className="space-y-3 text-lg">
-              <p className="text-white/90">🎯 Final Score: <b className="text-yellow-300">{score.toLocaleString()}</b></p>
-              <p className="text-white/90">🔥 Highest Streak: <b className="text-orange-300">{streak}</b></p>
+            <h2 className="text-4xl font-bold font-orbitron text-white mb-4">Game Over!</h2>
+            <div className="space-y-3 text-lg font-orbitron">
+              <p className="text-gray-300">🎯 Final Score: <b className="text-tron-orange">{score.toLocaleString()}</b></p>
+              <p className="text-gray-300">🔥 Highest Streak: <b className="text-tron-orange">{streak}</b></p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <GameButton
               onClick={resetGame}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 font-bold text-xl"
+              variant="danger"
+              size="lg"
+              className="w-full"
             >
               Try Again
-            </motion.button>
-          </motion.div>
+            </GameButton>
+          </TronCard>
         )}
       </div>
-    </main>
+    </div>
   );
 }

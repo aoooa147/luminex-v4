@@ -44,20 +44,20 @@ model PowerDraft {
 }
 
 model GameAction {
-  id          String   @id @default(cuid())
-  userId      String   @db.VarChar(42)
-  gameId      String
-  action      String
-  data        Json?
-  timestamp   DateTime @default(now())
-  suspicious  Boolean  @default(false)
-  reason      String?
-  confidence  Float?
-  deviceId    String?  // Device fingerprint
-  ipAddress   String?  // IP address
-  userAgent   String?  // User agent string
-  
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String   @db.VarChar(42)
+  gameId     String
+  action     String
+  data       Json?
+  timestamp  DateTime @default(now())
+  suspicious Boolean  @default(false)
+  reason     String?
+  confidence Float?
+  deviceId   String? // Device fingerprint
+  ipAddress  String? // IP address
+  userAgent  String? // User agent string
+
+  createdAt DateTime @default(now())
 
   @@index([userId, gameId, timestamp])
   @@index([userId])
@@ -70,22 +70,22 @@ model GameAction {
 }
 
 model SuspiciousActivity {
-  id          String   @id @default(cuid())
-  userId      String   @db.VarChar(42)
-  gameId      String?
-  type        String   // 'suspicious_score' | 'multiple_accounts' | 'vpn_detected' | 'bot_detected'
-  severity    String   @default("medium") // 'low' | 'medium' | 'high'
-  reason      String
-  confidence  Float
-  data        Json?
-  deviceId    String?
-  ipAddress   String?
-  blocked     Boolean  @default(false)
-  resolved    Boolean  @default(false)
-  resolvedAt  DateTime?
-  resolvedBy  String?
-  
-  createdAt   DateTime @default(now())
+  id         String    @id @default(cuid())
+  userId     String    @db.VarChar(42)
+  gameId     String?
+  type       String // 'suspicious_score' | 'multiple_accounts' | 'vpn_detected' | 'bot_detected'
+  severity   String    @default("medium") // 'low' | 'medium' | 'high'
+  reason     String
+  confidence Float
+  data       Json?
+  deviceId   String?
+  ipAddress  String?
+  blocked    Boolean   @default(false)
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([type])
@@ -104,10 +104,10 @@ model DeviceFingerprint {
   lastSeen    DateTime @default(now())
   suspicious  Boolean  @default(false)
   blocked     Boolean  @default(false)
-  metadata    Json?    // Browser info, screen size, etc.
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  metadata    Json? // Browser info, screen size, etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([fingerprint])
   @@index([suspicious])
@@ -116,26 +116,41 @@ model DeviceFingerprint {
 }
 
 model IPRecord {
-  id            String   @id @default(cuid())
-  ipAddress     String   @unique
-  userIds       String[] // Array of user IDs using this IP
-  country       String?
-  isVPN         Boolean  @default(false)
-  isProxy       Boolean  @default(false)
-  isTor         Boolean  @default(false)
-  riskLevel     String   @default("low") // 'low' | 'medium' | 'high'
-  firstSeen     DateTime @default(now())
-  lastSeen      DateTime @default(now())
-  suspicious    Boolean  @default(false)
-  blocked       Boolean  @default(false)
-  blockedUntil  DateTime?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(cuid())
+  ipAddress    String    @unique
+  userIds      String[] // Array of user IDs using this IP
+  country      String?
+  isVPN        Boolean   @default(false)
+  isProxy      Boolean   @default(false)
+  isTor        Boolean   @default(false)
+  riskLevel    String    @default("low") // 'low' | 'medium' | 'high'
+  firstSeen    DateTime  @default(now())
+  lastSeen     DateTime  @default(now())
+  suspicious   Boolean   @default(false)
+  blocked      Boolean   @default(false)
+  blockedUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ipAddress])
   @@index([suspicious])
   @@index([blocked])
   @@index([riskLevel])
   @@map("ip_records")
+}
+
+model SystemSettings {
+  id                String   @id @default("main")
+  maintenanceMode   Boolean  @default(false)
+  maintenanceMessage String? @db.Text
+  broadcastMessage  String?  @db.Text
+  broadcastEnabled  Boolean  @default(false)
+  maxConcurrentUsers Int     @default(100000)
+  systemVersion     String   @default("4.0.0")
+  lastMaintenance   DateTime?
+  updatedAt         DateTime @updatedAt
+  updatedBy         String?  @db.VarChar(42)
+
+  @@map("system_settings")
 }

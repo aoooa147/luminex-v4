@@ -42,6 +42,8 @@ import BottomNav from '@/components/layout/BottomNav';
 // Lazy load modals
 const StakeModal = dynamic(() => import('@/components/modals/StakeModal'), { ssr: false });
 const QRModal = dynamic(() => import('@/components/modals/QRModal'), { ssr: false });
+import { TronShell, TronPanel } from '@/components/tron';
+import { BroadcastMessage } from '@/components/common/BroadcastMessage';
 
 const LOGO_URL = LOGO_URL_FROM_CONSTANTS;
 const TOKEN_NAME = TOKEN_NAME_FROM_CONSTANTS;
@@ -780,14 +782,25 @@ const LuminexApp = () => {
   // Only World App is supported
   if (!verified && !isWorldApp()) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold text-yellow-400 mb-4">World App Required</h1>
-          <p className="text-gray-300 mb-6">
-            This application only works in World App. Please open this app in World App to continue.
-          </p>
+      <TronShell showEnergyStream={false} className="bg-[#050505]">
+        <div className="flex flex-1 items-center justify-center px-6 py-10">
+          <TronPanel title={t('worldAppRequired') ?? 'World App Required'} padding="lg" className="max-w-md text-center">
+            <p className="text-gray-300 mb-6 font-orbitron text-sm tracking-wide">
+              {t('openInWorldApp') ?? 'This application only works in World App. Please open this app in World App to continue.'}
+            </p>
+            <TronPanel
+              status="warning"
+              padding="sm"
+              className="bg-black/40 border-tron-orange/40 text-gray-200"
+              title={t('downloadWorldApp') ?? 'Download World App'}
+            >
+              <p className="text-xs font-light tracking-widest text-gray-400">
+                {t('download') ?? 'Download World App'}
+              </p>
+            </TronPanel>
+          </TronPanel>
         </div>
-      </div>
+      </TronShell>
     );
   }
 
@@ -797,51 +810,7 @@ const LuminexApp = () => {
   const totalApy = currentPower ? currentPower.totalAPY : baseApy;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-y-auto">
-      {/* Luxurious gold geometric background pattern */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{ 
-        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(234, 179, 8, 0.08) 35px, rgba(234, 179, 8, 0.08) 70px),
-                          repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(217, 119, 6, 0.08) 35px, rgba(217, 119, 6, 0.08) 70px)`,
-        transform: 'translateZ(0)'
-      }}></div>
-      
-      {/* Elegant gold animated background particles */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          className="absolute top-20 left-10 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"
-          animate={{ 
-            opacity: [0.06, 0.12, 0.06],
-            scale: [1, 1.1, 1],
-            x: [0, 20, 0],
-            y: [0, 15, 0]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
-        />
-        <motion.div 
-          className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-amber-500/6 rounded-full blur-3xl"
-          animate={{ 
-            opacity: [0.05, 0.1, 0.05],
-            scale: [1, 1.15, 1],
-            x: [0, -25, 0],
-            y: [0, -20, 0]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
-        />
-        <motion.div 
-          className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-yellow-400/5 rounded-full blur-3xl"
-          animate={{ 
-            opacity: [0.03, 0.08, 0.03],
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360]
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          style={{ willChange: 'opacity, transform', transform: 'translateZ(0)' }}
-        />
-      </div>
-
-      {/* Header */}
+    <TronShell>
       <AppHeader
         actualAddress={actualAddress}
         userInfo={userInfo}
@@ -855,10 +824,8 @@ const LuminexApp = () => {
         t={t}
       />
 
-      {/* Main Content */}
-      <div 
-        className="relative max-w-md mx-auto px-4 py-2 pb-20 overflow-y-auto"
-      >
+      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-4 pb-24 pt-4">
+        <BroadcastMessage />
         <AnimatePresence mode="wait">
           {activeTab === 'staking' && (
             <StakingTab
@@ -884,7 +851,7 @@ const LuminexApp = () => {
               t={t}
             />
           )}
-          
+
           {activeTab === 'membership' && (
             <MembershipTab
               currentPower={currentPower}
@@ -893,7 +860,7 @@ const LuminexApp = () => {
               handlePurchasePower={handlePurchasePower}
             />
           )}
-          
+
           {activeTab === 'referral' && (
             <ReferralTab
               safeTotalReferrals={safeTotalReferrals}
@@ -907,13 +874,10 @@ const LuminexApp = () => {
             />
           )}
 
-          {activeTab === 'game' && (
-            <GameTab />
-          )}
+          {activeTab === 'game' && <GameTab />}
         </AnimatePresence>
-            </div>
+      </main>
 
-      {/* Stake Modal */}
       <StakeModal
         showStakeModal={showStakeModal}
         setShowStakeModal={setShowStakeModal}
@@ -926,27 +890,17 @@ const LuminexApp = () => {
         handleStake={handleStake}
       />
 
-      {/* Bottom Navigation */}
-      <BottomNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isAdmin={isAdmin}
-      />
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={isAdmin} />
 
-      {/* Toast Notification */}
       <Toast toast={toast} />
 
-      {/* QR Code Modal */}
       <QRModal
         showQRModal={showQRModal}
         setShowQRModal={setShowQRModal}
         safeReferralCode={safeReferralCode}
         showToast={showToast}
       />
-
-      {/* Spacer for bottom nav */}
-      <div className="h-16"></div>
-    </div>
+    </TronShell>
   );
 };
 
