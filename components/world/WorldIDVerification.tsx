@@ -261,11 +261,14 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                     const getResponse = await fetch(`/api/world/username/get?address=${address}`);
                     if (getResponse.ok) {
                       const getData = await getResponse.json();
-                      if (getData?.success && getData?.username) {
-                        foundUsername = getData.username;
-                        sessionStorage.setItem('userName', foundUsername);
-                        localStorage.setItem('userName', foundUsername);
-                        console.log('✅ Username retrieved from server storage (fallback):', foundUsername);
+                      if (getData?.success && getData?.username && typeof getData.username === 'string') {
+                        const retrievedUsername = getData.username.trim();
+                        if (retrievedUsername) {
+                          foundUsername = retrievedUsername;
+                          sessionStorage.setItem('userName', foundUsername);
+                          localStorage.setItem('userName', foundUsername);
+                          console.log('✅ Username retrieved from server storage (fallback):', foundUsername);
+                        }
                       }
                     }
                   } catch (e) {
