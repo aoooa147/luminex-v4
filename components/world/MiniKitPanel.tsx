@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useMiniKit } from '@/hooks/useMiniKit';
 import { WORLD_APP_ID, WORLD_ACTION, TREASURY_ADDRESS, TOKEN_NAME, LOGO_URL, BRAND_NAME } from '@/lib/utils/constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,8 +8,9 @@ import { t } from '@/lib/utils/i18n';
  * MiniKitPanel
  * - Adds Verify / Wallet Auth / Pay→Confirm controls in a collapsible sheet
  * - Purely additive: does not remove/replace any index.tsx code
+ * - Optimized with React.memo, useCallback, and useMemo
  */
-export default function MiniKitPanel() {
+const MiniKitPanel = memo(function MiniKitPanel() {
   const { ready, error, verify, walletAuth, pay } = useMiniKit();
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState(WORLD_ACTION || 'luminexstaking');
@@ -25,18 +26,22 @@ export default function MiniKitPanel() {
   const [pollStep, setPollStep] = useState(0);
   const pollMax = 20;
 
-  const log = (m: string) => setLogs((old) => [m, ...old].slice(0, 120));
+  // Memoize log function to avoid recreating on every render
+  const log = useCallback((m: string) => {
+    setLogs((old) => [m, ...old].slice(0, 120));
+  }, []);
 
-  const genReference = async () => {
+  // Memoize functions with useCallback to avoid recreating on every render
+  const genReference = useCallback(async () => {
     const r = await fetch('/api/initiate-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount, symbol: 'WLD' }) });
     const j = await r.json();
     const refId = j.id || '';
     setReference(refId);
     log('Generated reference: ' + refId);
     return refId; // ✅ Return reference ID to avoid React state update race condition
-  };
+  }, [amount, log]);
 
-  const doVerify = async () => {
+  const doVerify = useCallback(async () => {
     try {
       setBusy(true);
       const payload = await verify(action);
@@ -46,9 +51,9 @@ export default function MiniKitPanel() {
       log('Verify response: ' + JSON.stringify(j));
     } catch (e: any) { log('Verify error: ' + e?.message); }
     finally { setBusy(false); }
-  };
+  }, [action, verify, log]);
 
-  const doWalletAuth = async () => {
+  const doWalletAuth = useCallback(async () => {
     try {
       setBusy(true);
       const payload = await walletAuth();
@@ -58,9 +63,9 @@ export default function MiniKitPanel() {
       log('WalletAuth response: ' + JSON.stringify(j));
     } catch (e: any) { log('WalletAuth error: ' + e?.message); }
     finally { setBusy(false); }
-  };
+  }, [walletAuth, log]);
 
-  async function pollConfirm(tx: string, ref: string, max=pollMax, interval=1500) {
+  const pollConfirm = useCallback(async (tx: string, ref: string, max=pollMax, interval=1500) => {
     setStep('pending');
     setIsPolling(true);
     setPollDone(false);
@@ -89,9 +94,9 @@ export default function MiniKitPanel() {
     setIsPolling(false);
     setStep('failed');
     return false;
-  }
+  }, [log, pollMax]);
 
-  const doPay = async () => {
+  const doPay = useCallback(async () => {
     setStep('initiated');
     try {
       setBusy(true);
@@ -164,13 +169,52 @@ export default function MiniKitPanel() {
     } finally { 
       setBusy(false); 
     }
-  };
+  }, [reference, amount, pay, log, genReference, pollConfirm]);
+
+  // Memoize toggle handler
+  const handleToggle = useCallback(() => {
+    setOpen((v) => !v);
+  }, []);
+
+  // Memoize input handlers
+  const handleActionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAction(e.target.value);
+  }, []);
+
+  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(e.target.value);
+  }, []);
+
+  const handleReferenceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setReference(e.target.value);
+  }, []);
+
+  // Memoize computed values
+  const progressWidth = useMemo(() => {
+    return step === 'idle' ? '0%' : step === 'initiated' ? '33%' : step === 'pending' ? '66%' : step === 'confirmed' ? '100%' : '100%';
+  }, [step]);
+
+  const progressColor = useMemo(() => {
+    return step === 'failed' ? 'bg-rose-500' : 'bg-indigo-500';
+  }, [step]);
+
+  const pollProgress = useMemo(() => {
+    return (pollStep / pollMax) * 100;
+  }, [pollStep, pollMax]);
+
+  const logsText = useMemo(() => {
+    return logs.join('\n');
+  }, [logs]);
+
+  const resultText = useMemo(() => {
+    return JSON.stringify(result, null, 2);
+  }, [result]);
 
   return (
     <>
       {/* Floating toggle button (non-intrusive) */}
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         className="fixed bottom-4 right-4 z-40 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400/60"
         style={{ minHeight: 44 }}
       >
@@ -192,14 +236,14 @@ export default function MiniKitPanel() {
 
             <div className="grid gap-3">
               <label className="text-sm">Action
-                <input value={action} onChange={(e) => setAction(e.target.value)} className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
+                <input value={action} onChange={handleActionChange} className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <label className="text-sm">Amount ({TOKEN_NAME || 'WLD'})
-                  <input value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
+                  <input value={amount} onChange={handleAmountChange} className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
                 </label>
                 <label className="text-sm">Reference
-                  <input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="auto-generated" className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
+                  <input value={reference} onChange={handleReferenceChange} placeholder="auto-generated" className="mt-1 w-full rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2" />
                 </label>
               </div>
             </div>
@@ -214,11 +258,9 @@ export default function MiniKitPanel() {
   <div className="relative mt-2 h-2 rounded-full bg-zinc-800 overflow-hidden">
     <motion.div
       initial={{ width: 0 }}
-      animate={{
-        width: step === 'idle' ? '0%' : step === 'initiated' ? '33%' : step === 'pending' ? '66%' : step === 'confirmed' ? '100%' : '100%'
-      }}
+      animate={{ width: progressWidth }}
       transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-      className={`h-2 ${step === 'failed' ? 'bg-rose-500' : 'bg-indigo-500'}`}
+      className={`h-2 ${progressColor}`}
     />
   </div>
   <AnimatePresence>
@@ -241,7 +283,7 @@ export default function MiniKitPanel() {
               <div className="w-full mt-3">
                 <p className="text-sm text-zinc-400">{t('polling')}</p>
                 <div className="w-full bg-zinc-800 border border-zinc-700 rounded-full h-2 mt-2 overflow-hidden">
-                  <div className="h-2 bg-indigo-500 transition-all" style={{ width: `${(pollStep / pollMax) * 100}%` }} />
+                  <div className="h-2 bg-indigo-500 transition-all" style={{ width: `${pollProgress}%` }} />
                 </div>
               </div>
             )}
@@ -264,11 +306,11 @@ export default function MiniKitPanel() {
             <div className="grid gap-2">
               <div>
                 <div className="text-xs opacity-80 mb-1">{t('logs')}</div>
-                <pre className="rounded-xl bg-zinc-900 border border-zinc-800 p-3 min-h-[80px] text-xs overflow-auto">{logs.join('\n')}</pre>
+                <pre className="rounded-xl bg-zinc-900 border border-zinc-800 p-3 min-h-[80px] text-xs overflow-auto">{logsText}</pre>
               </div>
               <div>
                 <div className="text-xs opacity-80 mb-1">{t('result')}</div>
-                <pre className="rounded-xl bg-zinc-900 border border-zinc-800 p-3 min-h-[80px] text-xs overflow-auto">{JSON.stringify(result, null, 2)}</pre>
+                <pre className="rounded-xl bg-zinc-900 border border-zinc-800 p-3 min-h-[80px] text-xs overflow-auto">{resultText}</pre>
               </div>
             </div>
           </div>
@@ -276,4 +318,8 @@ export default function MiniKitPanel() {
       )}
     </>
   );
-}
+});
+
+MiniKitPanel.displayName = 'MiniKitPanel';
+
+export default MiniKitPanel;

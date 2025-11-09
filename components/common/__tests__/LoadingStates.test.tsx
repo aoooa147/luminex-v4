@@ -5,8 +5,8 @@ import { LoadingSpinner, LoadingSkeleton, SuspenseBoundary } from '../LoadingSta
 describe('LoadingStates Components', () => {
   describe('LoadingSpinner', () => {
     it('should render with default size', () => {
-      render(<LoadingSpinner />);
-      const spinner = screen.getByRole('generic');
+      const { container } = render(<LoadingSpinner />);
+      const spinner = container.querySelector('.animate-spin');
       expect(spinner).toBeInTheDocument();
     });
 
@@ -16,33 +16,33 @@ describe('LoadingStates Components', () => {
     });
 
     it('should render with different sizes', () => {
-      const { rerender } = render(<LoadingSpinner size="sm" />);
-      expect(screen.getByRole('generic')).toBeInTheDocument();
+      const { container, rerender } = render(<LoadingSpinner size="sm" />);
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
 
       rerender(<LoadingSpinner size="md" />);
-      expect(screen.getByRole('generic')).toBeInTheDocument();
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
 
       rerender(<LoadingSpinner size="lg" />);
-      expect(screen.getByRole('generic')).toBeInTheDocument();
+      expect(container.querySelector('.animate-spin')).toBeInTheDocument();
     });
   });
 
   describe('LoadingSkeleton', () => {
     it('should render single skeleton by default', () => {
-      render(<LoadingSkeleton />);
-      const skeletons = screen.getAllByRole('generic');
-      expect(skeletons.length).toBeGreaterThan(0);
+      const { container } = render(<LoadingSkeleton />);
+      const skeletons = container.querySelectorAll('.animate-pulse');
+      expect(skeletons.length).toBe(1);
     });
 
     it('should render multiple skeletons', () => {
-      render(<LoadingSkeleton count={3} />);
-      const skeletons = screen.getAllByRole('generic');
+      const { container } = render(<LoadingSkeleton count={3} />);
+      const skeletons = container.querySelectorAll('.animate-pulse');
       expect(skeletons.length).toBe(3);
     });
 
     it('should apply custom className', () => {
-      render(<LoadingSkeleton className="custom-class" />);
-      const skeleton = screen.getAllByRole('generic')[0];
+      const { container } = render(<LoadingSkeleton className="custom-class" />);
+      const skeleton = container.querySelector('.animate-pulse');
       expect(skeleton).toHaveClass('custom-class');
     });
   });

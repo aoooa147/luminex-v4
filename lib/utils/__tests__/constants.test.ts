@@ -68,8 +68,10 @@ describe('Constants', () => {
     it('should have tiers with required properties', () => {
       MEMBERSHIP_TIERS.forEach(tier => {
         expect(tier).toHaveProperty('name');
-        expect(tier).toHaveProperty('priceWLD');
-        expect(typeof tier.priceWLD).toBe('string');
+        expect(tier).toHaveProperty('price');
+        expect(typeof tier.price).toBe('string');
+        expect(tier).toHaveProperty('apy');
+        expect(typeof tier.apy).toBe('number');
       });
     });
   });

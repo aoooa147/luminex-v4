@@ -16,6 +16,8 @@ try {
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // Use jsdom for component tests (default)
+  // API route tests will use @jest-environment node directive
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
@@ -23,6 +25,13 @@ const customJestConfig = {
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)',
+  ],
+  // Exclude Playwright E2E tests from Jest
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/e2e/',
+    '/luminex-v4-ultimate 33/',
   ],
   collectCoverageFrom: [
     'lib/**/*.{js,jsx,ts,tsx}',

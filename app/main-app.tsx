@@ -104,6 +104,7 @@ const LuminexApp = () => {
     isClaiming,
     isWithdrawing,
     isClaimingInterest,
+    isLoadingStakingData,
     formattedStakedAmount,
     formattedPendingRewards,
     handleStake: handleStakeHook,
@@ -124,6 +125,7 @@ const LuminexApp = () => {
   const {
     currentPower,
     isPurchasingPower,
+    isLoadingPowerData,
     handlePurchasePower,
     fetchPowerStatus,
   } = powerHook;
@@ -142,6 +144,7 @@ const LuminexApp = () => {
     safeTotalReferrals,
     safeTotalEarnings,
     copied,
+    isLoadingReferralData,
     setCopied,
   } = referralHook;
 
@@ -477,6 +480,7 @@ const LuminexApp = () => {
               isWithdrawing={isWithdrawing}
               pendingRewards={pendingRewards}
               stakedAmount={stakedAmount}
+              isLoadingStakingData={isLoadingStakingData}
               t={t}
             />
           )}
@@ -486,6 +490,7 @@ const LuminexApp = () => {
               currentPower={currentPower}
               totalApy={totalApy}
               isPurchasingPower={isPurchasingPower}
+              isLoadingPowerData={isLoadingPowerData}
               handlePurchasePower={handlePurchasePower}
             />
           )}
@@ -497,6 +502,7 @@ const LuminexApp = () => {
               safeReferralCode={safeReferralCode}
               referralCode={referralCode}
               copied={copied}
+              isLoadingReferralData={isLoadingReferralData}
               setCopied={setCopied}
               setShowQRModal={setShowQRModal}
               t={t}

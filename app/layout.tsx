@@ -6,10 +6,8 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import BrandStyle from '@/components/BrandStyle';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 
-// Initialize Sentry on the client side
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
-  require('../sentry.client.config');
-}
+// Sentry client initialization is now handled by instrumentation-client.ts
+// This is the recommended approach for Next.js 15+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,14 +15,6 @@ export const metadata: Metadata = {
   title: 'Luminex Staking - Premium DeFi Platform',
   description: 'Premium DeFi staking platform for World App with up to 500% APY',
   manifest: '/manifest.json',
-  themeColor: '#9333ea',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    viewportFit: 'cover',
-    userScalable: false, // Better for mobile app experience
-  },
   icons: {
     icon: '/icon-192.png',
     apple: '/icon-512.png',
@@ -45,6 +35,15 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover' as const,
+  userScalable: false,
+  themeColor: '#9333ea',
 };
 
 export default function RootLayout({

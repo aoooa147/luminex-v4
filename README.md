@@ -90,8 +90,20 @@ npx prisma generate
 npm run dev
 ```
 
+## Development
+
+### Quick Start Guide
+See `docs/development/GETTING_STARTED.md` for a comprehensive guide on how to continue developing the application.
+
+### Development Priorities
+See `docs/development/DEVELOPMENT_PRIORITIES.md` for prioritized development tasks.
+
+### Roadmap
+See `docs/development/DEVELOPMENT_ROADMAP.md` for the long-term development roadmap.
+
 ## Documentation
 
+- **Getting Started**: See `docs/development/GETTING_STARTED.md` for development guide
 - **Setup Guides**: See `docs/setup/` for setup instructions
 - **Development**: See `docs/development/` for development guides
 - **Security**: See `docs/security/` for security documentation

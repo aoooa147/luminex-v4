@@ -89,7 +89,7 @@ export function createErrorResponse(
   code: string = 'ERROR',
   statusCode: number = 400
 ): NextResponse {
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       success: false,
       error: code,
@@ -97,18 +97,48 @@ export function createErrorResponse(
     },
     { status: statusCode }
   );
+  
+  // Add security headers to response
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  
+  // Don't leak sensitive error information in production
+  if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
+    // Override message for internal errors in production
+    const safeResponse = NextResponse.json(
+      {
+        success: false,
+        error: code,
+        message: 'An error occurred. Please try again later.',
+      },
+      { status: statusCode }
+    );
+    safeResponse.headers.set('X-Content-Type-Options', 'nosniff');
+    safeResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    return safeResponse;
+  }
+  
+  return response;
 }
 
 /**
  * Create success response
  */
 export function createSuccessResponse<T>(data: T, statusCode: number = 200): NextResponse {
-  return NextResponse.json(
-    {
-      success: true,
-      ...(typeof data === 'object' ? data : { data }),
-    },
+  // Always wrap data in a data field for consistency
+  const responseData = typeof data === 'object' && data !== null && !Array.isArray(data)
+    ? { success: true, ...data }
+    : { success: true, data };
+  
+  const response = NextResponse.json(
+    responseData,
     { status: statusCode }
   );
+  
+  // Add security headers to response
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  
+  return response;
 }
 

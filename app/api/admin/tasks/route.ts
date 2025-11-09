@@ -3,15 +3,21 @@ import { withErrorHandler, createErrorResponse, createSuccessResponse } from '@/
 import { logger } from '@/lib/utils/logger';
 import { runTask } from '@/lib/automation/scheduler';
 
-// Admin wallet address
-const ADMIN_WALLET_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || process.env.TREASURY_ADDRESS || '';
+/**
+ * Get admin wallet address
+ */
+function getAdminWalletAddress(): string {
+  return process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS || process.env.TREASURY_ADDRESS || '';
+}
 
 /**
  * Check if user is admin
  */
 function isAdmin(userId: string | null): boolean {
-  if (!userId || !ADMIN_WALLET_ADDRESS) return false;
-  return userId.toLowerCase() === ADMIN_WALLET_ADDRESS.toLowerCase();
+  if (!userId) return false;
+  const adminAddress = getAdminWalletAddress();
+  if (!adminAddress) return false;
+  return userId.toLowerCase() === adminAddress.toLowerCase();
 }
 
 /**

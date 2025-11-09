@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { POOLS, TOKEN_NAME } from '@/lib/utils/constants';
 import { BASE_APY, getPowerBoost } from '@/lib/utils/powerConfig';
-import { LoadingSpinner } from '@/components/common/LoadingStates';
+import { LoadingSpinner, LoadingSkeleton } from '@/components/common/LoadingStates';
+import { EmptyStakingState, EmptyRewardsState } from '@/components/common/EmptyStates';
 
 // Map pool IDs to icons
 const POOL_ICONS: Record<number, typeof Unlock> = {
@@ -48,6 +49,7 @@ interface StakingTabProps {
   isWithdrawing: boolean;
   pendingRewards: number;
   stakedAmount: number;
+  isLoadingStakingData?: boolean;
   t: (key: string, params?: Record<string, string | number>) => string;
 }
 
@@ -71,6 +73,7 @@ const StakingTab = memo(({
   isWithdrawing,
   pendingRewards,
   stakedAmount,
+  isLoadingStakingData = false,
   t,
 }: StakingTabProps) => {
   return (
@@ -118,70 +121,114 @@ const StakingTab = memo(({
       </div>
 
       {/* Staking Card */}
-      <motion.div
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-3 text-white overflow-hidden border border-yellow-600/20"
-      >
-        <div className="relative z-10 space-y-2">
-          {/* Power License Status */}
-          <div className="flex items-center justify-between p-2 bg-black/40 rounded-lg border border-white/10">
-            <div className="flex items-center space-x-1.5">
-              <Zap className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="text-white/80 text-[10px]">Power License:</span>
-              <span className="text-white font-bold text-xs">
-                {currentPower ? currentPower.name : 'None'}
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-yellow-300 font-bold text-xs">{totalApy}% Total APY</div>
-              <div className="text-white/60 text-[9px] mt-0.5">
-                Base {baseApy}% {powerBoost > 0 ? `+ ${powerBoost}%` : ''}
-              </div>
-            </div>
+      {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-6 text-white overflow-hidden border border-yellow-600/20"
+        >
+          <div className="text-center">
+            <p className="text-yellow-400 text-sm mb-2">
+              {!actualAddress ? 'Connect your wallet to start staking' : 'Contract not configured'}
+            </p>
+            {!actualAddress && (
+              <p className="text-white/60 text-xs">
+                Connect your wallet in World App to stake LUX tokens and earn rewards
+              </p>
+            )}
           </div>
-
-          {/* Staking Balance */}
-          <div className="p-2 bg-black/40 rounded-lg border border-white/10">
-            <p className="text-white/80 text-[10px] mb-1">{t('myStakingBalance')}</p>
-            {!actualAddress || !STAKING_CONTRACT_ADDRESS ? (
-              <div className="flex items-center justify-center py-1">
-                <span className="text-yellow-400 text-[10px] text-center">
-                  {!actualAddress ? 'Connect wallet' : 'Contract not configured'}
+        </motion.div>
+      ) : isLoadingStakingData ? (
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-3 text-white overflow-hidden border border-yellow-600/20"
+        >
+          <div className="relative z-10 space-y-2">
+            <LoadingSkeleton className="h-12 w-full" count={3} />
+          </div>
+        </motion.div>
+      ) : stakedAmount === 0 ? (
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-6 text-white overflow-hidden border border-yellow-600/20"
+        >
+          <EmptyStakingState
+            action={
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowStakeModal(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg"
+              >
+                Start Staking
+              </motion.button>
+            }
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl p-3 text-white overflow-hidden border border-yellow-600/20"
+        >
+          <div className="relative z-10 space-y-2">
+            {/* Power License Status */}
+            <div className="flex items-center justify-between p-2 bg-black/40 rounded-lg border border-white/10">
+              <div className="flex items-center space-x-1.5">
+                <Zap className="w-3.5 h-3.5 text-yellow-400" aria-hidden="true" />
+                <span className="text-white/80 text-[10px]">Power License:</span>
+                <span className="text-white font-bold text-xs">
+                  {currentPower ? currentPower.name : 'None'}
                 </span>
               </div>
-            ) : (
+              <div className="text-right">
+                <div className="text-yellow-300 font-bold text-xs">{totalApy}% Total APY</div>
+                <div className="text-white/60 text-[9px] mt-0.5">
+                  Base {baseApy}% {powerBoost > 0 ? `+ ${powerBoost}%` : ''}
+                </div>
+              </div>
+            </div>
+
+            {/* Staking Balance */}
+            <div className="p-2 bg-black/40 rounded-lg border border-white/10">
+              <p className="text-white/80 text-[10px] mb-1">{t('myStakingBalance')}</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <Coins className="w-4 h-4 text-yellow-300" />
+                  <Coins className="w-4 h-4 text-yellow-300" aria-hidden="true" />
                   <span className="text-lg font-extrabold text-white">{formattedStakedAmount}</span>
                   <span className="text-white/60 text-xs">LUX</span>
                 </div>
-                <TrendingUp className="w-4 h-4 text-green-300" />
+                <TrendingUp className="w-4 h-4 text-green-300" aria-hidden="true" />
               </div>
-            )}
-          </div>
-
-          {/* Earned Interest */}
-          <div className="p-2 bg-black/40 rounded-lg border border-white/10">
-            <p className="text-white/80 text-[10px] mb-1">{t('earnedInterest')}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-extrabold text-yellow-300">{formattedPendingRewards}</span>
-              <span className="text-white/60 text-xs">LUX</span>
             </div>
-          </div>
 
-          {/* Time Elapsed */}
-          {timeElapsed.days > 0 || timeElapsed.hours > 0 || timeElapsed.minutes > 0 ? (
-            <div className="flex items-center space-x-1.5 text-[10px] text-white/70 bg-white/5 rounded-lg px-2 py-1">
-              <Timer className="w-3 h-3 flex-shrink-0" />
-              <span className="font-mono">
-                {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m
-              </span>
+            {/* Earned Interest */}
+            <div className="p-2 bg-black/40 rounded-lg border border-white/10">
+              <p className="text-white/80 text-[10px] mb-1">{t('earnedInterest')}</p>
+              {pendingRewards === 0 ? (
+                <EmptyRewardsState className="p-0" />
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-extrabold text-yellow-300">{formattedPendingRewards}</span>
+                  <span className="text-white/60 text-xs">LUX</span>
+                </div>
+              )}
             </div>
-          ) : null}
-        </div>
-      </motion.div>
+
+            {/* Time Elapsed */}
+            {timeElapsed.days > 0 || timeElapsed.hours > 0 || timeElapsed.minutes > 0 ? (
+              <div className="flex items-center space-x-1.5 text-[10px] text-white/70 bg-white/5 rounded-lg px-2 py-1">
+                <Timer className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                <span className="font-mono">
+                  {timeElapsed.days}D {timeElapsed.hours}H {timeElapsed.minutes}m
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </motion.div>
+      )}
 
       {/* Action Buttons */}
       <div className="space-y-2">

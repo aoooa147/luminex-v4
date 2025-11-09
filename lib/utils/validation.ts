@@ -63,11 +63,26 @@ export function isValidAmount(amount: string | number): boolean {
 
 /**
  * Sanitize string input (prevent XSS)
+ * @deprecated Use sanitizeString from @/lib/security/sanitization instead
  */
 export function sanitizeString(input: string, maxLength: number = 1000): string {
   if (!input || typeof input !== 'string') return '';
   return input.slice(0, maxLength).replace(/[<>]/g, '');
 }
+
+// Re-export security utilities for backward compatibility
+export {
+  sanitizeString as sanitizeStringSecure,
+  sanitizeHTML,
+  sanitizeNumber,
+  sanitizeAddress,
+  sanitizeURL,
+  encodeHTML,
+  encodeJS,
+  encodeURL,
+  sanitizeObject,
+  sanitizeSQL,
+} from '@/lib/security/sanitization';
 
 /**
  * Validate email format (if needed)

@@ -17,9 +17,9 @@ describe('Power Configuration', () => {
       });
     });
 
-    it('should return null for invalid code', () => {
+    it('should return undefined for invalid code', () => {
       const power = getPowerByCode('invalid' as PowerCode);
-      expect(power).toBe(null);
+      expect(power).toBeUndefined();
     });
   });
 

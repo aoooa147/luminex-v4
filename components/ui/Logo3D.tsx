@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
 interface Logo3DProps {
@@ -9,11 +9,11 @@ interface Logo3DProps {
   className?: string;
 }
 
-const Logo3D: React.FC<Logo3DProps> = ({
+const Logo3D = memo<Logo3DProps>(function Logo3D({
   size = 160,
   interactive = true,
   className = ''
-}) => {
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -30,38 +30,44 @@ const Logo3D: React.FC<Logo3DProps> = ({
     damping: 15
   });
 
+  // Memoize event handlers
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const x = (e.clientX - centerX) / (rect.width / 2);
+    const y = (e.clientY - centerY) / (rect.height / 2);
+
+    mouseX.set(x);
+    mouseY.set(y);
+  }, [mouseX, mouseY]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+    setIsHovered(false);
+  }, [mouseX, mouseY]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
   useEffect(() => {
     if (!interactive || !containerRef.current) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-
-      const x = (e.clientX - centerX) / (rect.width / 2);
-      const y = (e.clientY - centerY) / (rect.height / 2);
-
-      mouseX.set(x);
-      mouseY.set(y);
-    };
-
-    const handleMouseLeave = () => {
-      mouseX.set(0);
-      mouseY.set(0);
-      setIsHovered(false);
-    };
 
     const container = containerRef.current;
     container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('mouseleave', handleMouseLeave);
-    container.addEventListener('mouseenter', () => setIsHovered(true));
+    container.addEventListener('mouseenter', handleMouseEnter);
 
     return () => {
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [interactive, mouseX, mouseY]);
+  }, [interactive, handleMouseMove, handleMouseLeave, handleMouseEnter]);
 
   return (
     <div
@@ -127,37 +133,39 @@ const Logo3D: React.FC<Logo3DProps> = ({
           }}
         >
           {/* Glowing dots on ring */}
-          {[...Array(12)].map((_, i) => {
-            const angle = (i * 360) / 12;
-            const radius = 50;
-            const x = Math.cos((angle * Math.PI) / 180) * radius;
-            const y = Math.sin((angle * Math.PI) / 180) * radius;
+          {useMemo(() => {
+            return [...Array(12)].map((_, i) => {
+              const angle = (i * 360) / 12;
+              const radius = 50;
+              const x = Math.cos((angle * Math.PI) / 180) * radius;
+              const y = Math.sin((angle * Math.PI) / 180) * radius;
 
-            return (
-              <motion.div
-                key={`dot-${i}`}
-                className="absolute rounded-full"
-                style={{
-                  width: '4px',
-                  height: '4px',
-                  left: `calc(50% + ${x}% - 2px)`,
-                  top: `calc(50% + ${y}% - 2px)`,
-                  background: 'radial-gradient(circle, rgba(184, 148, 31, 0.8) 0%, rgba(184, 148, 31, 0) 70%)',
-                  boxShadow: '0 0 6px rgba(184, 148, 31, 0.6), 0 0 12px rgba(184, 148, 31, 0.3)',
-                }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                  ease: 'easeInOut',
-                }}
-              />
-            );
-          })}
+              return (
+                <motion.div
+                  key={`dot-${i}`}
+                  className="absolute rounded-full"
+                  style={{
+                    width: '4px',
+                    height: '4px',
+                    left: `calc(50% + ${x}% - 2px)`,
+                    top: `calc(50% + ${y}% - 2px)`,
+                    background: 'radial-gradient(circle, rgba(184, 148, 31, 0.8) 0%, rgba(184, 148, 31, 0) 70%)',
+                    boxShadow: '0 0 6px rgba(184, 148, 31, 0.6), 0 0 12px rgba(184, 148, 31, 0.3)',
+                  }}
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.1,
+                    ease: 'easeInOut',
+                  }}
+                />
+              );
+            });
+          }, [])}
         </motion.div>
 
         {/* Main 3D Coin/Medallion */}
@@ -320,6 +328,8 @@ const Logo3D: React.FC<Logo3DProps> = ({
       </motion.div>
     </div>
   );
-};
+});
+
+Logo3D.displayName = 'Logo3D';
 
 export default Logo3D;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, Loader2 } from 'lucide-react';
 import { TOKEN_NAME, LOGO_URL, LANGUAGES } from '@/lib/utils/constants';
@@ -30,7 +30,37 @@ const AppHeader = memo(({
   setLanguage,
   t,
 }: AppHeaderProps) => {
-  const activeLanguage = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+  // Memoize computed values
+  const activeLanguage = useMemo(() => 
+    LANGUAGES.find(l => l.code === language) || LANGUAGES[0],
+    [language]
+  );
+
+  const userName = useMemo(() => {
+    const userName = userInfo?.name || userInfo?.username;
+    if (userName && typeof userName === 'string') return userName;
+    if (actualAddress && typeof actualAddress === 'string') {
+      return `@${actualAddress.slice(0, 8)}...${actualAddress.slice(-6)}`;
+    }
+    return 'USER';
+  }, [userInfo, actualAddress]);
+
+  const yourBalanceText = useMemo(() => t('yourBalance'), [t]);
+
+  // Memoize event handlers
+  const handleLanguageMenuToggle = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowLanguageMenu(!showLanguageMenu);
+  }, [showLanguageMenu, setShowLanguageMenu]);
+
+  const handleLanguageSelect = useCallback((langCode: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLanguage(langCode);
+    localStorage.setItem('preferredLanguage', langCode);
+    setShowLanguageMenu(false);
+  }, [setLanguage, setShowLanguageMenu]);
 
   return (
     <div 
@@ -72,24 +102,13 @@ const AppHeader = memo(({
                 <span className="text-white text-xs font-bold">U</span>
               </div>
               <span className="text-white text-sm font-medium">
-                {(() => {
-                  const userName = userInfo?.name || userInfo?.username;
-                  if (userName && typeof userName === 'string') return userName;
-                  if (actualAddress && typeof actualAddress === 'string') {
-                    return `@${actualAddress.slice(0, 8)}...${actualAddress.slice(-6)}`;
-                  }
-                  return 'USER';
-                })()}
+                {userName}
               </span>
             </div>
             <div className="relative language-menu z-[9999]">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowLanguageMenu(!showLanguageMenu);
-                }}
+                onClick={handleLanguageMenuToggle}
                 className="flex items-center space-x-1 bg-gradient-to-br from-purple-600/80 to-purple-800/80 rounded-lg px-3 py-1.5 border border-purple-400/30 hover:border-purple-400/50 transition-all cursor-pointer z-[9999] relative shadow-lg"
                 style={{ userSelect: 'none', pointerEvents: 'auto' }}
               >
@@ -119,13 +138,7 @@ const AppHeader = memo(({
                       <button
                         type="button"
                         key={lang.code}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setLanguage(lang.code);
-                          localStorage.setItem('preferredLanguage', lang.code);
-                          setShowLanguageMenu(false);
-                        }}
+                        onClick={handleLanguageSelect(lang.code)}
                         className={`w-full px-4 py-2 text-left hover:bg-purple-500/10 transition-colors flex items-center space-x-2 cursor-pointer ${
                           language === lang.code ? 'bg-purple-500/15 text-purple-300' : 'text-gray-300'
                         }`}
@@ -153,7 +166,7 @@ const AppHeader = memo(({
               >
                 <Wallet className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[10px] font-medium">{t('yourBalance')}</span>
+              <span className="text-[10px] font-medium">{yourBalanceText}</span>
             </div>
             <div className="text-right">
               {!actualAddress ? (

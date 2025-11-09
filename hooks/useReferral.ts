@@ -11,6 +11,7 @@ export interface ReferralState {
   totalReferrals: number;
   totalEarnings: number;
   copied: boolean;
+  isLoadingReferralData: boolean;
 }
 
 export interface ReferralActions {
@@ -29,6 +30,7 @@ export function useReferral(
   const [totalReferrals, setTotalReferrals] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [isLoadingReferralData, setIsLoadingReferralData] = useState(false);
 
   // Safe referral code - ensure it's always a string
   const safeReferralCode = useMemo(() => {
@@ -52,6 +54,7 @@ export function useReferral(
     }
 
     try {
+      setIsLoadingReferralData(true);
       const response = await fetch(`/api/referral/stats?address=${actualAddress}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -67,10 +70,12 @@ export function useReferral(
         setTotalReferrals(0);
         setTotalEarnings(0);
       }
+      setIsLoadingReferralData(false);
     } catch (error: any) {
       // Silently handle fetch errors - don't show to user
       setTotalReferrals(0);
       setTotalEarnings(0);
+      setIsLoadingReferralData(false);
     }
   }, [actualAddress]);
 
@@ -141,6 +146,7 @@ export function useReferral(
     totalReferrals,
     totalEarnings,
     copied,
+    isLoadingReferralData,
     safeReferralCode,
     safeTotalReferrals,
     safeTotalEarnings,

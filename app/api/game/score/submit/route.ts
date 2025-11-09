@@ -17,6 +17,13 @@ const MIN_GAME_DURATION_FOR_HIGH_SCORE = 10; // seconds
 const HIGH_SCORE_THRESHOLD = 50000;
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Security: Check URL for threats
+  const { checkURLThreats, checkSecurityThreats } = await import('@/lib/security/threatDetection');
+  const urlThreats = checkURLThreats(req);
+  if (urlThreats.hasThreat) {
+    return createErrorResponse('Invalid request', 'INVALID_REQUEST', 400);
+  }
+
   // Rate limiting
   const rateLimitResult = await rateLimiters.gameAction(req);
   if (!rateLimitResult.allowed) {
@@ -29,6 +36,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const body = await req.json();
   const { address, payload, sig, deviceId } = body;
+
+  // Security: Check request body for threats
+  const threats = checkSecurityThreats(req, body, { logEvents: true, severity: 'high' });
+  if (threats.hasThreat) {
+    return createErrorResponse('Invalid input detected', 'INVALID_INPUT', 400);
+  }
   
   // Validate required fields
   if (!address || !payload?.nonce || !sig) {
@@ -42,6 +55,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   
   // Validate address format
   if (!isValidAddress(address)) {
+    // Security: Check if invalid address contains security threats
+    if (typeof address === 'string') {
+      checkSecurityThreats(req, { address }, { logEvents: true, severity: 'medium' });
+    }
     return createErrorResponse('Invalid address format', 'INVALID_ADDRESS', 400);
   }
   

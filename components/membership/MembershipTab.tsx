@@ -1,14 +1,16 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Loader2 } from 'lucide-react';
 import { POWERS, BASE_APY, getPowerByCode, type PowerCode } from '@/lib/utils/powerConfig';
+import { LoadingSkeleton } from '@/components/common/LoadingStates';
 
 interface MembershipTabProps {
   currentPower: { code: PowerCode; name: string; totalAPY: number } | null;
   totalApy: number;
   isPurchasingPower: boolean;
+  isLoadingPowerData?: boolean;
   handlePurchasePower: (targetCode: PowerCode) => void;
 }
 
@@ -16,8 +18,13 @@ const MembershipTab = memo(({
   currentPower,
   totalApy,
   isPurchasingPower,
+  isLoadingPowerData = false,
   handlePurchasePower,
 }: MembershipTabProps) => {
+  // Memoize power purchase handlers
+  const createPurchaseHandler = useCallback((powerCode: PowerCode) => {
+    return () => handlePurchasePower(powerCode);
+  }, [handlePurchasePower]);
   return (
     <motion.div
       key="membership"
@@ -33,21 +40,39 @@ const MembershipTab = memo(({
           <Zap className="w-5 h-5 text-yellow-400" />
           <span className="text-yellow-400 font-bold text-sm">POWER LICENSES</span>
         </div>
-        {currentPower && (
+        {isLoadingPowerData ? (
+          <LoadingSkeleton className="h-8 w-32" count={1} />
+        ) : currentPower ? (
           <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-yellow-500/20 rounded-lg border border-yellow-400/30">
-            <span className="text-base">⚡</span>
+            <span className="text-base" aria-hidden="true">⚡</span>
             <span className="text-white font-bold text-xs">{currentPower.name}</span>
             <span className="text-yellow-300 font-bold text-xs">{totalApy}%</span>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Power Tiers */}
-      <div className="space-y-3">
-        {POWERS.map((power, index) => {
+      <div className="space-y-3" role="list" aria-label="Power license tiers">
+        {isLoadingPowerData ? (
+          <LoadingSkeleton className="h-20 w-full" count={3} />
+        ) : (
+          POWERS.map((power, index) => {
           const isOwned = currentPower?.code === power.code;
-          const canUpgrade = !currentPower || (getPowerByCode(currentPower.code) && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) < parseFloat(power.priceWLD));
-          const isLower = currentPower && parseFloat(getPowerByCode(currentPower.code)!.priceWLD) > parseFloat(power.priceWLD);
+          const currentPowerData = currentPower ? getPowerByCode(currentPower.code) : null;
+          const canUpgrade = useMemo(() => 
+            !currentPower || (currentPowerData && parseFloat(currentPowerData.priceWLD) < parseFloat(power.priceWLD)),
+            [currentPower, currentPowerData, power.priceWLD]
+          );
+          const isLower = useMemo(() => 
+            currentPower && currentPowerData && parseFloat(currentPowerData.priceWLD) > parseFloat(power.priceWLD),
+            [currentPower, currentPowerData, power.priceWLD]
+          );
+          const upgradePrice = useMemo(() => {
+            if (!currentPower || !currentPowerData) return power.priceWLD;
+            return (parseFloat(power.priceWLD) - parseFloat(currentPowerData.priceWLD)).toFixed(1);
+          }, [currentPower, currentPowerData, power.priceWLD]);
+
+          const purchaseHandler = createPurchaseHandler(power.code);
 
           return (
             <motion.div
@@ -74,7 +99,7 @@ const MembershipTab = memo(({
               <motion.button
                 whileHover={{ scale: canUpgrade && !isPurchasingPower ? 1.05 : 1 }}
                 whileTap={{ scale: canUpgrade && !isPurchasingPower ? 0.95 : 1 }}
-                onClick={() => canUpgrade && !isPurchasingPower ? handlePurchasePower(power.code) : undefined}
+                onClick={canUpgrade && !isPurchasingPower ? purchaseHandler : undefined}
                 disabled={!canUpgrade || isPurchasingPower || !!isLower}
                 aria-label={
                   isOwned 
@@ -101,12 +126,13 @@ const MembershipTab = memo(({
                 ) : !currentPower ? (
                   `${power.priceWLD} WLD`
                 ) : (
-                  `+${(parseFloat(power.priceWLD) - parseFloat(getPowerByCode(currentPower.code)!.priceWLD)).toFixed(1)} WLD`
+                  `+${upgradePrice} WLD`
                 )}
-              </motion.button>
-            </motion.div>
-          );
-        })}
+            </motion.button>
+          </motion.div>
+        );
+        })
+        )}
       </div>
     </motion.div>
   );

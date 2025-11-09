@@ -29,23 +29,33 @@ const glowClasses = {
   yellow: 'shadow-[0_0_10px_rgba(250,204,21,0.5)]',
 }
 
-export function GameStatsCard({
+export const GameStatsCard = React.memo(function GameStatsCard({
   label,
   value,
   icon,
   color = 'red',
   className = '',
 }: GameStatsCardProps) {
+  // Memoize formatted value to avoid recalculation on every render
+  const formattedValue = React.useMemo(() => {
+    return typeof value === 'number' ? value.toLocaleString() : value;
+  }, [value]);
+
+  // Memoize className string to avoid recalculation
+  const cardClassName = React.useMemo(() => {
+    return `
+      relative rounded-xl p-3 text-center border backdrop-blur-xl
+      ${colorClasses[color]}
+      ${glowClasses[color]}
+      ${className}
+    `.trim();
+  }, [color, className]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`
-        relative rounded-xl p-3 text-center border backdrop-blur-xl
-        ${colorClasses[color]}
-        ${glowClasses[color]}
-        ${className}
-      `}
+      className={cardClassName}
       whileHover={{ scale: 1.05, y: -2 }}
       transition={{ duration: 0.2 }}
     >
@@ -54,9 +64,9 @@ export function GameStatsCard({
         {label}
       </div>
       <div className="text-xl font-bold font-orbitron">
-        {typeof value === 'number' ? value.toLocaleString() : value}
+        {formattedValue}
       </div>
     </motion.div>
-  )
-}
+  );
+});
 

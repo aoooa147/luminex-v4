@@ -1,0 +1,46 @@
+﻿
+> luminex-v4-ultimate@4.0.0 test
+> jest app/api/__tests__/error-scenarios/rate-limits.test.ts --testNamePattern=process-referral --no-coverage
+
+node.exe : FAIL app/api/__tests__/error-scenarios/rate-limits.test.ts
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\tawin\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL app/api/__...-limits.test.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Error Scenarios: Rate Limits
+    process-referral route
+      ├ù should return 429 when rate limit is exceeded (29 ms)
+    verify route
+      Γùï skipped should return 429 when rate limit is exceeded
+    initiate-payment route
+      Γùï skipped should return 429 when rate limit is exceeded
+    confirm-payment route
+      Γùï skipped should return 429 when rate limit is exceeded
+    membership-purchase route
+      Γùï skipped should return 429 when rate limit is exceeded
+
+  ΓùÅ Error Scenarios: Rate Limits ΓÇ║ process-referral route ΓÇ║ should return 429 when rate limit is exceeded
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: undefined
+
+      116 |       // Verify error response structure
+      117 |       expect(data).toBeDefined();
+    > 118 |       expect(data.success).toBe(false);
+          |                            ^
+      119 |       expect(data.error).toBe('RATE_LIMIT');
+      120 |       expect(data.message).toContain('Too many requests');
+      121 |       expect(mockTakeToken).toHaveBeenCalled();
+
+      at Object.toBe (app/api/__tests__/error-scenarios/rate-limits.test.ts:118:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 4 skipped, 5 total
+Snapshots:   0 total
+Time:        1.099 s
+Ran all test suites matching /app\\api\\__tests__\\error-scenarios\\rate-limits.test.ts/i with tests matching 
+"process-referral".

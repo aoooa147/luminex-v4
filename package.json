@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:analyze": "ANALYZE=true prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
@@ -33,6 +34,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.6",
     "@playwright/test": "^1.48.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",

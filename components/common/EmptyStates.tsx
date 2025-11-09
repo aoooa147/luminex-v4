@@ -40,31 +40,52 @@ export const EmptyState = memo(({
 EmptyState.displayName = 'EmptyState';
 
 // Predefined empty states for common scenarios
-export const EmptyStakingState = memo(() => (
+interface EmptyStakingStateProps {
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export const EmptyStakingState = memo(({ action, className = '' }: EmptyStakingStateProps = {}) => (
   <EmptyState
     icon={<Coins className="w-16 h-16 mx-auto text-yellow-400/50" />}
     title="No Staking Yet"
     description="Start staking your LUX tokens to earn rewards!"
+    action={action}
+    className={className}
   />
 ));
 
 EmptyStakingState.displayName = 'EmptyStakingState';
 
-export const EmptyRewardsState = memo(() => (
+interface EmptyRewardsStateProps {
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export const EmptyRewardsState = memo(({ action, className }: EmptyRewardsStateProps = {}) => (
   <EmptyState
-    icon={<TrendingUp className="w-16 h-16 mx-auto text-green-400/50" />}
+    icon={<TrendingUp className="w-12 h-12 mx-auto text-green-400/50" />}
     title="No Rewards Yet"
     description="Stake tokens to start earning rewards!"
+    action={action}
+    className={className}
   />
 ));
 
 EmptyRewardsState.displayName = 'EmptyRewardsState';
 
-export const EmptyReferralsState = memo(() => (
+interface EmptyReferralsStateProps {
+  action?: React.ReactNode;
+  className?: string;
+}
+
+export const EmptyReferralsState = memo(({ action, className = '' }: EmptyReferralsStateProps = {}) => (
   <EmptyState
     icon={<Users className="w-16 h-16 mx-auto text-blue-400/50" />}
     title="No Referrals Yet"
     description="Share your referral code with friends to earn rewards!"
+    action={action}
+    className={className}
   />
 ));
 

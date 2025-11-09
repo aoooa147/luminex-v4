@@ -32,6 +32,7 @@ export interface StakingState {
   isClaiming: boolean;
   isWithdrawing: boolean;
   isClaimingInterest: boolean;
+  isLoadingStakingData: boolean;
 }
 
 export interface StakingActions {
@@ -56,6 +57,7 @@ export function useStaking(
   const [isClaiming, setIsClaiming] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [isClaimingInterest, setIsClaimingInterest] = useState(false);
+  const [isLoadingStakingData, setIsLoadingStakingData] = useState(false);
   
   const stakingDataFetchInProgress = useRef(false);
 
@@ -72,6 +74,7 @@ export function useStaking(
 
     try {
       stakingDataFetchInProgress.current = true;
+      setIsLoadingStakingData(true);
       
       const stakingContract = new ethers.Contract(STAKING_CONTRACT_ADDRESS, STAKING_ABI, provider);
       
@@ -102,8 +105,10 @@ export function useStaking(
       }
       
       stakingDataFetchInProgress.current = false;
+      setIsLoadingStakingData(false);
     } catch (error: any) {
       stakingDataFetchInProgress.current = false;
+      setIsLoadingStakingData(false);
       // Silently handle fetch errors - don't show to user
       // Reset to default values on error
       setStakedAmount(0);
@@ -114,19 +119,19 @@ export function useStaking(
 
   const handleStake = useCallback(async (amount: string, selectedPool: number, balance: number) => {
     if (!amount) {
-      onError?.('Please enter an amount');
+      onError?.('Please enter an amount to stake.');
       return;
     }
     if (!actualAddress) {
-      onError?.('Please connect wallet first');
+      onError?.('Please connect your wallet first. Solution: Connect your wallet in World App.');
       return;
     }
     if (Number(amount) > balance) {
-      onError?.('Insufficient balance');
+      onError?.('Insufficient balance. Solution: Please check your LUX balance and stake a smaller amount. Hint: You can see your balance in the wallet section.');
       return;
     }
     if (!STAKING_CONTRACT_ADDRESS || !provider) {
-      onError?.('Staking contract not configured');
+      onError?.('Staking contract not configured. Solution: Please refresh the page or contact support.');
       return;
     }
     
@@ -206,17 +211,41 @@ export function useStaking(
         return;
       }
       
-      // Provide user-friendly error messages
-      const errorMessages: Record<string, string> = {
-        'token approval failed': 'Failed to approve tokens. Please try again.',
-        'staking transaction failed': 'Staking transaction failed. Please check your balance and try again.',
-        'please use world app to stake tokens': 'Please open this app in World App to stake tokens.',
-        'provider not available': 'Wallet provider not available. Please reconnect your wallet.',
-        'insufficient balance': 'Insufficient balance. Please check your LUX balance.',
+      // Provide user-friendly error messages with solutions
+      const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+        'token approval failed': {
+          message: 'Failed to approve tokens',
+          solution: 'Please try again. If the problem persists, check your wallet connection.',
+          hint: 'Token approval is required before staking. Make sure you approve the transaction in your wallet.',
+        },
+        'staking transaction failed': {
+          message: 'Staking transaction failed',
+          solution: 'Please check your balance and network connection, then try again.',
+          hint: 'Make sure you have enough LUX tokens and sufficient gas fees.',
+        },
+        'please use world app to stake tokens': {
+          message: 'World App is required',
+          solution: 'Please open this app in World App to stake tokens.',
+          hint: 'World App is needed for blockchain transactions. Make sure you are using the World App.',
+        },
+        'provider not available': {
+          message: 'Wallet provider not available',
+          solution: 'Please reconnect your wallet and try again.',
+          hint: 'Your wallet connection may have been lost. Please refresh the page and reconnect.',
+        },
+        'insufficient balance': {
+          message: 'Insufficient balance',
+          solution: 'Please check your LUX balance and stake a smaller amount.',
+          hint: 'You need enough LUX tokens in your wallet to stake. Check your balance first.',
+        },
       };
       
-      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Staking failed. Please try again.';
-      onError?.(friendlyMessage);
+      const errorInfo = errorMessages[errorMsg];
+      if (errorInfo) {
+        onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
+      } else {
+        onError?.(error?.message || 'Staking failed. Please try again.');
+      }
     }
   }, [actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 
@@ -280,25 +309,41 @@ export function useStaking(
         return;
       }
       
-      // Provide user-friendly error messages
-      const errorMessages: Record<string, string> = {
-        'claim rewards transaction failed': 'Failed to claim rewards. Please try again.',
-        'please use world app to claim rewards': 'Please open this app in World App to claim rewards.',
-        'no rewards to claim': 'No rewards available to claim.',
+      // Provide user-friendly error messages with solutions
+      const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+        'claim rewards transaction failed': {
+          message: 'Failed to claim rewards',
+          solution: 'Please check your network connection and try again.',
+          hint: 'Make sure you are connected to the internet and have sufficient gas fees.',
+        },
+        'please use world app to claim rewards': {
+          message: 'World App is required',
+          solution: 'Please open this app in World App to claim rewards.',
+          hint: 'World App is needed for blockchain transactions.',
+        },
+        'no rewards to claim': {
+          message: 'No rewards available',
+          solution: 'Stake more tokens to earn rewards.',
+          hint: 'Rewards are calculated based on your staked amount and time.',
+        },
       };
       
-      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Claim failed. Please try again.';
-      onError?.(friendlyMessage);
+      const errorInfo = errorMessages[errorMsg];
+      if (errorInfo) {
+        onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
+      } else {
+        onError?.(error?.message || 'Claim failed. Please try again.');
+      }
     }
   }, [pendingRewards, actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 
   const handleWithdrawBalance = useCallback(async () => {
     if (stakedAmount === 0) {
-      onError?.('No balance to withdraw');
+      onError?.('No balance to withdraw. Solution: You need to stake tokens first. Hint: Stake some tokens to start earning rewards.');
       return;
     }
     if (!actualAddress || !STAKING_CONTRACT_ADDRESS || !provider) {
-      onError?.('Please connect wallet first');
+      onError?.('Please connect your wallet first. Solution: Connect your wallet in World App.');
       return;
     }
 
@@ -365,16 +410,36 @@ export function useStaking(
         return;
       }
       
-      // Provide user-friendly error messages
-      const errorMessages: Record<string, string> = {
-        'withdrawal transaction failed': 'Failed to withdraw. Please try again.',
-        'please use world app to withdraw balance': 'Please open this app in World App to withdraw.',
-        'no staked balance to withdraw': 'No staked balance available to withdraw.',
-        'provider not available': 'Wallet provider not available. Please reconnect your wallet.',
+      // Provide user-friendly error messages with solutions
+      const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+        'withdrawal transaction failed': {
+          message: 'Failed to withdraw',
+          solution: 'Please check your network connection and try again.',
+          hint: 'Make sure you are connected to the internet and have sufficient gas fees.',
+        },
+        'please use world app to withdraw balance': {
+          message: 'World App is required',
+          solution: 'Please open this app in World App to withdraw.',
+          hint: 'World App is needed for blockchain transactions.',
+        },
+        'no staked balance to withdraw': {
+          message: 'No staked balance available',
+          solution: 'You need to stake tokens first before you can withdraw.',
+          hint: 'Stake some tokens to start earning, then you can withdraw later.',
+        },
+        'provider not available': {
+          message: 'Wallet provider not available',
+          solution: 'Please reconnect your wallet and try again.',
+          hint: 'Your wallet connection may have been lost. Please refresh the page and reconnect.',
+        },
       };
       
-      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Withdrawal failed. Please try again.';
-      onError?.(friendlyMessage);
+      const errorInfo = errorMessages[errorMsg];
+      if (errorInfo) {
+        onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
+      } else {
+        onError?.(error?.message || 'Withdrawal failed. Please try again.');
+      }
     }
   }, [stakedAmount, actualAddress, provider, selectedPool, fetchStakingData, onSuccess, onError]);
 
@@ -439,6 +504,7 @@ export function useStaking(
     isClaiming,
     isWithdrawing,
     isClaimingInterest,
+    isLoadingStakingData,
     formattedStakedAmount,
     formattedPendingRewards,
     handleStake,

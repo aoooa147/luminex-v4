@@ -5,6 +5,7 @@ import { takeToken } from '@/lib/utils/rateLimit';
 import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
 import { isValidAddress, isValidReferralCode } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
+import { checkSecurityThreats, checkURLThreats } from '@/lib/security/threatDetection';
 
 interface ProcessReferralRequest {
   newUserId: string; // Wallet address of new user
@@ -17,6 +18,12 @@ interface ProcessReferralRequest {
  * Example: LUX123456 means address ends with ...123456...
  */
 export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Check URL for security threats
+  const urlThreats = checkURLThreats(req);
+  if (urlThreats.hasThreat) {
+    return createErrorResponse('Invalid request', 'INVALID_REQUEST', 400);
+  }
+
   // Rate limiting
   const ip = referralAntiCheat.getClientIP(req);
   if (!takeToken(ip, 5, 0.5)) {
@@ -25,6 +32,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const body = await req.json() as ProcessReferralRequest;
   const { newUserId, referrerCode } = body;
+
+  // Check request body for security threats
+  const threats = checkSecurityThreats(req, body, { logEvents: true, severity: 'high' });
+  if (threats.hasThreat) {
+    return createErrorResponse('Invalid input detected', 'INVALID_INPUT', 400);
+  }
 
   // Validate required fields
   const bodyValidation = validateBody(body, ['newUserId', 'referrerCode']);
@@ -38,6 +51,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   // Validate wallet address format
   if (!isValidAddress(newUserId)) {
+    // Check if invalid address contains security threats
+    if (typeof newUserId === 'string') {
+      checkSecurityThreats(req, { newUserId }, { logEvents: true, severity: 'medium' });
+    }
     referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_address');
     return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
   }
@@ -50,6 +67,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   // Validate referral code format
   if (!isValidReferralCode(referrerCode)) {
+    // Check if invalid code contains security threats
+    if (typeof referrerCode === 'string') {
+      checkSecurityThreats(req, { referrerCode }, { logEvents: true, severity: 'medium' });
+    }
     referralAntiCheat.recordAttempt(ip, '', newUserId, false, 'invalid_code_format');
     return createErrorResponse('Invalid referral code format. Expected: LUX + 6 hex characters', 'INVALID_CODE_FORMAT', 400);
   }

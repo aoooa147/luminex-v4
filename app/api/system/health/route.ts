@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkDatabaseHealth } from '@/lib/performance/optimizer';
-import { getMemoryUsage } from '@/lib/performance/optimizer';
+import { checkDatabaseHealth, getMemoryUsage } from '@/lib/performance/optimizer';
 import { createSuccessResponse } from '@/lib/utils/apiHandler';
 
 /**
  * GET /api/system/health
  * Get system health status
+ * Cached for 15 seconds to reduce load while still being relatively real-time
  */
 export async function GET(req: NextRequest) {
   try {
     const dbHealth = await checkDatabaseHealth();
     const memory = getMemoryUsage();
     
-    return createSuccessResponse({
+    const response = createSuccessResponse({
       status: 'operational',
       timestamp: new Date().toISOString(),
       database: {
@@ -27,12 +27,21 @@ export async function GET(req: NextRequest) {
       },
       uptime: process.uptime(),
     });
+    
+    // Cache health check for 15 seconds
+    response.headers.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=30');
+    
+    return response;
   } catch (error: any) {
-    return createSuccessResponse({
+    const response = createSuccessResponse({
       status: 'degraded',
       timestamp: new Date().toISOString(),
       error: error.message || 'Health check failed',
     });
+    
+    // Cache error response for shorter time
+    response.headers.set('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=15');
+    
+    return response;
   }
 }
-

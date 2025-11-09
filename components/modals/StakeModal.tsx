@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { TOKEN_NAME } from '@/lib/utils/constants';
@@ -28,6 +28,19 @@ const StakeModal = memo(({
   isStaking,
   handleStake,
 }: StakeModalProps) => {
+  // Memoize event handlers
+  const handleClose = useCallback(() => {
+    setShowStakeModal(false);
+    setIsShowInput(false);
+  }, [setShowStakeModal, setIsShowInput]);
+
+  const handleMaxClick = useCallback(() => {
+    setStakeAmount(balance.toString());
+  }, [balance, setStakeAmount]);
+
+  const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setStakeAmount(e.target.value);
+  }, [setStakeAmount]);
   return (
     <AnimatePresence>
       {showStakeModal && (
@@ -36,7 +49,7 @@ const StakeModal = memo(({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => { setShowStakeModal(false); setIsShowInput(false); }}
+          onClick={handleClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -54,12 +67,12 @@ const StakeModal = memo(({
                   <input
                     type="number"
                     value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
+                    onChange={handleAmountChange}
                     placeholder="0.00"
                     className="w-full bg-white/5 border border-yellow-600/40 rounded-2xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-yellow-500 text-lg"
                   />
                   <button
-                    onClick={() => setStakeAmount(balance.toString())}
+                    onClick={handleMaxClick}
                     aria-label="Set maximum stake amount"
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold text-sm px-3 py-1 rounded-xl hover:from-yellow-400 hover:to-amber-500"
                     style={{
@@ -75,7 +88,7 @@ const StakeModal = memo(({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setShowStakeModal(false); setIsShowInput(false); }}
+                onClick={handleClose}
                 aria-label="Cancel staking"
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2.5 px-4 rounded-2xl text-sm"
               >

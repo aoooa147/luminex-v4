@@ -1,6 +1,7 @@
 /**
  * Integration tests for API validation
  * Tests API routes with proper request/response handling
+ * @jest-environment node
  */
 
 import { NextRequest } from 'next/server';
@@ -9,7 +10,8 @@ import { isValidAddress, isValidReferralCode } from '@/lib/utils/validation';
 describe('API Validation Integration', () => {
   describe('Address Validation in API Context', () => {
     it('should validate addresses from API requests', () => {
-      const testAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb';
+      // Use valid lowercase address to avoid checksum issues
+      const testAddress = '0x1234567890123456789012345678901234567890';
       expect(isValidAddress(testAddress)).toBe(true);
     });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PiggyBank, Zap, UserPlus, Gamepad2, Shield } from 'lucide-react';
 
@@ -15,6 +15,16 @@ const BottomNav = memo(({
   setActiveTab,
   isAdmin,
 }: BottomNavProps) => {
+  // Memoize tab change handlers to prevent unnecessary re-renders
+  const handleStakingClick = useCallback(() => setActiveTab('staking'), [setActiveTab]);
+  const handleMembershipClick = useCallback(() => setActiveTab('membership'), [setActiveTab]);
+  const handleReferralClick = useCallback(() => setActiveTab('referral'), [setActiveTab]);
+  const handleGameClick = useCallback(() => setActiveTab('game'), [setActiveTab]);
+  const handleAdminClick = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.location.assign('/admin');
+    }
+  }, []);
   return (
     <div 
       className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-yellow-600/20 z-40" 
@@ -26,7 +36,7 @@ const BottomNav = memo(({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setActiveTab('staking')}
+          onClick={handleStakingClick}
           aria-label="Staking tab"
           aria-pressed={activeTab === 'staking'}
           className={`flex flex-col items-center space-y-1 relative ${activeTab === 'staking' ? 'text-white' : 'text-gray-500'}`}
@@ -43,7 +53,7 @@ const BottomNav = memo(({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setActiveTab('membership')}
+          onClick={handleMembershipClick}
           aria-label="Power/Membership tab"
           aria-pressed={activeTab === 'membership'}
           className={`flex flex-col items-center space-y-1 relative ${activeTab === 'membership' ? 'text-white' : 'text-gray-500'}`}
@@ -60,7 +70,7 @@ const BottomNav = memo(({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setActiveTab('referral')}
+          onClick={handleReferralClick}
           aria-label="Referral tab"
           aria-pressed={activeTab === 'referral'}
           className={`flex flex-col items-center space-y-1 relative ${activeTab === 'referral' ? 'text-white' : 'text-gray-500'}`}
@@ -77,7 +87,7 @@ const BottomNav = memo(({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setActiveTab('game')}
+          onClick={handleGameClick}
           aria-label="Game tab"
           aria-pressed={activeTab === 'game'}
           className={`flex flex-col items-center space-y-1 relative ${activeTab === 'game' ? 'text-white' : 'text-gray-500'}`}
@@ -97,11 +107,7 @@ const BottomNav = memo(({
             type="button"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.location.assign('/admin');
-              }
-            }}
+            onClick={handleAdminClick}
             aria-label="Admin dashboard"
             className="flex flex-col items-center space-y-1 relative text-yellow-400 hover:text-yellow-300"
           >

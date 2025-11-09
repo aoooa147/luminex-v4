@@ -11,6 +11,7 @@ import { trackPowerPurchase } from '@/lib/utils/analytics';
 export interface PowerState {
   currentPower: { code: PowerCode; name: string; totalAPY: number } | null;
   isPurchasingPower: boolean;
+  isLoadingPowerData: boolean;
 }
 
 export interface PowerActions {
@@ -26,6 +27,7 @@ export function usePower(
 ) {
   const [currentPower, setCurrentPower] = useState<{ code: PowerCode; name: string; totalAPY: number } | null>(null);
   const [isPurchasingPower, setIsPurchasingPower] = useState(false);
+  const [isLoadingPowerData, setIsLoadingPowerData] = useState(false);
 
   const fetchPowerStatus = useCallback(async () => {
     if (!actualAddress) {
@@ -34,6 +36,7 @@ export function usePower(
     }
 
     try {
+      setIsLoadingPowerData(true);
       const response = await fetch(`/api/power/active?userId=${actualAddress}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -51,15 +54,17 @@ export function usePower(
       } else {
         setCurrentPower(null);
       }
+      setIsLoadingPowerData(false);
     } catch (error: any) {
       // Silently handle fetch errors - don't show to user
       setCurrentPower(null);
+      setIsLoadingPowerData(false);
     }
   }, [actualAddress]);
 
   const handlePurchasePower = useCallback(async (targetCode: PowerCode) => {
     if (!actualAddress) {
-      onError?.('Please connect wallet first');
+      onError?.('Please connect your wallet first. Solution: Connect your wallet in World App.');
       return;
     }
 
@@ -77,13 +82,25 @@ export function usePower(
       const initData = await initResponse.json();
 
       if (!initData.success) {
-        const errorMessages: Record<string, string> = {
-          'insufficient_balance': 'Insufficient WLD balance',
-          'invalid_reference': 'Invalid reference. Please try again.',
-          'verification_failed': 'Transaction verification failed',
+        const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+          'insufficient_balance': {
+            message: 'Insufficient WLD balance',
+            solution: 'Please add more WLD tokens to your wallet.',
+            hint: 'You need WLD tokens to purchase Power Licenses. Check your balance first.',
+          },
+          'invalid_reference': {
+            message: 'Invalid reference',
+            solution: 'Please refresh the page and try again.',
+            hint: 'The reference may have expired. Please start the purchase process again.',
+          },
+          'verification_failed': {
+            message: 'Transaction verification failed',
+            solution: 'Please try again or contact support if the problem persists.',
+            hint: 'This may be a temporary issue. Please wait a moment and try again.',
+          },
         };
-        const errorMsg = errorMessages[initData.error] || initData.error || 'Failed to initialize power purchase';
-        onError?.(errorMsg);
+        const errorInfo = errorMessages[initData.error] || { message: initData.error || 'Failed to initialize power purchase' };
+        onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
         setIsPurchasingPower(false);
         return;
       }
@@ -91,7 +108,7 @@ export function usePower(
       const { reference, amountWLD, to, target } = initData;
 
       if (!MiniKit.isInstalled()) {
-        onError?.('World App is required');
+        onError?.('World App is required. Solution: Please open this app in World App to purchase power. Hint: World App is needed for blockchain transactions.');
         setIsPurchasingPower(false);
         return;
       }
@@ -143,15 +160,34 @@ export function usePower(
           // Track analytics
           trackPowerPurchase(confirmData.data.power.code, parseFloat(amountWLD));
         } else {
-          const errorMessages: Record<string, string> = {
-            'user_cancelled': 'Payment cancelled',
-            'insufficient_balance': 'Insufficient WLD balance',
-            'invalid_reference': 'Invalid reference',
-            'verification_failed': 'Transaction verification failed',
-            'draft_already_used': 'Transaction already processed',
+          const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+            'user_cancelled': {
+              message: 'Payment cancelled',
+              solution: 'You can try again when ready.',
+            },
+            'insufficient_balance': {
+              message: 'Insufficient WLD balance',
+              solution: 'Please add more WLD tokens to your wallet.',
+              hint: 'You need WLD tokens to purchase Power Licenses.',
+            },
+            'invalid_reference': {
+              message: 'Invalid reference',
+              solution: 'Please refresh the page and try again.',
+              hint: 'The reference may have expired. Please start the purchase process again.',
+            },
+            'verification_failed': {
+              message: 'Transaction verification failed',
+              solution: 'Please try again or contact support if the problem persists.',
+              hint: 'This may be a temporary issue. Please wait a moment and try again.',
+            },
+            'draft_already_used': {
+              message: 'Transaction already processed',
+              solution: 'This transaction has already been completed. Please refresh the page.',
+              hint: 'You may have already purchased this Power License.',
+            },
           };
-          const errorMsg = errorMessages[confirmData.error] || confirmData.error || 'Payment failed';
-          onError?.(errorMsg);
+          const errorInfo = errorMessages[confirmData.error] || { message: confirmData.error || 'Payment failed' };
+          onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
         }
       } catch (payError: any) {
         const msg = String(payError?.message || '').toLowerCase();
@@ -189,16 +225,36 @@ export function usePower(
         return;
       }
       
-      // Provide user-friendly error messages
-      const errorMessages: Record<string, string> = {
-        'failed to initialize power purchase': 'Failed to start purchase. Please try again.',
-        'world app is required': 'Please open this app in World App to purchase power.',
-        'payment failed': 'Payment failed. Please check your balance and try again.',
-        'insufficient balance': 'Insufficient WLD balance. Please add more WLD to your wallet.',
+      // Provide user-friendly error messages with solutions
+      const errorMessages: Record<string, { message: string; solution?: string; hint?: string }> = {
+        'failed to initialize power purchase': {
+          message: 'Failed to start purchase',
+          solution: 'Please try again or contact support if the problem persists.',
+          hint: 'This may be a temporary issue. Please wait a moment and try again.',
+        },
+        'world app is required': {
+          message: 'World App is required',
+          solution: 'Please open this app in World App to purchase power.',
+          hint: 'World App is needed for blockchain transactions.',
+        },
+        'payment failed': {
+          message: 'Payment failed',
+          solution: 'Please check your balance and network connection, then try again.',
+          hint: 'Make sure you have enough WLD tokens and a stable internet connection.',
+        },
+        'insufficient balance': {
+          message: 'Insufficient WLD balance',
+          solution: 'Please add more WLD tokens to your wallet.',
+          hint: 'You need WLD tokens to purchase Power Licenses.',
+        },
       };
       
-      const friendlyMessage = errorMessages[errorMsg] || error?.message || 'Failed to purchase power. Please try again.';
-      onError?.(friendlyMessage);
+      const errorInfo = errorMessages[errorMsg];
+      if (errorInfo) {
+        onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
+      } else {
+        onError?.(error?.message || 'Failed to purchase power. Please try again.');
+      }
     } finally {
       setIsPurchasingPower(false);
     }
@@ -214,6 +270,7 @@ export function usePower(
   return {
     currentPower,
     isPurchasingPower,
+    isLoadingPowerData,
     handlePurchasePower,
     fetchPowerStatus,
   };

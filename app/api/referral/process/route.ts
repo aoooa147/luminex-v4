@@ -5,6 +5,7 @@ import { takeToken } from '@/lib/utils/rateLimit';
 import { withErrorHandler, createErrorResponse, createSuccessResponse, validateBody } from '@/lib/utils/apiHandler';
 import { isValidAddress } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
+import { checkSecurityThreats, checkURLThreats } from '@/lib/security/threatDetection';
 
 interface ProcessReferralRequest {
   newUserAddress: string; // Wallet address of new user
@@ -16,6 +17,12 @@ interface ProcessReferralRequest {
  * This endpoint takes the referrer address directly (simpler than reverse lookup from code)
  */
 export const POST = withErrorHandler(async (req: NextRequest) => {
+  // Security: Check URL for threats
+  const urlThreats = checkURLThreats(req);
+  if (urlThreats.hasThreat) {
+    return createErrorResponse('Invalid request', 'INVALID_REQUEST', 400);
+  }
+
   // Rate limiting
   const ip = referralAntiCheat.getClientIP(req);
   if (!takeToken(ip, 5, 0.5)) {
@@ -24,6 +31,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const body = await req.json() as ProcessReferralRequest;
   const { newUserAddress, referrerAddress } = body;
+
+  // Security: Check request body for threats
+  const threats = checkSecurityThreats(req, body, { logEvents: true, severity: 'high' });
+  if (threats.hasThreat) {
+    return createErrorResponse('Invalid input detected', 'INVALID_INPUT', 400);
+  }
 
   // Validate required fields
   const bodyValidation = validateBody(body, ['newUserAddress', 'referrerAddress']);
@@ -37,6 +50,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   // Validate wallet address format
   if (!isValidAddress(newUserAddress) || !isValidAddress(referrerAddress)) {
+    // Security: Check if invalid addresses contain security threats
+    if (typeof newUserAddress === 'string') {
+      checkSecurityThreats(req, { newUserAddress }, { logEvents: true, severity: 'medium' });
+    }
+    if (typeof referrerAddress === 'string') {
+      checkSecurityThreats(req, { referrerAddress }, { logEvents: true, severity: 'medium' });
+    }
     referralAntiCheat.recordAttempt(ip, referrerAddress, newUserAddress, false, 'invalid_address');
     return createErrorResponse('Invalid wallet address format', 'INVALID_ADDRESS', 400);
   }

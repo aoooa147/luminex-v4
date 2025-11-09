@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import * as Sentry from "@sentry/nextjs";
 
 export default function Error({
   error,
@@ -13,6 +14,10 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error('Error:', error);
+    // Report error to Sentry
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
   }, [error]);
 
   return (
