@@ -111,7 +111,7 @@ const StakingTab = memo(({
       </div>
 
       {/* Staking Card */}
-      <TronCard glowColor="red" className="p-3 sm:p-4">
+      <TronCard glowColor="primary" className="p-3 sm:p-4">
         <div className="space-y-2">
           {/* Power License Status */}
           <div className="flex items-center justify-between p-2 bg-bg-tertiary/80 rounded-lg border border-tron-red/30 backdrop-blur-lg">

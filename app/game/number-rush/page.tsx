@@ -323,7 +323,7 @@ export default function NumberRushPage() {
         )}
 
         {gameState === 'idle' && (
-          <TronCard glowColor="red" className="text-center">
+          <TronCard glowColor="primary" className="text-center">
             <div className="text-6xl mb-4">⚡</div>
             <h2 className="text-3xl font-bold mb-4 font-orbitron text-white">Test your speed!</h2>
             <p className="text-gray-300 mb-6 font-orbitron">
@@ -348,7 +348,7 @@ export default function NumberRushPage() {
         )}
 
         {(gameState === 'waiting' || gameState === 'playing') && (
-          <TronCard glowColor="blue" className="relative h-96 overflow-hidden p-0">
+          <TronCard glowColor="cyan" className="relative h-96 overflow-hidden p-0">
             {/* Button Grid */}
             <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-4 p-4">
               {/* Top */}
@@ -433,7 +433,7 @@ export default function NumberRushPage() {
         )}
 
         {gameState === 'gameover' && (
-          <TronCard glowColor="blue" className="text-center space-y-6">
+          <TronCard glowColor="cyan" className="text-center space-y-6">
             <div className="text-7xl mb-4">🎉</div>
             <h2 className="text-4xl font-bold font-orbitron text-white mb-4">Game Over!</h2>
             <div className="space-y-3 text-lg font-orbitron">

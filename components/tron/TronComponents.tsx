@@ -161,7 +161,7 @@ export function TronStatCard({
   trend?: 'up' | 'down'
 }) {
   return (
-    <TronCard glowColor={trend === 'up' ? 'red' : 'orange'}>
+    <TronCard glowColor={trend === 'up' ? 'primary' : 'orange'}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm text-gray-400 uppercase tracking-wide font-orbitron mb-2">
@@ -515,7 +515,7 @@ export function TronUIShowcase() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TronCard title="Flexible Pool" icon={Zap} glowColor="red">
+        <TronCard title="Flexible Pool" icon={Zap} glowColor="primary">
           <div className="space-y-4">
             <TronProgressBar value={750} max={1000} label="Pool Capacity" />
             <div className="flex items-center justify-between">
@@ -528,7 +528,7 @@ export function TronUIShowcase() {
           </div>
         </TronCard>
 
-        <TronCard title="365-Day Lock" icon={Shield} glowColor="blue">
+        <TronCard title="365-Day Lock" icon={Shield} glowColor="cyan">
           <div className="space-y-4">
             <TronProgressBar value={450} max={1000} label="Pool Capacity" />
             <div className="flex items-center justify-between">

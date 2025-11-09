@@ -31,7 +31,7 @@ export const EnergyCoreVisualization = memo(function EnergyCoreVisualization({
   }, [circleCircumference, normalizedPercentage]);
 
   return (
-    <TronCard glowColor="red" className="p-8 text-center">
+    <TronCard glowColor="primary" className="p-8 text-center">
       <div className="relative">
         {/* Radial Chart - Energy Core */}
         <div className="relative w-64 h-64 mx-auto mb-6">
