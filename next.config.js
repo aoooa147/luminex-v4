@@ -18,10 +18,8 @@ const nextConfig = {
   },
   // Enable compression for better performance
   compress: true,
-  // Optimize production builds
-  swcMinify: true,
-  // Optimize fonts
-  optimizeFonts: true,
+  // Note: swcMinify and optimizeFonts are deprecated in Next.js 15
+  // These options are now enabled by default
   async headers() {
     const securityHeaders = [
       { key: 'X-Frame-Options', value: 'SAMEORIGIN' },

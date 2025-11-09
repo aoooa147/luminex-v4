@@ -172,9 +172,9 @@ export function sanitizeObject<T extends Record<string, any>>(
       typeof item === 'string' 
         ? sanitizeString(item, maxStringLength)
         : typeof item === 'object' && item !== null
-        ? sanitizeObject(item, options)
+        ? sanitizeObject(item as Record<string, any>, options)
         : item
-    ) as T;
+    ) as unknown as T;
   }
   
   const sanitized: any = {};
@@ -187,7 +187,7 @@ export function sanitizeObject<T extends Record<string, any>>(
     } else if (typeof value === 'number') {
       sanitized[cleanKey] = sanitizeNumber(value);
     } else if (typeof value === 'object' && value !== null) {
-      sanitized[cleanKey] = sanitizeObject(value, options);
+      sanitized[cleanKey] = sanitizeObject(value as Record<string, any>, options);
     } else {
       sanitized[cleanKey] = value;
     }

@@ -240,3 +240,41 @@ export function checkURLThreats(req: NextRequest): {
   };
 }
 
+/**
+ * Check for suspicious request patterns
+ */
+export function detectSuspiciousActivity(req: NextRequest): {
+  suspicious: boolean;
+  reasons: string[];
+} {
+  const reasons: string[] = [];
+  
+  // Check for suspicious user agents
+  const userAgent = req.headers.get('user-agent') || '';
+  if (!userAgent || userAgent.length < 10) {
+    reasons.push('Missing or suspicious user agent');
+  }
+  
+  // Check for suspicious headers
+  const headers = req.headers;
+  const forwardedFor = headers.get('x-forwarded-for');
+  if (forwardedFor && forwardedFor.split(',').length > 5) {
+    reasons.push('Too many proxy hops');
+  }
+  
+  // Check for SQL injection patterns in URL
+  const url = req.nextUrl.pathname + req.nextUrl.search;
+  if (detectSQLInjection(url)) {
+    reasons.push('SQL injection pattern detected in URL');
+  }
+  
+  // Check for XSS patterns in URL
+  if (detectXSS(url)) {
+    reasons.push('XSS pattern detected in URL');
+  }
+  
+  return {
+    suspicious: reasons.length > 0,
+    reasons,
+  };
+}
