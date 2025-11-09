@@ -22,7 +22,9 @@ import { AILoadingState } from '@/components/common/AILoadingState';
 import { SplashScreen } from '@/components/common/SplashScreen';
 import { WelcomeCard } from '@/components/common/WelcomeCard';
 import { QuickActionCard } from '@/components/common/QuickActionCard';
-import { Zap as ZapIcon, Gamepad2 as Gamepad2Icon, Users as UsersIcon, Coins as CoinsIcon } from 'lucide-react';
+import { HomeTab } from '@/components/home/HomeTab';
+import { PowerTab } from '@/components/power/PowerTab';
+import { ProfileTab } from '@/components/profile/ProfileTab';
 const MiniKitPanel = dynamic(() => import('@/components/world/MiniKitPanel'), { 
   ssr: false,
   loading: () => <AILoadingState message="Loading panel..." size="sm" />
@@ -474,7 +476,7 @@ const LuminexApp = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [verified, setVerified] = useState(false);
   const [verifiedAddress, setVerifiedAddress] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'staking' | 'membership' | 'referral' | 'game'>('staking');
+  const [activeTab, setActiveTab] = useState<'home' | 'power' | 'game' | 'friends' | 'profile'>('home');
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedPool, setSelectedPool] = useState(0);
   const [stakeAmount, setStakeAmount] = useState('');
@@ -754,86 +756,30 @@ const LuminexApp = () => {
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col px-3 sm:px-4 pb-20 sm:pb-24 pt-2 sm:pt-4 min-h-0">
         <BroadcastMessage />
         
-        {/* User HUD - Quick Actions (only show on staking tab as home dashboard) */}
-        {activeTab === 'staking' && (
-          <div className="space-y-3 mb-4">
-            <WelcomeCard 
+        <div>
+          {activeTab === 'home' && (
+            <HomeTab
               username={userInfo?.username || userInfo?.name}
               address={actualAddress || undefined}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <QuickActionCard
-                title="Power"
-                description="Upgrade license"
-                icon={ZapIcon}
-                href="#"
-                glowColor="red"
-                onClick={() => setActiveTab('membership')}
-              />
-              <QuickActionCard
-                title="Games"
-                description="Play & earn"
-                icon={Gamepad2Icon}
-                href="#"
-                glowColor="orange"
-                onClick={() => setActiveTab('game')}
-              />
-              <QuickActionCard
-                title="Referral"
-                description="Invite friends"
-                icon={UsersIcon}
-                href="#"
-                glowColor="purple"
-                onClick={() => setActiveTab('referral')}
-              />
-              <QuickActionCard
-                title="Staking"
-                description="Stake tokens"
-                icon={CoinsIcon}
-                href="#"
-                glowColor="cyan"
-                onClick={() => setActiveTab('staking')}
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          {activeTab === 'staking' && (
-            <StakingTab
-              selectedPool={selectedPool}
-              setSelectedPool={setSelectedPool}
-              currentPower={currentPower}
-              totalApy={totalApy}
-              baseApy={baseApy}
-              powerBoost={powerBoost}
-              actualAddress={actualAddress}
-              STAKING_CONTRACT_ADDRESS={STAKING_CONTRACT_ADDRESS}
-              formattedStakedAmount={formattedStakedAmount}
-              formattedPendingRewards={formattedPendingRewards}
-              timeElapsed={timeElapsed}
-              setShowStakeModal={setShowStakeModal}
-              handleClaimInterest={handleClaimInterest}
-              handleWithdrawBalance={handleWithdrawBalance}
-              setActiveTab={setActiveTab}
-              isClaimingInterest={isClaimingInterest}
-              isWithdrawing={isWithdrawing}
-              pendingRewards={pendingRewards}
-              stakedAmount={stakedAmount}
-              t={t}
+              powerLevel={currentPower ? Math.min(100, (totalApy / 325) * 100) : 0}
+              powerStatus={currentPower ? 'ปกติ' : 'ไม่มี Power'}
+              onNavigate={setActiveTab}
             />
           )}
 
-          {activeTab === 'membership' && (
-            <MembershipTab
+          {activeTab === 'power' && (
+            <PowerTab
               currentPower={currentPower}
               totalApy={totalApy}
+              baseApy={BASE_APY}
+              powerBoost={currentPower ? totalApy - BASE_APY : 0}
               isPurchasingPower={isPurchasingPower}
               handlePurchasePower={handlePurchasePower}
+              onNavigate={setActiveTab}
             />
           )}
 
-          {activeTab === 'referral' && (
+          {activeTab === 'friends' && (
             <ReferralTab
               safeTotalReferrals={safeTotalReferrals}
               safeTotalEarnings={safeTotalEarnings}
@@ -843,6 +789,17 @@ const LuminexApp = () => {
               setCopied={setCopied}
               setShowQRModal={setShowQRModal}
               t={t}
+            />
+          )}
+
+          {activeTab === 'profile' && (
+            <ProfileTab
+              userInfo={userInfo}
+              actualAddress={actualAddress}
+              formattedBalance={formattedBalance}
+              formattedWldBalance={formattedWldBalance}
+              isAdmin={isAdmin}
+              onNavigate={setActiveTab}
             />
           )}
 

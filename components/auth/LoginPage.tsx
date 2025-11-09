@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TronShell, TronButton, TronInput, TronCard } from '@/components/tron';
-import { LogIn, Lock, User, AlertCircle } from 'lucide-react';
+import { TronShell } from '@/components/tron';
+import { LogIn, Lock, User, Mail, Phone } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: (username: string, password: string) => Promise<void>;
   onForgotPassword?: () => void;
+  onSignUp?: () => void;
   error?: string;
 }
 
-export function LoginPage({ onLogin, onForgotPassword, error }: LoginPageProps) {
+export function LoginPage({ onLogin, onForgotPassword, onSignUp, error }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null);
 
@@ -29,57 +31,64 @@ export function LoginPage({ onLogin, onForgotPassword, error }: LoginPageProps) 
   };
 
   return (
-    <TronShell showEnergyStream={true} className="bg-[#000000]">
+    <TronShell showEnergyStream={false} className="bg-[#050816]">
       <div className="min-h-screen flex items-center justify-center px-4 py-10">
-        {/* Grid background - subtle animated */}
+        {/* Background gradient with pattern */}
         <div 
-          className="fixed inset-0 pointer-events-none opacity-5"
+          className="fixed inset-0 pointer-events-none opacity-10"
           style={{
             backgroundImage: `
-              linear-gradient(90deg, rgba(0, 229, 255, 0.3) 1px, transparent 1px),
-              linear-gradient(0deg, rgba(0, 229, 255, 0.3) 1px, transparent 1px)
+              linear-gradient(90deg, rgba(79, 70, 229, 0.1) 1px, transparent 1px),
+              linear-gradient(0deg, rgba(79, 70, 229, 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '50px 50px',
-            backgroundPosition: '0 0',
-            animation: 'gridScroll 20s linear infinite',
           }}
         />
 
         <div className="w-full max-w-md relative z-10">
-          {/* Access Point Header */}
+          {/* Luminex Branding */}
           <div className="text-center mb-8">
+            {/* Logo - Lightning bolt in circle */}
             <div className="inline-block mb-4">
-              <div className="w-20 h-20 mx-auto rounded-full border-4 border-tron-cyan/50 bg-tron-cyan/10 flex items-center justify-center">
-                <Lock className="w-10 h-10 text-tron-cyan" style={{ filter: 'drop-shadow(0 0 15px rgba(0, 229, 255, 0.8))' }} />
+              <div 
+                className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-luminex-primary to-luminex-cyan flex items-center justify-center border-2 border-luminex-primary/50"
+                style={{
+                  boxShadow: '0 0 30px rgba(79, 70, 229, 0.5), inset 0 0 20px rgba(34, 211, 238, 0.2)',
+                }}
+              >
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 2L3 14h8v8l10-12h-8V2z" />
+                </svg>
               </div>
             </div>
-            <h1 className="text-3xl font-orbitron font-bold text-tron-cyan mb-2 uppercase tracking-wider">
-              ACCESS POINT
+            <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Luminex
             </h1>
-            <p className="text-gray-400 text-sm font-orbitron">
-              Connect to the Grid
+            <p className="text-gray-400 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Play. Power. Earn.
             </p>
           </div>
 
           {/* Login Card */}
-          <TronCard glowColor="cyan" className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="glass-tron p-8 rounded-2xl">
+            <h2 className="text-2xl font-semibold text-white mb-6 text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+              เข้าสู่ระบบ
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Error Message */}
               {error && (
-                <div className="p-3 rounded-lg bg-tron-orange/10 border border-tron-orange/30 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-tron-orange flex-shrink-0" />
-                  <p className="text-sm text-tron-orange font-orbitron">{error}</p>
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex-shrink-0" />
+                  <p className="text-sm text-red-400">{error}</p>
                 </div>
               )}
 
-              {/* Username Input */}
+              {/* Email/Phone Input */}
               <div className="space-y-2">
-                <label className="text-sm font-orbitron text-tron-cyan uppercase tracking-wide">
-                  Username
-                </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-tron-cyan/50">
-                    <User className="w-5 h-5" />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-luminex-primary/50">
+                    <Mail className="w-5 h-5" />
                   </div>
                   <input
                     type="text"
@@ -87,39 +96,25 @@ export function LoginPage({ onLogin, onForgotPassword, error }: LoginPageProps) 
                     onChange={(e) => setUsername(e.target.value)}
                     onFocus={() => setFocusedField('username')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full pl-12 pr-4 py-3 bg-transparent border-0 border-b-2 rounded-none text-white font-orbitron placeholder:text-gray-500 focus:outline-none transition-all duration-300"
+                    className="w-full pl-12 pr-4 py-3 bg-bg-tertiary/50 border-2 rounded-xl text-white placeholder:text-gray-500 focus:outline-none transition-all duration-200"
                     style={{
-                      borderBottomColor: focusedField === 'username' 
-                        ? 'rgba(0, 229, 255, 1)' 
-                        : 'rgba(0, 229, 255, 0.3)',
+                      borderColor: focusedField === 'username' 
+                        ? 'rgba(79, 70, 229, 0.6)' 
+                        : 'rgba(79, 70, 229, 0.2)',
                       boxShadow: focusedField === 'username'
-                        ? '0 4px 20px rgba(0, 229, 255, 0.4), inset 0 -2px 0 rgba(0, 229, 255, 0.8)'
+                        ? '0 0 20px rgba(79, 70, 229, 0.3)'
                         : 'none',
                     }}
-                    placeholder="Enter username"
+                    placeholder="Email หรือ เบอร์โทร"
                     required
                   />
-                  {/* Animated underline glow */}
-                  {focusedField === 'username' && (
-                    <div 
-                      className="absolute bottom-0 left-0 h-0.5 bg-tron-cyan"
-                      style={{
-                        width: '100%',
-                        boxShadow: '0 0 10px rgba(0, 229, 255, 0.8)',
-                        animation: 'pulse 2s ease-in-out infinite',
-                      }}
-                    />
-                  )}
                 </div>
               </div>
 
               {/* Password Input */}
               <div className="space-y-2">
-                <label className="text-sm font-orbitron text-tron-cyan uppercase tracking-wide">
-                  Password
-                </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-tron-cyan/50">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-luminex-primary/50">
                     <Lock className="w-5 h-5" />
                   </div>
                   <input
@@ -128,56 +123,73 @@ export function LoginPage({ onLogin, onForgotPassword, error }: LoginPageProps) 
                     onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
-                    className="w-full pl-12 pr-4 py-3 bg-transparent border-0 border-b-2 rounded-none text-white font-orbitron placeholder:text-gray-500 focus:outline-none transition-all duration-300"
+                    className="w-full pl-12 pr-4 py-3 bg-bg-tertiary/50 border-2 rounded-xl text-white placeholder:text-gray-500 focus:outline-none transition-all duration-200"
                     style={{
-                      borderBottomColor: focusedField === 'password' 
-                        ? 'rgba(0, 229, 255, 1)' 
-                        : 'rgba(0, 229, 255, 0.3)',
+                      borderColor: focusedField === 'password' 
+                        ? 'rgba(79, 70, 229, 0.6)' 
+                        : 'rgba(79, 70, 229, 0.2)',
                       boxShadow: focusedField === 'password'
-                        ? '0 4px 20px rgba(0, 229, 255, 0.4), inset 0 -2px 0 rgba(0, 229, 255, 0.8)'
+                        ? '0 0 20px rgba(79, 70, 229, 0.3)'
                         : 'none',
                     }}
-                    placeholder="Enter password"
+                    placeholder="รหัสผ่าน"
                     required
                   />
-                  {/* Animated underline glow */}
-                  {focusedField === 'password' && (
-                    <div 
-                      className="absolute bottom-0 left-0 h-0.5 bg-tron-cyan"
-                      style={{
-                        width: '100%',
-                        boxShadow: '0 0 10px rgba(0, 229, 255, 0.8)',
-                        animation: 'pulse 2s ease-in-out infinite',
-                      }}
-                    />
-                  )}
                 </div>
               </div>
 
-              {/* Login Button - Chamfered Ghost Button */}
+              {/* Remember Me Checkbox */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-2 border-luminex-primary/30 bg-bg-tertiary/50 text-luminex-primary focus:ring-2 focus:ring-luminex-primary focus:ring-offset-0"
+                />
+                <label htmlFor="remember" className="text-sm text-gray-400 cursor-pointer">
+                  จำฉันไว้ในเครื่องนี้
+                </label>
+              </div>
+
+              {/* Login Button - Primary Full Width */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full relative overflow-hidden border-2 rounded-lg font-orbitron font-semibold uppercase tracking-wider transition-all duration-200 border-tron-cyan text-tron-cyan hover:bg-tron-cyan/20 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 text-base"
+                className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: 'transparent',
-                  clipPath: 'polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px)',
-                  boxShadow: '0 0 20px rgba(0, 229, 255, 0.3)',
-                  transform: 'translateZ(0)',
+                  background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+                  boxShadow: '0 0 20px rgba(79, 70, 229, 0.4)',
                 }}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 border-2 border-tron-cyan border-t-transparent rounded-full animate-spin" />
-                    CONNECTING...
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    กำลังเข้าสู่ระบบ...
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <LogIn className="w-5 h-5" />
-                    LOGIN
+                    เข้าสู่ระบบ
                   </span>
                 )}
               </button>
+
+              {/* Sign Up Button - Secondary Outline */}
+              {onSignUp && (
+                <button
+                  type="button"
+                  onClick={onSignUp}
+                  className="w-full py-3 rounded-xl font-semibold border-2 transition-all duration-200"
+                  style={{
+                    borderColor: 'rgba(79, 70, 229, 0.5)',
+                    color: '#6366F1',
+                    background: 'transparent',
+                  }}
+                >
+                  สมัครสมาชิก
+                </button>
+              )}
 
               {/* Forgot Password Link */}
               {onForgotPassword && (
@@ -185,37 +197,24 @@ export function LoginPage({ onLogin, onForgotPassword, error }: LoginPageProps) 
                   <button
                     type="button"
                     onClick={onForgotPassword}
-                    className="text-tron-orange hover:text-tron-orange-bright font-orbitron text-sm uppercase tracking-wide transition-colors duration-200"
-                    style={{
-                      textShadow: '0 0 10px rgba(255, 107, 53, 0.6)',
-                    }}
+                    className="text-sm text-gray-400 hover:text-luminex-primary transition-colors duration-200"
                   >
-                    Forgot Password?
+                    ลืมรหัสผ่าน?
                   </button>
                 </div>
               )}
             </form>
-          </TronCard>
+          </div>
 
           {/* Footer */}
           <div className="text-center mt-6">
-            <p className="text-gray-500 text-xs font-orbitron">
-              Secure connection to the Grid
+            <p className="text-gray-500 text-xs opacity-60" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Powered by Luminex System
             </p>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gridScroll {
-          0% { background-position: 0 0; }
-          100% { background-position: 50px 50px; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </TronShell>
   );
 }
+

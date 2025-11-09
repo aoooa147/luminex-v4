@@ -20,10 +20,10 @@ export const TronButton = memo(function TronButton({
   className?: string
 }) {
   const variants = {
-    primary: 'border-tron-red text-tron-red hover:bg-tron-red/20',
-    secondary: 'border-tron-blue text-tron-blue hover:bg-tron-blue/20',
-    danger: 'border-tron-orange text-tron-orange hover:bg-tron-orange/20',
-    success: 'border-tron-purple text-tron-purple hover:bg-tron-purple/20',
+    primary: 'border-luminex-primary text-luminex-primary hover:bg-luminex-primary/20',
+    secondary: 'border-luminex-cyan text-luminex-cyan hover:bg-luminex-cyan/20',
+    danger: 'border-orange-500 text-orange-500 hover:bg-orange-500/20',
+    success: 'border-luminex-green text-luminex-green hover:bg-luminex-green/20',
   }
 
   const sizes = {
@@ -57,45 +57,45 @@ export const TronCard = memo(function TronCard({
   children, 
   title,
   icon: Icon,
-  glowColor = 'red',
+  glowColor = 'primary',
   className = '' 
 }: {
   children: React.ReactNode
   title?: string
   icon?: any
-  glowColor?: 'red' | 'cyan' | 'blue' | 'orange' | 'purple'
+  glowColor?: 'primary' | 'cyan' | 'green' | 'purple' | 'orange'
   className?: string
 }) {
   const glowColors = {
-    red: 'shadow-neon-red border-tron-red/30',
-    cyan: 'shadow-neon-cyan border-tron-cyan/30',
-    blue: 'shadow-neon-blue border-tron-blue/30',
-    orange: 'shadow-neon-orange border-tron-orange/30',
-    purple: 'shadow-neon-purple border-tron-purple/30',
+    primary: 'border-luminex-primary/30',
+    cyan: 'border-luminex-cyan/30',
+    green: 'border-luminex-green/30',
+    purple: 'border-luminex-purple/30',
+    orange: 'border-orange-500/30',
   }
 
   const textColors = {
-    red: 'text-tron-red',
-    cyan: 'text-tron-cyan',
-    blue: 'text-tron-blue',
-    orange: 'text-tron-orange',
-    purple: 'text-tron-purple',
+    primary: 'text-luminex-primary',
+    cyan: 'text-luminex-cyan',
+    green: 'text-luminex-green',
+    purple: 'text-luminex-purple',
+    orange: 'text-orange-500',
   }
 
   const bgColors = {
-    red: 'bg-tron-red/10 border-tron-red/30',
-    cyan: 'bg-tron-cyan/10 border-tron-cyan/30',
-    blue: 'bg-tron-blue/10 border-tron-blue/30',
-    orange: 'bg-tron-orange/10 border-tron-orange/30',
-    purple: 'bg-tron-purple/10 border-tron-purple/30',
+    primary: 'bg-luminex-primary/10 border-luminex-primary/30',
+    cyan: 'bg-luminex-cyan/10 border-luminex-cyan/30',
+    green: 'bg-luminex-green/10 border-luminex-green/30',
+    purple: 'bg-luminex-purple/10 border-luminex-purple/30',
+    orange: 'bg-orange-500/10 border-orange-500/30',
   }
 
   const borderGradients = {
-    red: 'via-tron-red',
-    cyan: 'via-tron-cyan',
-    blue: 'via-tron-blue',
-    orange: 'via-tron-orange',
-    purple: 'via-tron-purple',
+    primary: 'via-luminex-primary',
+    cyan: 'via-luminex-cyan',
+    green: 'via-luminex-green',
+    purple: 'via-luminex-purple',
+    orange: 'via-orange-500',
   }
 
   return (

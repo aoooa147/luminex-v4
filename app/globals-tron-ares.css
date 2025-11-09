@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ⚡ LUMINEX POWER APP THEME - Electric Blue/Purple Neon ⚡ */
+/* 🎬 TRON ARES THEME - Red Neon Futuristic 🎬 */
 
 :root {
   /* Safe areas */
@@ -12,43 +12,52 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --minikit-gap: 84px;
 
-  /* 🎨 LUMINEX Color Palette - Electric Blue/Purple Neon */
-  /* Primary colors - Electric Blue/Purple */
-  --luminex-primary: #4F46E5; /* Indigo-600 - Main brand color */
-  --luminex-primary-light: #6366F1; /* Indigo-500 */
-  --luminex-primary-dark: #4338CA; /* Indigo-700 */
-  --luminex-cyan: #22D3EE; /* Cyan-400 - Electric cyan */
-  --luminex-cyan-light: #67E8F9; /* Cyan-300 */
-  --luminex-cyan-dark: #06B6D4; /* Cyan-600 */
+  /* 🎨 TRON ARES Color Palette - Red Neon Theme */
+  --tron-red: #ff1a2a;
+  --tron-red-bright: #ff4757;
+  --tron-red-dark: #cc1420;
+  --tron-red-neon: #ff0066;
+  --tron-red-glow: rgba(255, 26, 42, 0.8);
+  --tron-red-light: rgba(255, 71, 87, 0.6);
   
-  /* Secondary colors - Success/Power Green */
-  --luminex-green: #22C55E; /* Green-500 - Success/Power on */
-  --luminex-green-light: #4ADE80; /* Green-400 */
-  --luminex-green-dark: #16A34A; /* Green-600 */
+  /* Secondary colors (kept for variety) */
+  --tron-cyan: #00e5ff;
+  --tron-cyan-dark: #00a8cc;
+  --tron-blue: #0066ff;
+  --tron-blue-dark: #003d99;
+  --tron-orange: #ff6b35;
+  --tron-orange-dark: #cc4420;
+  --tron-purple: #a855f7;
+  --tron-pink: #ec4899;
   
-  /* Accent colors */
-  --luminex-purple: #A855F7; /* Purple-500 */
-  --luminex-purple-light: #C084FC; /* Purple-400 */
-  --luminex-purple-dark: #9333EA; /* Purple-600 */
+  /* Dark city colors - Tron Ares style */
+  --city-dark: #0a0a0a;
+  --city-gray: #1a1a1a;
+  --city-gray-light: #2a2a2a;
+  --city-gray-muted: #3a3a3a;
+  --wet-reflection: rgba(255, 26, 42, 0.15);
+  --fog-gray: rgba(26, 26, 26, 0.8);
   
-  /* Background colors - Dark theme */
-  --bg-primary: #050816; /* Main background - Dark blue-black */
-  --bg-secondary: #0F172A; /* Secondary background - Slate-900 */
-  --bg-tertiary: #1E293B; /* Tertiary - Slate-800 */
-  --bg-card: rgba(30, 41, 59, 0.85); /* Card background with transparency */
+  /* Background colors */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #1a1a1a;
+  --bg-card: rgba(26, 26, 26, 0.85);
   
-  /* Glow effects */
-  --glow-primary-sm: 0 0 8px rgba(79, 70, 229, 0.6);
-  --glow-primary-md: 0 0 15px rgba(79, 70, 229, 0.8);
-  --glow-primary-lg: 0 0 25px rgba(79, 70, 229, 1);
-  --glow-cyan-sm: 0 0 8px rgba(34, 211, 238, 0.6);
-  --glow-cyan-md: 0 0 15px rgba(34, 211, 238, 0.8);
-  --glow-green-sm: 0 0 8px rgba(34, 197, 94, 0.6);
-  --glow-green-md: 0 0 15px rgba(34, 197, 94, 0.8);
+  /* Grid colors - Red neon theme */
+  --grid-color: rgba(255, 26, 42, 0.12);
+  --grid-glow: rgba(255, 26, 42, 0.25);
+  --grid-red-neon: rgba(255, 0, 102, 0.2);
   
-  /* Grid pattern colors */
-  --grid-color: rgba(79, 70, 229, 0.08);
-  --grid-glow: rgba(34, 211, 238, 0.12);
+  /* Neon glow sizes */
+  --glow-sm: 0 0 5px;
+  --glow-md: 0 0 10px;
+  --glow-lg: 0 0 20px;
+  --glow-xl: 0 0 30px;
+  --glow-red-sm: 0 0 8px rgba(255, 26, 42, 0.6);
+  --glow-red-md: 0 0 15px rgba(255, 26, 42, 0.8);
+  --glow-red-lg: 0 0 25px rgba(255, 26, 42, 1);
+  --glow-red-xl: 0 0 40px rgba(255, 26, 42, 1);
 }
 
 * {
@@ -57,10 +66,10 @@
   margin: 0;
 }
 
-/* ⚡ Scrollbar - Luminex Electric style */
+/* 🎬 Scrollbar - Tron Ares Red style */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--luminex-primary) transparent;
+  scrollbar-color: var(--tron-red) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -73,14 +82,14 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: var(--luminex-primary);
+  background: var(--tron-red);
   border-radius: 2px;
-  box-shadow: var(--glow-primary-sm);
+  box-shadow: var(--glow-red-sm);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--luminex-primary-light);
-  box-shadow: var(--glow-primary-md);
+  background: var(--tron-red-bright);
+  box-shadow: var(--glow-red-md);
 }
 
 html, body {
@@ -108,7 +117,7 @@ body {
   background: var(--bg-primary);
 }
 
-/* 🌌 City Nightscape Background - Static (No Animation) */
+/* 🌌 City Nightscape Background - Tron Ares Style */
 body::before {
   content: '';
   position: fixed;
@@ -121,13 +130,13 @@ body::before {
     linear-gradient(0deg, var(--grid-color) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: 0 0;
+  animation: gridScroll 20s linear infinite;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.1;
-  transform: translateZ(0);
+  opacity: 0.25;
 }
 
-/* 🌆 City Skyline & Red Neon Glow - Static (No Animation) */
+/* 🌆 City Skyline & Red Neon Glow */
 body::after {
   content: '';
   position: fixed;
@@ -136,12 +145,12 @@ body::after {
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.08) 0%, transparent 40%),
-    linear-gradient(180deg, rgba(255, 26, 42, 0.04) 0%, rgba(0, 0, 0, 0.95) 100%);
+    radial-gradient(ellipse at 70% 20%, rgba(255, 26, 42, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 60%, rgba(255, 0, 102, 0.2) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(255, 26, 42, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
   pointer-events: none;
   z-index: 0;
-  transform: translateZ(0);
+  mix-blend-mode: screen;
 }
 
 @keyframes gridScroll {
@@ -153,54 +162,22 @@ body::after {
   }
 }
 
-/* 🚀 Performance Optimizations - Reduce Flickering */
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* Prevent layout shift */
-img, video, iframe {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* 💠 TRON ARES Grid - Red Neon - Static (No Animation) */
+/* 💠 TRON ARES Grid - Red Neon */
 .tron-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(0deg, rgba(255, 26, 42, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 26, 42, 0.06) 1px, transparent 1px);
+    linear-gradient(0deg, rgba(255, 26, 42, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 26, 42, 0.12) 1px, transparent 1px);
   background-size: 120px 120px;
-  opacity: 0.08;
-  transform: translateZ(0);
+  animation: tronGridDrift 18s linear infinite;
+  opacity: 0.2;
+  mix-blend-mode: screen;
 }
 
 .tron-grid-secondary {
@@ -209,17 +186,17 @@ a {
   animation-duration: 28s;
 }
 
-/* 🔴 Red Neon Energy Stream - Static (No Animation) */
+/* 🔴 Red Neon Energy Stream */
 .tron-energy-stream {
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(circle at 70% 20%, rgba(255, 26, 42, 0.2), transparent 60%),
-    radial-gradient(circle at 30% 40%, rgba(255, 0, 102, 0.12), transparent 65%),
-    linear-gradient(120deg, rgba(255, 26, 42, 0.1) 0%, rgba(26, 26, 26, 0.1) 100%);
-  filter: blur(60px);
-  opacity: 0.3;
-  transform: translateZ(0);
+    radial-gradient(circle at 70% 20%, rgba(255, 26, 42, 0.5), transparent 60%),
+    radial-gradient(circle at 30% 40%, rgba(255, 0, 102, 0.3), transparent 65%),
+    linear-gradient(120deg, rgba(255, 26, 42, 0.25) 0%, rgba(26, 26, 26, 0.1) 100%);
+  filter: blur(90px);
+  opacity: 0.6;
+  animation: redNeonPulse 8s ease-in-out infinite;
 }
 
 @keyframes redNeonPulse {
@@ -233,16 +210,16 @@ a {
   }
 }
 
-/* 🌫️ City Fog Effect - Static (No Animation) */
+/* 🌫️ City Fog Effect */
 .tron-fog {
   position: absolute;
   inset: 0;
   background: 
-    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.2), transparent 65%),
-    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.03), transparent 50%);
-  filter: blur(40px);
-  opacity: 0.2;
-  transform: translateZ(0);
+    radial-gradient(circle at 50% 10%, rgba(26, 26, 26, 0.4), transparent 65%),
+    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.08), transparent 50%);
+  filter: blur(60px);
+  opacity: 0.4;
+  animation: fogDrift 25s ease-in-out infinite;
 }
 
 @keyframes fogDrift {
@@ -265,29 +242,36 @@ a {
   }
 }
 
-/* ⚡ Luminex Glass Effects - Electric Blue/Purple - Optimized */
+/* 🎨 Tron Ares Glass Effects - Red Neon */
 .glass-tron {
   background: linear-gradient(
     135deg,
-    rgba(79, 70, 229, 0.08) 0%,
-    rgba(30, 41, 59, 0.95) 100%
+    rgba(255, 26, 42, 0.08) 0%,
+    rgba(26, 26, 26, 0.95) 100%
   );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(79, 70, 229, 0.2);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 26, 42, 0.3);
   box-shadow: 
-    0 0 20px rgba(79, 70, 229, 0.1),
-    inset 0 0 20px rgba(34, 211, 238, 0.05);
+    0 0 20px rgba(255, 26, 42, 0.15),
+    inset 0 0 20px rgba(255, 26, 42, 0.08);
   position: relative;
   overflow: hidden;
-  transform: translateZ(0);
-  will-change: auto;
-  border-radius: 16px; /* Rounded cards */
 }
 
-/* Disable shine animation for performance */
 .glass-tron::before {
-  display: none;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 26, 42, 0.15),
+    transparent
+  );
+  animation: shine 3s infinite;
 }
 
 @keyframes shine {
@@ -335,54 +319,68 @@ a {
   }
 }
 
-/* ⚡ Luminex Electric Text */
+/* 🌟 Red Neon Text */
 .neon-text {
-  color: var(--luminex-primary-light);
+  color: var(--tron-red);
   text-shadow: 
-    0 0 8px rgba(99, 102, 241, 0.8),
-    0 0 16px rgba(99, 102, 241, 0.6),
-    0 0 24px rgba(99, 102, 241, 0.4);
+    0 0 10px var(--tron-red),
+    0 0 20px var(--tron-red),
+    0 0 30px var(--tron-red);
+  animation: textRedGlow 2s ease-in-out infinite;
 }
 
-.neon-text-primary {
-  color: var(--luminex-primary);
-  text-shadow: 0 0 10px rgba(79, 70, 229, 0.8), 0 0 20px rgba(79, 70, 229, 0.6);
+@keyframes textRedGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px var(--tron-red),
+      0 0 20px var(--tron-red),
+      0 0 30px var(--tron-red);
+  }
+  50% {
+    text-shadow: 
+      0 0 15px var(--tron-red),
+      0 0 30px var(--tron-red),
+      0 0 40px var(--tron-red),
+      0 0 50px var(--tron-red-bright);
+  }
 }
 
-.neon-text-cyan {
-  color: var(--luminex-cyan);
-  text-shadow: 0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.6);
+.neon-text-red {
+  color: var(--tron-red);
+  text-shadow: 0 0 10px var(--tron-red), 0 0 20px var(--tron-red);
 }
 
-.neon-text-green {
-  color: var(--luminex-green);
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.8), 0 0 20px rgba(34, 197, 94, 0.6);
+.neon-text-orange {
+  color: var(--tron-orange);
+  text-shadow: 0 0 10px var(--tron-orange), 0 0 20px var(--tron-orange);
 }
 
 .neon-text-purple {
-  color: var(--luminex-purple);
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.6);
+  color: var(--tron-purple);
+  text-shadow: 0 0 10px var(--tron-purple), 0 0 20px var(--tron-purple);
 }
 
-/* ⚡ Luminex Electric Button */
+/* 🎯 Red Neon Button */
 .neon-button {
   position: relative;
   background: linear-gradient(
     135deg,
-    rgba(79, 70, 229, 0.2) 0%,
-    rgba(67, 56, 202, 0.15) 100%
+    rgba(255, 26, 42, 0.25) 0%,
+    rgba(204, 20, 32, 0.2) 100%
   );
-  border: 2px solid var(--luminex-primary);
-  color: var(--luminex-primary-light);
+  border: 2px solid var(--tron-red);
+  color: var(--tron-red);
   padding: 12px 32px;
-  border-radius: 12px; /* More rounded */
+  border-radius: 8px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   box-shadow: 
-    0 0 20px rgba(79, 70, 229, 0.3),
-    inset 0 0 20px rgba(34, 211, 238, 0.1);
+    0 0 20px rgba(255, 26, 42, 0.4),
+    inset 0 0 20px rgba(255, 26, 42, 0.15);
 }
 
 .neon-button::before {
@@ -393,22 +391,22 @@ a {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(79, 70, 229, 0.4);
+  background: rgba(255, 26, 42, 0.6);
   transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
+  transition: width 0.6s, height 0.6s;
 }
 
 .neon-button:hover {
   background: linear-gradient(
     135deg,
-    rgba(79, 70, 229, 0.3) 0%,
-    rgba(67, 56, 202, 0.25) 100%
+    rgba(255, 26, 42, 0.35) 0%,
+    rgba(204, 20, 32, 0.3) 100%
   );
   transform: translateY(-2px);
   box-shadow: 
-    0 0 30px rgba(79, 70, 229, 0.5),
+    0 0 30px rgba(255, 26, 42, 0.6),
     0 5px 20px rgba(0, 0, 0, 0.5),
-    inset 0 0 30px rgba(34, 211, 238, 0.15);
+    inset 0 0 30px rgba(255, 26, 42, 0.25);
 }
 
 .neon-button:hover::before {
@@ -420,24 +418,24 @@ a {
   transform: translateY(0);
 }
 
-/* ⚡ Luminex Electric Card */
+/* 🎮 Red Neon Card */
 .neon-card {
   position: relative;
   background: linear-gradient(
     135deg,
-    rgba(30, 41, 59, 0.9) 0%,
-    rgba(15, 23, 42, 0.95) 100%
+    rgba(26, 26, 26, 0.95) 0%,
+    rgba(10, 10, 10, 0.98) 100%
   );
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(79, 70, 229, 0.3);
-  border-radius: 20px; /* More rounded for modern look */
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 26, 42, 0.4);
+  border-radius: 16px;
   padding: 24px;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(79, 70, 229, 0.1),
-    inset 0 0 30px rgba(34, 211, 238, 0.05);
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(255, 26, 42, 0.15),
+    inset 0 0 40px rgba(255, 26, 42, 0.08);
 }
 
 .neon-card::before {
@@ -450,32 +448,41 @@ a {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--luminex-primary),
+    var(--tron-red),
     transparent
   );
-  opacity: 0.5;
+  animation: borderScan 3s linear infinite;
+}
+
+@keyframes borderScan {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .neon-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(79, 70, 229, 0.5);
+  transform: translateY(-4px);
+  border-color: rgba(255, 26, 42, 0.6);
   box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.5),
-    0 0 50px rgba(79, 70, 229, 0.2),
-    inset 0 0 40px rgba(34, 211, 238, 0.1);
+    0 8px 30px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(255, 26, 42, 0.25),
+    inset 0 0 60px rgba(255, 26, 42, 0.15);
 }
 
-/* ⚡ Luminex Electric Energy Lines */
+/* ⚡ Red Energy Lines */
 .energy-line {
   position: relative;
   height: 2px;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--luminex-primary) 50%,
+    var(--tron-red) 50%,
     transparent 100%
   );
-  box-shadow: 0 0 10px rgba(79, 70, 229, 0.8);
+  box-shadow: 0 0 10px var(--tron-red);
   animation: energyFlow 2s linear infinite;
 }
 
@@ -758,58 +765,24 @@ a {
   color: rgba(255, 26, 42, 0.5);
 }
 
-/* ⚡ Performance Optimizations - GPU Acceleration */
+/* ⚡ Performance optimizations */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* GPU acceleration for smooth animations */
-.neon-card,
-.neon-button,
-[class*="neon"],
-[class*="tron"] {
+.motion-div,
+[class*="motion"],
+[class*="animate"],
+[class*="neon"] {
   transform: translateZ(0);
-  will-change: transform, opacity;
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Optimize transitions - use transform instead of layout properties */
-.neon-card,
-.neon-button,
-button,
-a {
-  transition-property: transform, opacity, border-color, background-color;
-  transition-duration: 0.2s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth hover effects */
-.neon-card:hover,
-.neon-button:hover {
-  transform: translateZ(0) scale(1.02);
-}
-
-/* Contain layout for better performance */
-.neon-card {
-  contain: layout style paint;
-}
-
-/* Optimize backdrop blur */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-
-.backdrop-blur-lg {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.backdrop-blur-xl {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.backdrop-blur-xl,
+.backdrop-blur-2xl {
+  will-change: auto;
 }
 
 .blur-xl,
@@ -915,161 +888,5 @@ img {
     );
   pointer-events: none;
   z-index: 1;
-}
-
-/* 💠 Tron Panel Glow - Red Neon */
-.tron-panel-glow {
-  position: absolute;
-  inset: -120%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 26, 42, 0.25), transparent 55%);
-  filter: blur(80px);
-  animation: redNeonPulse 12s ease-in-out infinite;
-}
-
-/* 📱 Mobile Responsive Improvements - Better Screen Fit */
-@media (max-width: 640px) {
-  /* Better touch targets */
-  button, a[role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Improve text readability on mobile */
-  body {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    font-size: 14px;
-  }
-  
-  /* Better spacing on mobile */
-  .container,
-  .max-w-md,
-  .max-w-2xl,
-  .max-w-4xl {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* Safe area insets for notched devices */
-  .safe-area-top {
-    padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
-  }
-  
-  .safe-area-left {
-    padding-left: max(1rem, env(safe-area-inset-left, 1rem));
-  }
-  
-  .safe-area-right {
-    padding-right: max(1rem, env(safe-area-inset-right, 1rem));
-  }
-  
-  /* Reduce animation intensity on mobile for performance */
-  body::before {
-    opacity: 0.15;
-    background-size: 40px 40px;
-    animation-duration: 40s;
-  }
-  
-  body::after {
-    opacity: 0.8;
-  }
-  
-  .tron-grid {
-    opacity: 0.1;
-    background-size: 100px 100px;
-    animation-duration: 35s;
-  }
-  
-  /* Optimize cards for mobile */
-  .neon-card {
-    padding: 1rem;
-    margin: 0.5rem 0;
-  }
-  
-  /* Better font sizes on mobile */
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-  h3 { font-size: 1.125rem; }
-  
-  /* Prevent horizontal scroll */
-  * {
-    max-width: 100%;
-  }
-}
-
-/* 📱 Tablet Responsive */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .container {
-    max-width: 100%;
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-/* 🖥️ Desktop Optimizations */
-@media (min-width: 1025px) {
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-}
-
-/* 🎯 High Performance Mode for 100k+ Users */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ⚡ Performance Optimizations - Prevent Lag & Flickering */
-/* Disable will-change to prevent memory leaks and reduce flickering */
-* {
-  will-change: auto !important;
-}
-
-/* GPU acceleration for critical elements only */
-.neon-card,
-.neon-button,
-.glass-tron {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  contain: layout style;
-}
-
-/* Optimize transitions - minimal and fast */
-button,
-a,
-[role="button"] {
-  transition-property: background-color, border-color, opacity, color;
-  transition-duration: 0.15s;
-  transition-timing-function: ease-out;
-}
-
-/* Disable expensive effects and animations */
-.neon-card::before,
-.neon-button::before,
-.glass-tron::before {
-  display: none !important;
-}
-
-/* Backdrop blur already optimized above - removed duplicates */
-
-/* 🚀 Lazy Loading for Images */
-img {
-  loading: lazy;
-  decoding: async;
-  max-width: 100%;
-  height: auto;
 }
 

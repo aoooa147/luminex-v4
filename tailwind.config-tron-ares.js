@@ -8,36 +8,46 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // LUMINEX POWER APP - Electric Blue/Purple Theme
-        luminex: {
-          // Primary colors - Electric Blue/Purple
-          primary: '#4F46E5', // Indigo-600
-          'primary-light': '#6366F1', // Indigo-500
-          'primary-dark': '#4338CA', // Indigo-700
-          cyan: '#22D3EE', // Cyan-400
-          'cyan-light': '#67E8F9', // Cyan-300
-          'cyan-dark': '#06B6D4', // Cyan-600
-          // Success/Power Green
-          green: '#22C55E', // Green-500
-          'green-light': '#4ADE80', // Green-400
-          'green-dark': '#16A34A', // Green-600
-          // Accent colors
-          purple: '#A855F7', // Purple-500
-          'purple-light': '#C084FC', // Purple-400
-          'purple-dark': '#9333EA', // Purple-600
+        // TRON ARES - Red Neon Theme
+        tron: {
+          // Primary red colors
+          red: '#ff1a2a',
+          'red-bright': '#ff4757',
+          'red-dark': '#cc1420',
+          'red-neon': '#ff0066',
+          'red-light': 'rgba(255, 71, 87, 0.6)',
+          // Secondary colors (kept for variety)
+          cyan: '#00e5ff',
+          'cyan-dark': '#00a8cc',
+          'cyan-light': '#6ff6ff',
+          blue: '#0066ff',
+          'blue-dark': '#003d99',
+          'blue-light': '#4d94ff',
+          orange: '#ff6b35',
+          'orange-dark': '#cc4420',
+          'orange-light': '#ff9872',
+          purple: '#a855f7',
+          'purple-dark': '#7c3aed',
+          pink: '#ec4899',
+          'pink-dark': '#db2777',
+          // City colors
+          'city-dark': '#0a0a0a',
+          'city-gray': '#1a1a1a',
+          'city-gray-light': '#2a2a2a',
+          'city-gray-muted': '#3a3a3a',
         },
-        // Background colors - Dark theme
+        // Background colors - Tron Ares dark city
         bg: {
-          primary: '#050816', // Main background
-          secondary: '#0F172A', // Slate-900
-          tertiary: '#1E293B', // Slate-800
-          card: 'rgba(30, 41, 59, 0.85)', // Card with transparency
+          primary: '#000000',
+          secondary: '#0a0a0a',
+          tertiary: '#1a1a1a',
+          card: 'rgba(26, 26, 26, 0.85)',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'SF Pro Display', 'Prompt', 'system-ui', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
-        prompt: ['Prompt', 'sans-serif'],
+        orbitron: ['Orbitron', 'sans-serif'],
+        exo: ['Exo 2', 'sans-serif'],
+        jetbrains: ['JetBrains Mono', 'monospace'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

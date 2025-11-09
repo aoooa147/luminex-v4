@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Orbitron, Exo_2, JetBrains_Mono } from 'next/font/google';
+import { Inter, Prompt } from 'next/font/google';
 import { MiniKitProvider } from '@worldcoin/minikit-js/minikit-provider';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import BrandStyle from '@/components/BrandStyle';
@@ -11,22 +11,17 @@ if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
   require('../sentry.client.config');
 }
 
-// Tron-inspired fonts
-const orbitron = Orbitron({ 
-  subsets: ['latin'],
-  variable: '--font-orbitron',
+// Luminex Power App fonts - Clean, modern
+const inter = Inter({ 
+  subsets: ['latin', 'thai'],
+  variable: '--font-inter',
   display: 'swap',
 });
 
-const exo2 = Exo_2({ 
-  subsets: ['latin'],
-  variable: '--font-exo',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({ 
-  subsets: ['latin'],
-  variable: '--font-jetbrains',
+const prompt = Prompt({ 
+  subsets: ['latin', 'thai'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-prompt',
   display: 'swap',
 });
 
@@ -84,7 +79,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://i.postimg.cc" />
         {/* Tron fonts are loaded via next/font/google */}
       </head>
-      <body className={`${orbitron.variable} ${exo2.variable} ${jetbrainsMono.variable} font-orbitron`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${prompt.variable} font-sans`} suppressHydrationWarning>
         <GoogleAnalytics />
         <ErrorBoundary>
           <MiniKitProvider>

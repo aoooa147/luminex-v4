@@ -1,11 +1,11 @@
 'use client';
 
 import React, { memo } from 'react';
-import { PiggyBank, Zap, UserPlus, Gamepad2, Shield } from 'lucide-react';
+import { Home, Zap, Gamepad2, UserPlus, User, Shield } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'staking' | 'membership' | 'referral' | 'game';
-  setActiveTab: (tab: 'staking' | 'membership' | 'referral' | 'game') => void;
+  activeTab: 'home' | 'power' | 'game' | 'friends' | 'profile';
+  setActiveTab: (tab: 'home' | 'power' | 'game' | 'friends' | 'profile') => void;
   isAdmin: boolean;
 }
 
@@ -16,94 +16,103 @@ const BottomNav = memo(({
 }: BottomNavProps) => {
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 glass-tron border-t border-tron-red/30 z-40 safe-area-bottom" 
+      className="fixed bottom-0 left-0 right-0 glass-tron border-t z-40 safe-area-bottom" 
       style={{
-        background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(10, 10, 15, 0.95) 100%)',
+        background: 'linear-gradient(180deg, rgba(5, 8, 22, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 26, 42, 0.15)',
+        borderTopColor: 'rgba(79, 70, 229, 0.2)',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(79, 70, 229, 0.1)',
         paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
         transform: 'translateZ(0)',
         contain: 'layout style',
       }}
     >
       <div className="max-w-md mx-auto px-4 py-3 flex justify-around">
+        {/* Home Tab */}
         <button
-          onClick={() => setActiveTab('staking')}
-          aria-label="Staking tab"
-          aria-pressed={activeTab === 'staking'}
-          className={`flex flex-col items-center space-y-1 relative font-orbitron min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'staking' ? 'text-tron-red' : 'text-gray-400'}`}
+          onClick={() => setActiveTab('home')}
+          aria-label="Home tab"
+          aria-pressed={activeTab === 'home'}
+          className={`flex flex-col items-center space-y-1 relative min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'home' ? 'text-luminex-primary' : 'text-gray-400'}`}
         >
-          {activeTab === 'staking' && (
+          {activeTab === 'home' && (
             <div
-              className="absolute -inset-2 bg-tron-red/20 rounded-2xl"
-              style={{ boxShadow: '0 0 15px rgba(255, 26, 42, 0.3)' }}
+              className="absolute -inset-2 bg-luminex-primary/20 rounded-2xl"
+              style={{ boxShadow: '0 0 15px rgba(79, 70, 229, 0.3)' }}
             />
           )}
-          <PiggyBank className={`w-6 h-6 relative z-10 ${activeTab === 'staking' ? 'drop-shadow-[0_0_6px_rgba(255,26,42,0.6)]' : ''}`} aria-hidden="true" />
-          <span className="text-xs font-bold relative z-10">Staking</span>
+          <Home className={`w-6 h-6 relative z-10 ${activeTab === 'home' ? 'drop-shadow-[0_0_6px_rgba(79,70,229,0.6)]' : ''}`} aria-hidden="true" />
+          <span className="text-xs font-semibold relative z-10">Home</span>
         </button>
+
+        {/* Power Tab */}
         <button
-          onClick={() => setActiveTab('membership')}
-          aria-label="Power/Membership tab"
-          aria-pressed={activeTab === 'membership'}
-          className={`flex flex-col items-center space-y-1 relative font-orbitron min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'membership' ? 'text-tron-red' : 'text-gray-400'}`}
+          onClick={() => setActiveTab('power')}
+          aria-label="Power tab"
+          aria-pressed={activeTab === 'power'}
+          className={`flex flex-col items-center space-y-1 relative min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'power' ? 'text-luminex-cyan' : 'text-gray-400'}`}
         >
-          {activeTab === 'membership' && (
+          {activeTab === 'power' && (
             <div
-              className="absolute -inset-2 bg-tron-red/20 rounded-2xl"
-              style={{ boxShadow: '0 0 15px rgba(255, 26, 42, 0.3)' }}
+              className="absolute -inset-2 bg-luminex-cyan/20 rounded-2xl"
+              style={{ boxShadow: '0 0 15px rgba(34, 211, 238, 0.3)' }}
             />
           )}
-          <Zap className={`w-6 h-6 relative z-10 ${activeTab === 'membership' ? 'drop-shadow-[0_0_6px_rgba(255,26,42,0.6)]' : ''}`} aria-hidden="true" />
-          <span className="text-xs font-bold relative z-10">Power</span>
+          <Zap className={`w-6 h-6 relative z-10 ${activeTab === 'power' ? 'drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}`} aria-hidden="true" />
+          <span className="text-xs font-semibold relative z-10">Power</span>
         </button>
-        <button
-          onClick={() => setActiveTab('referral')}
-          aria-label="Referral tab"
-          aria-pressed={activeTab === 'referral'}
-          className={`flex flex-col items-center space-y-1 relative font-orbitron min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'referral' ? 'text-tron-purple' : 'text-gray-400'}`}
-        >
-          {activeTab === 'referral' && (
-            <div
-              className="absolute -inset-2 bg-tron-purple/20 rounded-2xl"
-              style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.25)' }}
-            />
-          )}
-          <UserPlus className={`w-6 h-6 relative z-10 ${activeTab === 'referral' ? 'drop-shadow-[0_0_6px_var(--tron-purple)]' : ''}`} aria-hidden="true" />
-          <span className="text-xs font-bold relative z-10">Referral</span>
-        </button>
+
+        {/* Game Tab */}
         <button
           onClick={() => setActiveTab('game')}
           aria-label="Game tab"
           aria-pressed={activeTab === 'game'}
-          className={`flex flex-col items-center space-y-1 relative font-orbitron min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'game' ? 'text-tron-red' : 'text-gray-400'}`}
+          className={`flex flex-col items-center space-y-1 relative min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'game' ? 'text-luminex-purple' : 'text-gray-400'}`}
         >
           {activeTab === 'game' && (
             <div
-              className="absolute -inset-2 bg-tron-red/20 rounded-2xl"
-              style={{ boxShadow: '0 0 15px rgba(255, 26, 42, 0.3)' }}
+              className="absolute -inset-2 bg-luminex-purple/20 rounded-2xl"
+              style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)' }}
             />
           )}
-          <Gamepad2 className={`w-6 h-6 relative z-10 ${activeTab === 'game' ? 'drop-shadow-[0_0_6px_rgba(255,26,42,0.6)]' : ''}`} aria-hidden="true" />
-          <span className="text-xs font-bold relative z-10">Game</span>
+          <Gamepad2 className={`w-6 h-6 relative z-10 ${activeTab === 'game' ? 'drop-shadow-[0_0_6px_rgba(168,85,247,0.6)]' : ''}`} aria-hidden="true" />
+          <span className="text-xs font-semibold relative z-10">Game</span>
         </button>
-        {/* Admin Button - Only visible to admin users */}
-        {isAdmin && (
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.location.assign('/admin');
-              }
-            }}
-            aria-label="Admin dashboard"
-            className="flex flex-col items-center space-y-1 relative text-tron-orange hover:text-tron-orange-light font-orbitron transition-colors duration-150"
-          >
-            <Shield className="w-6 h-6 relative z-10 drop-shadow-[0_0_6px_var(--tron-orange)]" aria-hidden="true" />
-            <span className="text-xs font-bold relative z-10">Admin</span>
-          </button>
-        )}
+
+        {/* Friends Tab */}
+        <button
+          onClick={() => setActiveTab('friends')}
+          aria-label="Friends tab"
+          aria-pressed={activeTab === 'friends'}
+          className={`flex flex-col items-center space-y-1 relative min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'friends' ? 'text-luminex-green' : 'text-gray-400'}`}
+        >
+          {activeTab === 'friends' && (
+            <div
+              className="absolute -inset-2 bg-luminex-green/20 rounded-2xl"
+              style={{ boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)' }}
+            />
+          )}
+          <UserPlus className={`w-6 h-6 relative z-10 ${activeTab === 'friends' ? 'drop-shadow-[0_0_6px_rgba(34,197,94,0.6)]' : ''}`} aria-hidden="true" />
+          <span className="text-xs font-semibold relative z-10">Friends</span>
+        </button>
+
+        {/* Profile Tab */}
+        <button
+          onClick={() => setActiveTab('profile')}
+          aria-label="Profile tab"
+          aria-pressed={activeTab === 'profile'}
+          className={`flex flex-col items-center space-y-1 relative min-h-[44px] min-w-[44px] transition-colors duration-150 ${activeTab === 'profile' ? 'text-luminex-primary' : 'text-gray-400'}`}
+        >
+          {activeTab === 'profile' && (
+            <div
+              className="absolute -inset-2 bg-luminex-primary/20 rounded-2xl"
+              style={{ boxShadow: '0 0 15px rgba(79, 70, 229, 0.3)' }}
+            />
+          )}
+          <User className={`w-6 h-6 relative z-10 ${activeTab === 'profile' ? 'drop-shadow-[0_0_6px_rgba(79,70,229,0.6)]' : ''}`} aria-hidden="true" />
+          <span className="text-xs font-semibold relative z-10">Profile</span>
+        </button>
       </div>
     </div>
   );
