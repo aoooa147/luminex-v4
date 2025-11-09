@@ -264,10 +264,11 @@ export default function WorldIDVerification({ onVerify }: WorldIDVerificationPro
                       if (getData?.success && getData?.username && typeof getData.username === 'string') {
                         const retrievedUsername = getData.username.trim();
                         if (retrievedUsername) {
+                          // Use retrievedUsername directly to avoid TypeScript type issues
                           foundUsername = retrievedUsername;
-                          sessionStorage.setItem('userName', foundUsername);
-                          localStorage.setItem('userName', foundUsername);
-                          console.log('✅ Username retrieved from server storage (fallback):', foundUsername);
+                          sessionStorage.setItem('userName', retrievedUsername);
+                          localStorage.setItem('userName', retrievedUsername);
+                          console.log('✅ Username retrieved from server storage (fallback):', retrievedUsername);
                         }
                       }
                     }
