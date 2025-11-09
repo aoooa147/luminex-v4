@@ -99,7 +99,7 @@ export const PowerTab = memo(function PowerTab({
           <button
             onClick={async () => {
               if (!currentPower) {
-                await handlePurchasePower('basic');
+                await handlePurchasePower('spark');
               }
             }}
             disabled={isPurchasingPower}
