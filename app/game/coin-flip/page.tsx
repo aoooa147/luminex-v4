@@ -76,20 +76,34 @@ export default function CoinFlipPage() {
   }, []);
 
   async function checkCooldown() {
-    if (!address) return;
+    if (!address) {
+      console.log('Skipping cooldown check - no address');
+      return;
+    }
+    
     try {
+      console.log('Checking cooldown:', { address, gameId: GAME_ID });
       const res = await fetch('/api/game/cooldown/check', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ address, gameId: GAME_ID })
       });
+      
+      if (!res.ok) {
+        console.error('Cooldown check failed:', res.status, await res.text().catch(() => ''));
+        return;
+      }
+      
       const data = await res.json();
+      console.log('Cooldown check response:', data);
+      
       if (data.ok) {
         setIsOnCooldown(data.isOnCooldown);
         setCooldownRemaining({ hours: data.remainingHours, minutes: data.remainingMinutes });
       }
     } catch (e) {
-      // Silent error handling
+      console.error('Cooldown check error:', e);
+      // Silent error handling - don't block UI
     }
   }
 
