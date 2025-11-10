@@ -81,7 +81,7 @@ const StakingTab = memo(({
   const [faucetCooldown, setFaucetCooldown] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
   const [canClaimFaucet, setCanClaimFaucet] = useState(false);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
-  // const { sendTransaction } = useMiniKit(); // Disabled - MiniKit SDK has map error bug
+  const { receiveReward } = useMiniKit(); // Use receiveReward to show authorization popup
   
   // Default fallback pools
   const DEFAULT_POOLS = React.useMemo(() => [
@@ -166,11 +166,60 @@ const StakingTab = memo(({
       }
 
       const reference = initData.reference;
+      const faucetAmount = initData.amount || 1; // 1 LUX
       
-      // Step 2: Confirm directly with backend (NO MiniKit - SDK has unfixable map error)
-      // User is already verified via World ID, so this is secure
-      // Backend will distribute reward via smart contract
-      const transactionId = `faucet_${reference}_${Date.now()}`;
+      // Step 2: Show authorization transaction popup using MiniKit receiveReward
+      // This will display "Authorize Transaction" popup with token amount (like "รับ 1 LUX")
+      console.log('🚀 Faucet: Calling receiveReward to show authorization popup', {
+        reference,
+        contractAddress: STAKING_CONTRACT_ADDRESS,
+        amount: faucetAmount.toString(),
+      });
+      
+      let payload: any = null;
+      try {
+        // Use receiveReward to show token amount in popup
+        // World App should display "Authorize Transaction" popup with token amount
+        console.log('📱 Faucet: Calling MiniKit receiveReward...');
+        payload = await receiveReward(
+          reference,
+          STAKING_CONTRACT_ADDRESS as `0x${string}`,
+          faucetAmount.toString(), // Amount to display in popup (1 LUX)
+          'WLD' // Use WLD format (MiniKit may not support LUX directly, but amount will be displayed)
+        );
+        console.log('✅ Faucet: receiveReward completed, payload:', payload);
+      } catch (e: any) {
+        console.error('❌ Faucet: receiveReward error:', e);
+        if (e?.type === 'user_cancelled') {
+          console.log('👤 Faucet: User cancelled the authorization');
+          setIsClaimingFaucet(false);
+          return;
+        }
+        // Log the error for debugging
+        console.error('Full error details:', {
+          message: e?.message,
+          type: e?.type,
+          code: e?.code,
+          error_code: e?.error_code,
+          stack: e?.stack,
+        });
+        alert(e?.message || 'Failed to authorize faucet claim. Please try again.');
+        setIsClaimingFaucet(false);
+        return;
+      }
+      
+      console.log('📋 Faucet: Step 2 completed, payload received:', {
+        hasTransactionId: !!payload?.transaction_id,
+        transactionId: payload?.transaction_id,
+        reference: payload?.reference,
+      });
+      
+      // Step 3: Confirm transaction with backend
+      if (!payload?.transaction_id) {
+        alert('Transaction was cancelled. Please try again.');
+        setIsClaimingFaucet(false);
+        return;
+      }
       
       const confirmRes = await fetch('/api/faucet/confirm', {
         method: 'POST',
@@ -178,7 +227,7 @@ const StakingTab = memo(({
         body: JSON.stringify({ 
           payload: {
             reference,
-            transaction_id: transactionId
+            transaction_id: payload.transaction_id
           }
         })
       });
@@ -186,7 +235,7 @@ const StakingTab = memo(({
       const confirmData = await confirmRes.json();
       
       if (confirmData && confirmData.ok) {
-        alert(`Successfully claimed ${initData.amount || 1} LUX!`);
+        alert(`Successfully claimed ${faucetAmount} LUX!`);
         setCanClaimFaucet(false);
         setFaucetCooldown({ hours: 24, minutes: 0 });
         // Refresh faucet status after successful claim

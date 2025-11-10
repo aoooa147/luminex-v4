@@ -18,16 +18,27 @@ const STAKING_ABI = [
 
 // Get provider and signer for contract interaction
 function getProviderAndSigner() {
-  const rpcUrl = process.env.WORLDCHAIN_RPC_URL || process.env.NEXT_PUBLIC_WALLET_RPC_URL;
-  if (!rpcUrl) {
-    throw new Error('WORLDCHAIN_RPC_URL or NEXT_PUBLIC_WALLET_RPC_URL is not set');
-  }
+  // Use fallback RPC URL if environment variable is not set
+  const rpcUrl = process.env.WORLDCHAIN_RPC_URL || 
+                 process.env.NEXT_PUBLIC_WALLET_RPC_URL || 
+                 'https://worldchain-mainnet.g.alchemy.com/public';
+  
+  logger.info('Using RPC URL for contract interaction', {
+    rpcUrl: rpcUrl.replace(/\/\/.*@/, '//***@'), // Mask credentials in logs
+    hasWorldchainRpc: !!process.env.WORLDCHAIN_RPC_URL,
+    hasWalletRpc: !!process.env.NEXT_PUBLIC_WALLET_RPC_URL,
+    usingFallback: !process.env.WORLDCHAIN_RPC_URL && !process.env.NEXT_PUBLIC_WALLET_RPC_URL,
+  }, 'faucet/confirm');
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   
   const privateKey = process.env.GAME_REWARD_DISTRIBUTOR_PRIVATE_KEY || process.env.PRIVATE_KEY;
   if (!privateKey) {
-    throw new Error('GAME_REWARD_DISTRIBUTOR_PRIVATE_KEY or PRIVATE_KEY is not set');
+    logger.error('Private key not configured', {
+      hasGameRewardDistributorKey: !!process.env.GAME_REWARD_DISTRIBUTOR_PRIVATE_KEY,
+      hasPrivateKey: !!process.env.PRIVATE_KEY,
+    }, 'faucet/confirm');
+    throw new Error('GAME_REWARD_DISTRIBUTOR_PRIVATE_KEY or PRIVATE_KEY is not set. Please configure it in .env.local');
   }
 
   const signer = new ethers.Wallet(privateKey, provider);
@@ -155,12 +166,21 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   } catch (error: any) {
     logger.error('Failed to distribute faucet reward via contract', {
       error: error.message,
+      errorStack: error.stack,
       user: claimAddress,
-      amount: FAUCET_AMOUNT.toString()
+      amount: FAUCET_AMOUNT.toString(),
+      errorType: error.constructor?.name,
     }, 'faucet/confirm');
 
     // If contract call fails, still mark as claimed in database
-    // But log the error for manual review
+    // This allows the frontend flow to complete even if backend contract distribution fails
+    // The error is logged for manual review and retry
+    // In production, you might want to queue failed distributions for retry
+    logger.warn('Contract distribution failed, but marking as claimed in database', {
+      user: claimAddress,
+      amount: FAUCET_AMOUNT.toString(),
+      error: error.message,
+    }, 'faucet/confirm');
   }
 
   // Mark as claimed in database
