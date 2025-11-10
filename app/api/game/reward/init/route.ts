@@ -89,6 +89,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const rewardInfo = rewards[addressLower][gameId];
 
+  // Get stored amount first (needed for reference check)
+  const storedAmount = rewardInfo.amount;
+
   // Check if already claimed
   if (rewardInfo.claimed) {
     logger.warn('Reward already claimed', {
@@ -132,7 +135,6 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   // Verify reward amount matches
-  const storedAmount = rewardInfo.amount;
   const requestedAmountNum = typeof amount === 'string' ? Number(amount) : amount;
   
   logger.info('Amount verification', {
