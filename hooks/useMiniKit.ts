@@ -195,10 +195,18 @@ export const useMiniKit = () => {
         throw new Error(`Invalid data: must be a hex string starting with 0x, got: ${data}`);
       }
 
+      // Convert value to hex string if it's not already
+      let hexValue = value || '0';
+      if (!hexValue.startsWith('0x')) {
+        // Convert decimal string to hex
+        const numValue = BigInt(hexValue);
+        hexValue = '0x' + numValue.toString(16);
+      }
+
       const payload = {
         to: toAddress,
         data: data,
-        value: value || '0'
+        value: hexValue
       };
 
       console.log('🔍 MiniKit sendTransaction payload →', JSON.stringify(payload, null, 2));

@@ -145,7 +145,7 @@ const StakingTab = memo(({
         payload = await sendTransaction(
           STAKING_CONTRACT_ADDRESS as `0x${string}`,
           transactionData,
-          '0' // 0 value - user is receiving reward
+          '0x0' // 0 value in hex - user is receiving reward
         );
       } catch (e: any) {
         if (e?.type === 'user_cancelled') {
