@@ -81,6 +81,7 @@ const StakingTab = memo(({
   const [faucetCooldown, setFaucetCooldown] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
   const [canClaimFaucet, setCanClaimFaucet] = useState(false);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
+  const { sendTransaction } = useMiniKit();
   
   // Default fallback pools
   const DEFAULT_POOLS = React.useMemo(() => [
@@ -166,18 +167,42 @@ const StakingTab = memo(({
 
       const reference = initData.reference;
       
-      // Step 2: Confirm directly with backend (no user authorization needed)
-      // Backend will distribute reward via smart contract automatically
-      // Generate transaction_id for tracking
-      const transactionId = `faucet_${reference}_${Date.now()}`;
-      
+      // Step 2: Request user authorization using sendTransaction
+      // According to World App docs: https://docs.world.org/mini-apps/commands/send-transaction
+      // This shows authorization popup for the transaction
+      let payload: any = null;
+      try {
+        // Send empty transaction to user's address for authorization
+        // Backend will execute the actual reward distribution
+        payload = await sendTransaction(
+          actualAddress as `0x${string}`, // User's address (they receive)
+          '0x', // Empty data
+          '0', // 0 value
+          STAKING_CONTRACT_NETWORK // Network
+        );
+      } catch (e: any) {
+        console.error('sendTransaction error:', e);
+        if (e?.type === 'user_cancelled') {
+          setIsClaimingFaucet(false);
+          return;
+        }
+        throw e;
+      }
+
+      // Step 3: Confirm with backend using transaction_id from MiniKit
+      if (!payload?.transaction_id) {
+        alert('Transaction authorization failed. Please try again.');
+        setIsClaimingFaucet(false);
+        return;
+      }
+
       const confirmRes = await fetch('/api/faucet/confirm', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ 
           payload: {
             reference,
-            transaction_id: transactionId
+            transaction_id: payload.transaction_id
           }
         })
       });
