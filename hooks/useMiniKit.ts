@@ -51,6 +51,12 @@ export const useMiniKit = () => {
         throw new Error('MiniKit is not installed. Open inside World App.');
       }
 
+      // Validate World ID configuration
+      const worldAppId = process.env.NEXT_PUBLIC_WORLD_APP_ID;
+      if (!worldAppId || worldAppId.trim() === '') {
+        throw new Error('World ID configuration error: NEXT_PUBLIC_WORLD_APP_ID is not set. Please configure it in .env.local');
+      }
+
       // Validate inputs before building payload
       if (!referenceId || typeof referenceId !== 'string' || referenceId.length < 8) {
         throw new Error('Invalid referenceId: must be a non-empty string with at least 8 characters');
@@ -62,7 +68,13 @@ export const useMiniKit = () => {
 
       // Check for zero address
       if (toAddress === '0x0000000000000000000000000000000000000000') {
-        throw new Error('Invalid toAddress: cannot use zero address. Please configure NEXT_PUBLIC_TREASURY_ADDRESS correctly.');
+        throw new Error('Invalid toAddress: cannot use zero address. Please configure NEXT_PUBLIC_TREASURY_ADDRESS correctly in .env.local');
+      }
+
+      // Validate contract address format
+      const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+      if (!isValidAddress) {
+        throw new Error(`Invalid contract address format: ${toAddress}. Please check NEXT_PUBLIC_TREASURY_ADDRESS or NEXT_PUBLIC_STAKING_CONTRACT configuration.`);
       }
 
       const safeToken = (token || 'WLD') as PayToken;
@@ -169,6 +181,24 @@ export const useMiniKit = () => {
           (e as any).originalError = err;
           throw e;
         }
+
+        // Check for configuration errors
+        if (
+          msg.includes('invalid') && (msg.includes('address') || msg.includes('contract')) ||
+          msg.includes('configuration') ||
+          code.includes('config')
+        ) {
+          const configError = new Error(
+            `Transaction failed due to configuration error. Please check:\n` +
+            `1. NEXT_PUBLIC_WORLD_APP_ID is set correctly in .env.local\n` +
+            `2. NEXT_PUBLIC_TREASURY_ADDRESS is a valid contract address\n` +
+            `3. Contract address matches your deployed contract\n` +
+            `Original error: ${err?.message || 'Unknown error'}`
+          );
+          (configError as any).type = 'configuration_error';
+          (configError as any).originalError = err;
+          throw configError;
+        }
         
         throw err;
       }
@@ -192,8 +222,25 @@ export const useMiniKit = () => {
         throw new Error('MiniKit is not installed. Open inside World App.');
       }
 
+      // Validate World ID configuration
+      const worldAppId = process.env.NEXT_PUBLIC_WORLD_APP_ID;
+      if (!worldAppId || worldAppId.trim() === '') {
+        throw new Error('World ID configuration error: NEXT_PUBLIC_WORLD_APP_ID is not set. Please configure it in .env.local');
+      }
+
       if (!toAddress || !toAddress.startsWith('0x') || toAddress.length !== 42) {
         throw new Error(`Invalid toAddress: must be a valid Ethereum address, got: ${toAddress}`);
+      }
+
+      // Check for zero address
+      if (toAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Invalid toAddress: cannot use zero address. Please configure NEXT_PUBLIC_STAKING_CONTRACT correctly in .env.local');
+      }
+
+      // Validate contract address format
+      const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+      if (!isValidAddress) {
+        throw new Error(`Invalid contract address format: ${toAddress}. Please check NEXT_PUBLIC_STAKING_CONTRACT configuration.`);
       }
 
       // Convert value to hex string if it's not already
@@ -269,6 +316,24 @@ export const useMiniKit = () => {
           (e as any).type = 'user_cancelled';
           (e as any).originalError = err;
           throw e;
+        }
+
+        // Check for configuration errors
+        if (
+          msg.includes('invalid') && (msg.includes('address') || msg.includes('contract')) ||
+          msg.includes('configuration') ||
+          code.includes('config')
+        ) {
+          const configError = new Error(
+            `Transaction failed due to configuration error. Please check:\n` +
+            `1. NEXT_PUBLIC_WORLD_APP_ID is set correctly in .env.local\n` +
+            `2. NEXT_PUBLIC_STAKING_CONTRACT is a valid contract address\n` +
+            `3. Contract address matches your deployed contract\n` +
+            `Original error: ${err?.message || 'Unknown error'}`
+          );
+          (configError as any).type = 'configuration_error';
+          (configError as any).originalError = err;
+          throw configError;
         }
         
         throw err;

@@ -220,7 +220,23 @@ export function usePower(
           return;
         }
 
-        onError?.(payError?.message || 'Payment failed');
+        // Check for configuration errors
+        if (
+          msg.includes('configuration') ||
+          msg.includes('world id') ||
+          msg.includes('next_public_world_app_id') ||
+          msg.includes('invalid contract address') ||
+          msg.includes('zero address') ||
+          (payError as any)?.type === 'configuration_error'
+        ) {
+          onError?.(
+            `Configuration error: ${payError?.message || 'Please check your World ID and contract address configuration in .env.local'}`
+          );
+          setIsPurchasingPower(false);
+          return;
+        }
+
+        onError?.(payError?.message || 'Payment failed. Please check your configuration and try again.');
       }
     } catch (error: any) {
       // Handle user cancellation
@@ -236,6 +252,24 @@ export function usePower(
         errorMsg.includes('user')
       ) {
         // User cancelled - don't show error
+        setIsPurchasingPower(false);
+        return;
+      }
+
+      // Check for configuration errors
+      if (
+        errorMsg.includes('configuration') ||
+        errorMsg.includes('world id') ||
+        errorMsg.includes('next_public_world_app_id') ||
+        errorMsg.includes('invalid contract address') ||
+        errorMsg.includes('zero address') ||
+        errorMsg.includes('treasury_address') ||
+        errorMsg.includes('staking_contract') ||
+        (error as any)?.type === 'configuration_error'
+      ) {
+        onError?.(
+          `Configuration error: ${error?.message || 'Please check your World ID and contract address configuration in .env.local. Make sure NEXT_PUBLIC_WORLD_APP_ID, NEXT_PUBLIC_TREASURY_ADDRESS, and NEXT_PUBLIC_STAKING_CONTRACT are set correctly.'}`
+        );
         setIsPurchasingPower(false);
         return;
       }
@@ -268,7 +302,7 @@ export function usePower(
       if (errorInfo) {
         onError?.(`${errorInfo.message}. ${errorInfo.solution || ''} ${errorInfo.hint ? `Hint: ${errorInfo.hint}` : ''}`);
       } else {
-        onError?.(error?.message || 'Failed to purchase power. Please try again.');
+        onError?.(error?.message || 'Failed to purchase power. Please check your configuration and try again.');
       }
     } finally {
       setIsPurchasingPower(false);
