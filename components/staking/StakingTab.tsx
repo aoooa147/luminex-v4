@@ -97,8 +97,13 @@ const StakingTab = memo(({
         
         if (res.ok) {
           const data = await res.json();
-          setCanClaimFaucet(data.canClaim);
-          setFaucetCooldown({ hours: data.remainingHours, minutes: data.remainingMinutes });
+          if (data && typeof data === 'object') {
+            setCanClaimFaucet(data.canClaim || false);
+            setFaucetCooldown({ 
+              hours: data.remainingHours || 0, 
+              minutes: data.remainingMinutes || 0 
+            });
+          }
         }
       } catch (e) {
         // Silent error
@@ -175,12 +180,37 @@ const StakingTab = memo(({
       
       const confirmData = await confirmRes.json();
       
-      if (confirmData.ok) {
-        alert(`Successfully claimed ${initData.amount} LUX!`);
+      if (confirmData && confirmData.ok) {
+        alert(`Successfully claimed ${initData.amount || 1} LUX!`);
         setCanClaimFaucet(false);
         setFaucetCooldown({ hours: 24, minutes: 0 });
+        // Refresh faucet status after successful claim
+        setTimeout(() => {
+          const checkFaucet = async () => {
+            try {
+              const res = await fetch('/api/faucet/check', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ address: actualAddress })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                  setCanClaimFaucet(data.canClaim || false);
+                  setFaucetCooldown({ 
+                    hours: data.remainingHours || 0, 
+                    minutes: data.remainingMinutes || 0 
+                  });
+                }
+              }
+            } catch (e) {
+              // Silent error
+            }
+          };
+          checkFaucet();
+        }, 1000);
       } else {
-        alert(confirmData.error || confirmData.message || 'Failed to claim faucet reward. Please try again.');
+        alert(confirmData?.error || confirmData?.message || 'Failed to claim faucet reward. Please try again.');
       }
     } catch (error: any) {
       alert(error?.message || 'Failed to claim faucet reward. Please try again.');
