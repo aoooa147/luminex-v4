@@ -251,21 +251,22 @@ export const useMiniKit = () => {
         hexValue = '0x' + numValue.toString(16);
       }
 
-      // MiniKit SDK v1.9.8+ requires actions array format (not transaction)
-      // For authorization-only transactions (e.g., faucet claims, game rewards)
-      // We create a simple action with address, value, and optional data
-      const action: any = {
+      // MiniKit SDK requires proper transaction format
+      // Build transaction object with all required fields
+      const transaction: any = {
         to: toAddress,
         value: hexValue,
       };
       
       // Only include data if it's provided and not empty
       if (data && data !== '0x' && data.length > 2) {
-        action.data = data;
+        transaction.data = data;
       }
 
+      // Create payload with transaction (not actions array)
+      // This prevents the map error in MiniKit SDK
       const payload: any = {
-        actions: [action],
+        transaction: transaction,
       };
       
       // Include network if specified (defaults to worldchain)
