@@ -251,8 +251,11 @@ export const useMiniKit = () => {
         hexValue = '0x' + numValue.toString(16);
       }
 
-      // MiniKit SDK v1.9.8+ requires specific format
-      // Build action object (single transaction)
+      // MiniKit SDK v1.9.8 workaround for map error
+      // The SDK has a bug where it tries to map over undefined
+      // Solution: Use the exact format that SDK expects
+      
+      // Build action object
       const action: any = {
         to: toAddress,
         value: hexValue,
@@ -263,24 +266,20 @@ export const useMiniKit = () => {
         action.data = data;
       }
 
-      // IMPORTANT: MiniKit SDK expects actions to be an array
-      // But we need to ensure it's properly initialized to prevent map error
-      const actions = [action];
-      
-      // Validate actions array before sending
-      if (!Array.isArray(actions) || actions.length === 0) {
-        throw new Error('Invalid actions array');
-      }
-
-      // Create payload with properly initialized actions array
+      // Create payload - use the format that works with SDK v1.9.8
+      // IMPORTANT: Some SDK versions have issues with actions array
+      // We'll use a format that's more compatible
       const payload: any = {
-        actions: actions,
+        // Use single transaction format (not actions array)
+        // This bypasses the map error in SDK
+        to: toAddress,
+        value: hexValue,
         network: network || 'worldchain',
       };
       
-      // Double check payload structure
-      if (!payload.actions || !Array.isArray(payload.actions)) {
-        throw new Error('Payload actions must be an array');
+      // Add data if present
+      if (data && data !== '0x' && data.length > 2) {
+        payload.data = data;
       }
 
       console.log('🔍 MiniKit sendTransaction payload (new format) →', JSON.stringify(payload, null, 2));
