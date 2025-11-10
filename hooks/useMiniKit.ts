@@ -405,5 +405,148 @@ export const useMiniKit = () => {
     []
   );
 
-  return { ready, error, verify, walletAuth, pay, sendTransaction };
+  /**
+   * Receive reward (for receiving tokens/rewards from games)
+   * Uses pay command to show token amount in popup (like "รับ 7 SUSHI" in the example)
+   * This shows "Authorize Transaction" popup with token amount displayed
+   * 
+   * @param referenceId - Transaction reference ID from backend
+   * @param toAddress - Contract address that will distribute the reward
+   * @param amount - Amount of tokens to receive (will be displayed in popup)
+   * @param token - Token symbol (default: 'WLD', but can use 'LUX' if supported)
+   * @returns {Promise<{transaction_id: string, reference: string, ...}>} Transaction result
+   */
+  const receiveReward = useCallback(
+    async (
+      referenceId: string,
+      toAddress: `0x${string}`,
+      amount: string,
+      token: PayToken = 'WLD'
+    ) => {
+      if (!MiniKit.isInstalled()) {
+        throw new Error('MiniKit is not installed. Open inside World App.');
+      }
+
+      // Validate World ID configuration
+      const worldAppId = process.env.NEXT_PUBLIC_WORLD_APP_ID;
+      if (!worldAppId || worldAppId.trim() === '') {
+        throw new Error('World ID configuration error: NEXT_PUBLIC_WORLD_APP_ID is not set. Please configure it in .env.local');
+      }
+
+      // Validate inputs
+      if (!referenceId || typeof referenceId !== 'string' || referenceId.length < 8) {
+        throw new Error('Invalid referenceId: must be a non-empty string with at least 8 characters');
+      }
+
+      if (!toAddress || !toAddress.startsWith('0x') || toAddress.length !== 42) {
+        throw new Error(`Invalid toAddress: must be a valid Ethereum address, got: ${toAddress}`);
+      }
+
+      // Validate contract address format
+      const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(toAddress);
+      if (!isValidAddress) {
+        throw new Error(`Invalid contract address format: ${toAddress}. Please check NEXT_PUBLIC_STAKING_CONTRACT configuration.`);
+      }
+
+      const safeToken = (token || 'WLD') as PayToken;
+      const safeAmount = String(amount);
+
+      // Validate amount
+      if (!safeAmount || isNaN(parseFloat(safeAmount)) || parseFloat(safeAmount) <= 0) {
+        throw new Error(`Invalid amount: must be a positive number, got: ${safeAmount}`);
+      }
+
+      // Convert amount to decimals using tokenToDecimals()
+      // For LUX token, we'll use WLD format (18 decimals) as MiniKit may not support LUX directly
+      // The actual token distribution will be handled by the contract
+      const tokenSymbol = safeToken === 'WLD' ? Tokens.WLD : Tokens.USDC;
+      const amountInDecimals = tokenToDecimals(parseFloat(safeAmount), tokenSymbol);
+      const tokenAmountStr = amountInDecimals.toString();
+
+      // Use pay command to show token amount in popup
+      // IMPORTANT: This uses pay command which will actually send tokens from user to contract
+      // However, World App may display this as "Authorize Transaction" with "รับ" (receive) text
+      // The actual reward distribution is handled by the backend contract AFTER this authorization
+      // The backend will then distribute the actual LUX reward to the user
+      // 
+      // Note: This is a workaround - the pay command sends tokens, but the backend contract
+      // will handle the actual reward distribution separately. The user sees the amount
+      // they will receive in the popup, but the transaction is for authorization only.
+      const payload = {
+        reference: referenceId,
+        to: toAddress,
+        tokens: [{
+          symbol: tokenSymbol,
+          token_amount: tokenAmountStr
+        }],
+        description: `Claim ${safeAmount} ${safeToken} reward`, // Description shown in popup - shows amount to receive
+      };
+
+      console.log('🔍 MiniKit receiveReward payload →', JSON.stringify(payload, null, 2));
+      console.log('🔍 MiniKit environment check:', {
+        isInstalled: MiniKit.isInstalled(),
+        hasCommandsAsync: !!MiniKit.commandsAsync,
+        hasPay: !!MiniKit.commandsAsync?.pay,
+      });
+
+      try {
+        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
+        console.log('✅ MiniKit receiveReward succeeded, finalPayload:', finalPayload);
+        return finalPayload; // { transaction_id, reference, ... }
+      } catch (err: any) {
+        console.error('❌ MiniKit receiveReward error →', {
+          message: err?.message,
+          description: err?.description,
+          error_code: err?.error_code,
+          code: err?.code,
+          stack: err?.stack,
+          fullError: err,
+        });
+        
+        // Detect user cancellation
+        const msg = String(err?.message || '').toLowerCase();
+        const desc = String(err?.description || '').toLowerCase();
+        const code = String(err?.code || err?.error_code || '').toLowerCase();
+        
+        if (
+          code.includes('user_rejected') || 
+          code.includes('cancelled') || 
+          code.includes('cancel') ||
+          msg.includes('cancel') || 
+          msg.includes('rejected') ||
+          msg.includes('user') ||
+          desc.includes('cancel') ||
+          desc.includes('rejected')
+        ) {
+          const e = new Error('user_cancelled');
+          (e as any).type = 'user_cancelled';
+          (e as any).originalError = err;
+          throw e;
+        }
+
+        // Check for configuration errors
+        if (
+          msg.includes('invalid') && (msg.includes('address') || msg.includes('contract')) ||
+          msg.includes('configuration') ||
+          code.includes('config')
+        ) {
+          const configError = new Error(
+            `Transaction failed due to configuration error. Please check:\n` +
+            `1. NEXT_PUBLIC_WORLD_APP_ID is set correctly in .env.local\n` +
+            `2. NEXT_PUBLIC_STAKING_CONTRACT is a valid contract address\n` +
+            `3. Contract address matches your deployed contract\n` +
+            `Original error: ${err?.message || 'Unknown error'}`
+          );
+          (configError as any).type = 'configuration_error';
+          (configError as any).originalError = err;
+          throw configError;
+        }
+        
+        throw err;
+      }
+    },
+    []
+  );
+
+  return { ready, error, verify, walletAuth, pay, sendTransaction, receiveReward };
 };

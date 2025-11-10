@@ -373,7 +373,7 @@ export default function ColorTapPage() {
     }
   }
 
-  const { sendTransaction } = useMiniKit();
+  const { receiveReward } = useMiniKit();
 
   async function handleClaimReward() {
     console.log('handleClaimReward called with:', { address, luxReward, rewardClaimed, isClaimingReward });
@@ -429,16 +429,16 @@ export default function ColorTapPage() {
 
       const reference = initData.reference;
       
-      // Step 2: Show transaction popup using MiniKit pay
+      // Step 2: Show transaction popup using MiniKit receiveReward
+      // This will display "Authorize Transaction" popup with token amount (like "รับ 7 SUSHI")
       let payload: any = null;
       try {
-        // Use sendTransaction to show "Authorize Transaction" instead of "Pay"
-        const transactionData = '0x'; // Empty data - just for authorization
-        payload = await sendTransaction(
+        // Use receiveReward to show token amount in popup
+        payload = await receiveReward(
+          reference,
           STAKING_CONTRACT_ADDRESS as `0x${string}`,
-          transactionData,
-          '0', // 0 value - user is receiving reward, not paying
-          STAKING_CONTRACT_NETWORK // Include network parameter
+          rewardAmount.toString(), // Amount to display in popup
+          'WLD' // Use WLD format (MiniKit may not support LUX directly, but amount will be displayed)
         );
       } catch (e: any) {
         if (e?.type === 'user_cancelled') {

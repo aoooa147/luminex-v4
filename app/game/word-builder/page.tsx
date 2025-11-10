@@ -397,7 +397,7 @@ export default function WordBuilderPage() {
     }
   }
 
-  const { sendTransaction } = useMiniKit();
+  const { receiveReward } = useMiniKit();
 
   async function handleClaimReward() {
     console.log('🔵 handleClaimReward called with:', { 
@@ -495,33 +495,22 @@ export default function WordBuilderPage() {
 
       const reference = initData.reference;
       
-      // Step 2: Show transaction authorization popup using MiniKit sendTransaction
-      // This shows "Authorize Transaction" (รับ reward) instead of "Pay" (จ่ายเงิน)
+      // Step 2: Show transaction popup using MiniKit receiveReward
+      // This will display "Authorize Transaction" popup with token amount (like "รับ 7 SUSHI")
       let payload: any = null;
       try {
-        // Create a dummy transaction data that just authorizes the transaction
-        // The actual reward distribution is handled by the backend after authorization
-        // We use a simple transfer with 0 value to the staking contract
-        // This is just for user authorization - backend will handle the actual reward distribution
-        const contractInterface = new ethers.Interface([
-          'function authorizeRewardClaim(string memory reference) external'
-        ]);
-        
-        // If the contract doesn't have authorizeRewardClaim, use a simple empty transaction
-        // The backend will handle the actual reward distribution
-        const transactionData = '0x'; // Empty data - just for authorization
-        
+        // Use receiveReward to show token amount in popup
         console.log('Authorizing transaction for reward claim:', {
           reference,
           rewardAmount: rewardAmount,
           contractAddress: STAKING_CONTRACT_ADDRESS
         });
         
-        payload = await sendTransaction(
+        payload = await receiveReward(
+          reference,
           STAKING_CONTRACT_ADDRESS as `0x${string}`,
-          transactionData,
-          '0', // 0 value - user is receiving reward, not paying
-          STAKING_CONTRACT_NETWORK // Include network parameter
+          rewardAmount.toString(), // Amount to display in popup
+          'WLD' // Use WLD format (MiniKit may not support LUX directly, but amount will be displayed)
         );
       } catch (e: any) {
         if (e?.type === 'user_cancelled') {

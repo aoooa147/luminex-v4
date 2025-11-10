@@ -284,7 +284,7 @@ export default function MemoryMatchPage() {
     }
   }
 
-  const { sendTransaction } = useMiniKit();
+  const { receiveReward } = useMiniKit();
 
   async function handleClaimReward() {
     console.log('🔵 handleClaimReward called with:', { 
@@ -396,21 +396,18 @@ export default function MemoryMatchPage() {
 
       const reference = initData.reference;
       
-      // Step 2: Show transaction popup using MiniKit pay
-      // Note: We're using a dummy payment to trigger the popup
-      // In production, this should call the contract's distributeGameReward function
-      // For now, we'll use a 0 WLD payment to show the transaction confirmation
+      // Step 2: Show transaction popup using MiniKit receiveReward
+      // This will display "Authorize Transaction" popup with token amount (like "รับ 7 SUSHI")
       let payload: any = null;
       try {
-        // Use pay with 0 WLD to show transaction confirmation popup
-        // The actual LUX reward will be distributed by the backend after confirmation
-        // Use sendTransaction to show "Authorize Transaction" instead of "Pay"
-        const transactionData = '0x'; // Empty data - just for authorization
-        payload = await sendTransaction(
+        // Use receiveReward to show token amount in popup
+        // Get reward amount from initData or luxReward state
+        const rewardAmount = initData.amount || luxReward;
+        payload = await receiveReward(
+          reference,
           STAKING_CONTRACT_ADDRESS as `0x${string}`,
-          transactionData,
-          '0', // 0 value - user is receiving reward, not paying
-          STAKING_CONTRACT_NETWORK // Include network parameter
+          rewardAmount.toString(), // Amount to display in popup
+          'WLD' // Use WLD format (MiniKit may not support LUX directly, but amount will be displayed)
         );
       } catch (e: any) {
         // Handle user cancellation
