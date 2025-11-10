@@ -347,26 +347,29 @@ export default function WordBuilderPage() {
       if (rewardData.ok) {
         // Validate reward amount from API
         const rewardAmount = rewardData.luxReward;
+        console.log('Reward API response:', { rewardData, rewardAmount, type: typeof rewardAmount });
+        
         if (!rewardAmount || rewardAmount === 0 || !Number.isFinite(rewardAmount)) {
-          console.error('Invalid reward amount from API:', rewardAmount);
+          console.error('Invalid reward amount from API:', { rewardAmount, type: typeof rewardAmount, rewardData });
           alert(`Invalid reward amount received: ${rewardAmount}. Please try again.`);
-          setLuxReward(0);
+          // Don't set to 0 - keep existing value or set to null
           return;
         }
         
         // Give full reward as calculated
-        console.log('Setting luxReward to:', rewardAmount);
-        setLuxReward(rewardAmount);
+        console.log('✅ Setting luxReward to:', rewardAmount, 'Type:', typeof rewardAmount);
+        setLuxReward(Number(rewardAmount)); // Ensure it's a number
         setRewardClaimed(false); // User needs to claim manually
+        console.log('✅ luxReward state updated to:', rewardAmount);
       } else {
-        // If cooldown or error, show message
-        console.error('Reward API error:', rewardData.error);
+        // If cooldown or error, show message but DON'T reset luxReward if it already has a value
+        console.error('Reward API error:', rewardData.error, rewardData);
         if (rewardData.error === 'COOLDOWN_ACTIVE') {
           alert('You are still on cooldown. Please wait 24 hours.');
-          setLuxReward(0);
+          // Don't reset luxReward - user might have a valid reward from previous session
         } else {
           alert(rewardData.error || 'Failed to calculate reward. Please try again.');
-          setLuxReward(0);
+          // Don't reset luxReward - keep existing value
         }
       }
       
@@ -383,10 +386,42 @@ export default function WordBuilderPage() {
   const { sendTransaction } = useMiniKit();
 
   async function handleClaimReward() {
-    console.log('handleClaimReward called with:', { address, luxReward, rewardClaimed, isClaimingReward });
+    console.log('🔵 handleClaimReward called with:', { 
+      address, 
+      luxReward, 
+      rewardClaimed, 
+      isClaimingReward,
+      luxRewardType: typeof luxReward,
+      luxRewardValue: luxReward
+    });
     
-    if (!address || !luxReward || luxReward === 0 || rewardClaimed || isClaimingReward) {
-      console.error('Cannot claim reward:', { address, luxReward, rewardClaimed, isClaimingReward });
+    if (!address) {
+      console.error('❌ No address');
+      alert('Please connect your wallet first.');
+      return;
+    }
+    
+    if (rewardClaimed) {
+      console.error('❌ Reward already claimed');
+      alert('Reward already claimed.');
+      return;
+    }
+    
+    if (isClaimingReward) {
+      console.error('❌ Already claiming');
+      return;
+    }
+    
+    // Validate luxReward - check for null, undefined, or 0
+    if (luxReward === null || luxReward === undefined) {
+      console.error('❌ luxReward is null/undefined');
+      alert('No reward available. Please complete a game first.');
+      return;
+    }
+    
+    if (luxReward === 0) {
+      console.error('❌ luxReward is 0');
+      alert('No reward available. Please complete a game first.');
       return;
     }
     
@@ -398,15 +433,28 @@ export default function WordBuilderPage() {
     // Validate luxReward before sending - use the actual value from state
     const rewardAmount = typeof luxReward === 'number' ? luxReward : Number(luxReward);
     
-    console.log('Validating reward amount:', { luxReward, rewardAmount, type: typeof luxReward });
+    console.log('🔵 Validating reward amount:', { 
+      luxReward, 
+      rewardAmount, 
+      luxRewardType: typeof luxReward,
+      rewardAmountType: typeof rewardAmount,
+      isFinite: Number.isFinite(rewardAmount),
+      isPositive: rewardAmount > 0
+    });
     
-    if (!rewardAmount || rewardAmount <= 0 || !Number.isFinite(rewardAmount)) {
-      console.error('Invalid luxReward value:', { luxReward, rewardAmount, type: typeof luxReward });
+    if (!Number.isFinite(rewardAmount)) {
+      console.error('❌ rewardAmount is not finite:', { luxReward, rewardAmount });
       alert(`Invalid reward amount: ${luxReward}. Please refresh and try again.`);
       return;
     }
     
-    console.log('Sending claim request with amount:', rewardAmount);
+    if (rewardAmount <= 0) {
+      console.error('❌ rewardAmount is not positive:', { luxReward, rewardAmount });
+      alert(`Invalid reward amount: ${luxReward}. Please refresh and try again.`);
+      return;
+    }
+    
+    console.log('✅ Sending claim request with amount:', rewardAmount, 'Type:', typeof rewardAmount);
     
     setIsClaimingReward(true);
     try {
