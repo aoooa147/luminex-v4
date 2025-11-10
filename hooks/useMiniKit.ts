@@ -407,8 +407,8 @@ export const useMiniKit = () => {
 
   /**
    * Receive reward (for receiving tokens/rewards from games)
-   * Uses pay command to show token amount in popup (like "รับ 7 SUSHI" in the example)
-   * This shows "Authorize Transaction" popup with token amount displayed
+   * Uses sendTransaction with pay command to show "Authorize Transaction" popup
+   * This will display authorization popup with token amount (like "รับ 7 SUSHI")
    * 
    * @param referenceId - Transaction reference ID from backend
    * @param toAddress - Contract address that will distribute the reward
@@ -456,22 +456,16 @@ export const useMiniKit = () => {
         throw new Error(`Invalid amount: must be a positive number, got: ${safeAmount}`);
       }
 
-      // Convert amount to decimals using tokenToDecimals()
-      // For LUX token, we'll use WLD format (18 decimals) as MiniKit may not support LUX directly
-      // The actual token distribution will be handled by the contract
+      // Convert amount to decimals for display
       const tokenSymbol = safeToken === 'WLD' ? Tokens.WLD : Tokens.USDC;
       const amountInDecimals = tokenToDecimals(parseFloat(safeAmount), tokenSymbol);
       const tokenAmountStr = amountInDecimals.toString();
 
-      // Use pay command to show token amount in popup
-      // IMPORTANT: This uses pay command which will actually send tokens from user to contract
-      // However, World App may display this as "Authorize Transaction" with "รับ" (receive) text
-      // The actual reward distribution is handled by the backend contract AFTER this authorization
-      // The backend will then distribute the actual LUX reward to the user
-      // 
-      // Note: This is a workaround - the pay command sends tokens, but the backend contract
-      // will handle the actual reward distribution separately. The user sees the amount
-      // they will receive in the popup, but the transaction is for authorization only.
+      // Use pay command with reference to show authorization popup
+      // World App will display "Authorize Transaction" popup with token amount
+      // The popup will show "รับ X token" (Receive X token) based on the amount
+      // NOTE: pay command shows "Pay" popup by default, but World App may show it as "Authorize Transaction"
+      // when the transaction is for receiving rewards from a contract
       const payload = {
         reference: referenceId,
         to: toAddress,
@@ -479,28 +473,82 @@ export const useMiniKit = () => {
           symbol: tokenSymbol,
           token_amount: tokenAmountStr
         }],
-        description: `Claim ${safeAmount} ${safeToken} reward`, // Description shown in popup - shows amount to receive
+        description: `Claim ${safeAmount} ${safeToken} reward`, // Description shown in popup
       };
+      
+      console.log('🎯 receiveReward: Preparing to show authorization popup', {
+        reference: referenceId,
+        toAddress,
+        amount: safeAmount,
+        token: safeToken,
+        tokenAmountStr,
+        payload: JSON.stringify(payload, null, 2),
+      });
 
-      console.log('🔍 MiniKit receiveReward payload →', JSON.stringify(payload, null, 2));
+      console.log('🔍 MiniKit receiveReward (pay command) payload →', JSON.stringify(payload, null, 2));
       console.log('🔍 MiniKit environment check:', {
         isInstalled: MiniKit.isInstalled(),
         hasCommandsAsync: !!MiniKit.commandsAsync,
         hasPay: !!MiniKit.commandsAsync?.pay,
+        referenceId,
+        amount: safeAmount,
+        token: safeToken,
+        payloadStructure: {
+          hasReference: !!payload.reference,
+          hasTo: !!payload.to,
+          hasTokens: Array.isArray(payload.tokens) && payload.tokens.length > 0,
+          tokenSymbol: payload.tokens[0]?.symbol,
+          tokenAmount: payload.tokens[0]?.token_amount,
+        },
       });
 
+      // Verify MiniKit is available before calling pay
+      if (!MiniKit.isInstalled()) {
+        const error = new Error('MiniKit is not installed. Please open this app in World App.');
+        console.error('❌ MiniKit not installed:', error);
+        throw error;
+      }
+      
+      if (!MiniKit.commandsAsync) {
+        const error = new Error('MiniKit commandsAsync is not available. Please refresh the page.');
+        console.error('❌ MiniKit commandsAsync not available:', error);
+        throw error;
+      }
+      
+      if (!MiniKit.commandsAsync.pay) {
+        const error = new Error('MiniKit pay command is not available. Please refresh the page.');
+        console.error('❌ MiniKit pay command not available:', error);
+        throw error;
+      }
+
       try {
-        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
-        console.log('✅ MiniKit receiveReward succeeded, finalPayload:', finalPayload);
+        // Use pay command - this should trigger authorization popup in World App
+        // World App will show "Authorize Transaction" popup with token amount
+        // IMPORTANT: This MUST be called in World App context for popup to appear
+        console.log('🚀 Calling MiniKit.commandsAsync.pay - popup should appear now!');
+        console.log('📱 Payload being sent:', JSON.stringify(payload, null, 2));
+        
+        // Call pay command - this should show authorization popup immediately
+        // The popup will display "Authorize Transaction" with token amount
+        const result = await MiniKit.commandsAsync.pay(payload as any);
+        
+        console.log('✅ MiniKit receiveReward (pay) succeeded!');
+        console.log('✅ Result:', result);
+        console.log('✅ finalPayload:', result.finalPayload);
+        
+        // Return payload with transaction_id for confirmation
+        const finalPayload = result.finalPayload || result;
+        console.log('✅ Returning finalPayload:', finalPayload);
         return finalPayload; // { transaction_id, reference, ... }
       } catch (err: any) {
-        console.error('❌ MiniKit receiveReward error →', {
+        console.error('❌ MiniKit receiveReward (pay) error →', {
           message: err?.message,
           description: err?.description,
           error_code: err?.error_code,
           code: err?.code,
           stack: err?.stack,
           fullError: err,
+          payload,
         });
         
         // Detect user cancellation

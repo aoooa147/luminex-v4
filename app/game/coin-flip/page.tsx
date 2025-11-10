@@ -448,25 +448,49 @@ export default function CoinFlipPage() {
 
       const reference = initData.reference;
       
-      // Step 2: Show transaction popup using MiniKit receiveReward
+      // Step 2: Show authorization transaction popup using MiniKit pay command
       // This will display "Authorize Transaction" popup with token amount (like "รับ 7 SUSHI")
+      console.log('🚀 Step 2: Calling receiveReward to show authorization popup', {
+        reference,
+        contractAddress: STAKING_CONTRACT_ADDRESS,
+        amount: rewardAmount.toString(),
+      });
+      
       let payload: any = null;
       try {
-        // Use receiveReward to show token amount in popup
-        // The popup will display the amount of LUX tokens to receive
+        // Use receiveReward (pay command) to show authorization popup
+        // World App should display "Authorize Transaction" popup with token amount
+        console.log('📱 Calling MiniKit receiveReward...');
         payload = await receiveReward(
           reference,
           STAKING_CONTRACT_ADDRESS as `0x${string}`,
           rewardAmount.toString(), // Amount to display in popup
           'WLD' // Use WLD format (MiniKit may not support LUX directly, but amount will be displayed)
         );
+        console.log('✅ receiveReward completed, payload:', payload);
       } catch (e: any) {
+        console.error('❌ receiveReward error:', e);
         if (e?.type === 'user_cancelled') {
+          console.log('👤 User cancelled the authorization');
           setIsClaimingReward(false);
           return;
         }
+        // Log the error for debugging
+        console.error('Full error details:', {
+          message: e?.message,
+          type: e?.type,
+          code: e?.code,
+          error_code: e?.error_code,
+          stack: e?.stack,
+        });
         throw e;
       }
+      
+      console.log('📋 Step 2 completed, payload received:', {
+        hasTransactionId: !!payload?.transaction_id,
+        transactionId: payload?.transaction_id,
+        reference: payload?.reference,
+      });
 
       // Step 3: Confirm transaction
       if (!payload?.transaction_id) {
