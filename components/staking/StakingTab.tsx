@@ -83,32 +83,29 @@ const StakingTab = memo(({
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
   const { sendTransaction } = useMiniKit();
   
+  // Default fallback pools
+  const DEFAULT_POOLS = React.useMemo(() => [
+    { id: 0, name: "Flexible", lockDays: 0, apy: 50, desc: "No lock required" },
+    { id: 1, name: "30 Days", lockDays: 30, apy: 75, desc: "Lock for 30 days" },
+    { id: 2, name: "90 Days", lockDays: 90, apy: 125, desc: "Lock for 90 days" },
+    { id: 3, name: "180 Days", lockDays: 180, apy: 175, desc: "Lock for 180 days" },
+    { id: 4, name: "365 Days", lockDays: 365, apy: 325, desc: "Maximum APY!" },
+  ], []);
+
   // Ensure POOLS is always an array with fallback
   const safePools = React.useMemo(() => {
     try {
-      if (Array.isArray(POOLS) && POOLS.length > 0) {
+      // Check if POOLS exists, is an array, and has items
+      if (POOLS && Array.isArray(POOLS) && POOLS.length > 0) {
         return POOLS;
       }
-      // Fallback pools if POOLS is undefined or empty
-      return [
-        { id: 0, name: "Flexible", lockDays: 0, apy: 50, desc: "No lock required" },
-        { id: 1, name: "30 Days", lockDays: 30, apy: 75, desc: "Lock for 30 days" },
-        { id: 2, name: "90 Days", lockDays: 90, apy: 125, desc: "Lock for 90 days" },
-        { id: 3, name: "180 Days", lockDays: 180, apy: 175, desc: "Lock for 180 days" },
-        { id: 4, name: "365 Days", lockDays: 365, apy: 325, desc: "Maximum APY!" },
-      ];
+      console.warn('POOLS is undefined or empty, using default pools');
+      return DEFAULT_POOLS;
     } catch (error) {
       console.error('Error initializing POOLS:', error);
-      // Return default pools on error
-      return [
-        { id: 0, name: "Flexible", lockDays: 0, apy: 50, desc: "No lock required" },
-        { id: 1, name: "30 Days", lockDays: 30, apy: 75, desc: "Lock for 30 days" },
-        { id: 2, name: "90 Days", lockDays: 90, apy: 125, desc: "Lock for 90 days" },
-        { id: 3, name: "180 Days", lockDays: 180, apy: 175, desc: "Lock for 180 days" },
-        { id: 4, name: "365 Days", lockDays: 365, apy: 325, desc: "Maximum APY!" },
-      ];
+      return DEFAULT_POOLS;
     }
-  }, []);
+  }, [DEFAULT_POOLS]);
 
   // Check faucet cooldown
   useEffect(() => {
@@ -298,6 +295,11 @@ const StakingTab = memo(({
       <div className="grid grid-cols-5 gap-1.5">
         {safePools && Array.isArray(safePools) && safePools.length > 0 ? (
           safePools.map((pool) => {
+            // Validate pool object
+            if (!pool || typeof pool.id === 'undefined') {
+              console.error('Invalid pool data:', pool);
+              return null;
+            }
             const Icon = POOL_ICONS[pool.id] || Unlock;
             const color = POOL_COLORS[pool.id] || "from-blue-400 to-cyan-400";
             return (

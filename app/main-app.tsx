@@ -546,7 +546,10 @@ const LuminexApp = () => {
     );
   }
 
-  const currentPool = POOLS_FROM_CONSTANTS[selectedPool];
+  // Safely access current pool with null check
+  const currentPool = (POOLS_FROM_CONSTANTS && Array.isArray(POOLS_FROM_CONSTANTS) && POOLS_FROM_CONSTANTS.length > selectedPool) 
+    ? POOLS_FROM_CONSTANTS[selectedPool] 
+    : { id: 0, name: "Flexible", lockDays: 0, apy: 50, desc: "No lock required" };
   const baseApy = BASE_APY; // Base APY is now 50% (from powerConfig)
   const powerBoost = currentPower ? getPowerBoost(getPowerByCode(currentPower.code) || null) : 0;
   const totalApy = currentPower ? currentPower.totalAPY : baseApy;
