@@ -78,7 +78,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const existingClaim = faucetClaims[addressLower];
 
   if (existingClaim?.reference && !existingClaim.claimed) {
-    logger.warn('Reference already exists for faucet claim', {
+    logger.info('Reference already exists for faucet claim, returning existing reference', {
       address: addressLower,
       existingReference: existingClaim.reference
     }, 'faucet/init');
