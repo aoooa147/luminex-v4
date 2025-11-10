@@ -337,10 +337,21 @@ export default function ColorTapPage() {
   const { pay } = useMiniKit();
 
   async function handleClaimReward() {
-    if (!address || !luxReward || luxReward === 0 || rewardClaimed || isClaimingReward) return;
+    if (!address || !luxReward || luxReward === 0 || rewardClaimed || isClaimingReward) {
+      console.error('Cannot claim reward:', { address, luxReward, rewardClaimed, isClaimingReward });
+      return;
+    }
     
     if (!MiniKit.isInstalled()) {
       alert('World App is required to claim rewards. Please open this app in World App.');
+      return;
+    }
+    
+    // Validate luxReward before sending
+    const rewardAmount = Number(luxReward);
+    if (!rewardAmount || rewardAmount <= 0 || !Number.isFinite(rewardAmount)) {
+      console.error('Invalid luxReward value:', luxReward);
+      alert(`Invalid reward amount: ${luxReward}. Please try again.`);
       return;
     }
     
@@ -353,7 +364,7 @@ export default function ColorTapPage() {
         body: JSON.stringify({ 
           address, 
           gameId: GAME_ID, 
-          amount: luxReward 
+          amount: rewardAmount 
         })
       });
       

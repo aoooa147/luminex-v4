@@ -26,8 +26,18 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   // Validate amount
-  if (typeof amount !== 'number' || amount <= 0) {
-    return createErrorResponse('Invalid reward amount', 'INVALID_AMOUNT', 400);
+  if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+    logger.error('Invalid amount received', { 
+      amount, 
+      type: typeof amount,
+      address: body.address,
+      gameId: body.gameId
+    }, 'game/reward/init');
+    return createErrorResponse(
+      `Invalid amount: must be a positive number, got: ${amount}`,
+      'INVALID_AMOUNT',
+      400
+    );
   }
 
   const addressLower = address.toLowerCase();
