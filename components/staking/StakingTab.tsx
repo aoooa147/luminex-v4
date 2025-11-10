@@ -295,7 +295,7 @@ const StakingTab = memo(({
 
       {/* Pool Selection */}
       <div className="grid grid-cols-5 gap-1.5">
-        {safePools.map((pool) => {
+        {safePools && Array.isArray(safePools) && safePools.length > 0 ? safePools.map((pool) => {
           const Icon = POOL_ICONS[pool.id] || Unlock;
           const color = POOL_COLORS[pool.id] || "from-blue-400 to-cyan-400";
           return (
