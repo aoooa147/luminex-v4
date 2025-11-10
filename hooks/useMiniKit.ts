@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MiniKit, VerificationLevel, ISuccessResult, MiniAppWalletAuthSuccessPayload, tokenToDecimals, Tokens } from '@worldcoin/minikit-js';
-import { applyMiniKitCompatShim } from '@/lib/minikit/compat';
+// import { applyMiniKitCompatShim } from '@/lib/minikit/compat'; // Disabled - causes map error
 
 /**
  * useMiniKit - thin wrapper around official MiniKit-JS
@@ -12,8 +12,9 @@ export const useMiniKit = () => {
 
   useEffect(() => {
     try {
-      // Ensure MiniKit sendTransaction compat patch is applied
-      applyMiniKitCompatShim();
+      // DO NOT apply compat shim - it causes map error
+      // applyMiniKitCompatShim();
+      // Use MiniKit SDK directly without transformation
       setReady(MiniKit.isInstalled());
     } catch (e: any) {
       setReady(false);
