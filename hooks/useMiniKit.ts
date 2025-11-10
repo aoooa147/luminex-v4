@@ -208,14 +208,21 @@ export const useMiniKit = () => {
   );
 
   /**
-   * Send transaction (for contract interactions)
+   * Send transaction (for contract interactions and receiving tokens)
    * This shows "Authorize Transaction" popup instead of "Pay" popup
-   * Updated to use MiniKit SDK v1.9.8+ format with transaction array
+   * Use this for receiving tokens/rewards - it shows "Authorize Transaction" which is correct for receiving
+   * Updated to use MiniKit SDK v1.9.8+ format with actions array
+   * 
+   * @param toAddress - Contract or recipient address
+   * @param data - Transaction data (contract call data). Use '0x' or empty for simple transfers/receiving
+   * @param value - Transaction value in wei (default: '0' for receiving tokens)
+   * @param network - Network name (default: 'worldchain')
+   * @returns {Promise<{transaction_id: string, ...}>} Transaction result with transaction_id
    */
   const sendTransaction = useCallback(
     async (
       toAddress: `0x${string}`,
-      data: string,
+      data: string = '0x',
       value: string = '0',
       network: string = 'worldchain'
     ) => {
@@ -248,47 +255,64 @@ export const useMiniKit = () => {
       let hexValue = value || '0';
       if (!hexValue.startsWith('0x')) {
         // Convert decimal string to hex
-        const numValue = BigInt(hexValue);
-        hexValue = '0x' + numValue.toString(16);
+        try {
+          const numValue = BigInt(hexValue);
+          hexValue = '0x' + numValue.toString(16);
+        } catch (e) {
+          // If conversion fails, default to '0x0'
+          hexValue = '0x0';
+        }
       }
 
-      // MiniKit SDK v1.9.8 workaround for map error
-      // The SDK has a bug where it tries to map over undefined
-      // Solution: Use the exact format that SDK expects
+      // MiniKit SDK v1.9.8+ requires payload format: { network, actions: [{ to, value, data? }] }
+      // DO NOT include legacy top-level fields (to, value, data) as it causes SDK confusion
+      // The SDK expects ONLY the actions array format
       
-      // Build action object
+      // Build action object - ensure all required fields are present
       const action: any = {
         to: toAddress,
-        value: hexValue,
+        value: hexValue || '0x0', // Always include value, default to '0x0' if not provided
       };
       
-      // Only include data if it's provided and not empty
-      if (data && data !== '0x' && data.length > 2) {
+      // Only include data if it's provided, not empty, and not just '0x'
+      // For receiving tokens (value = 0, no data), we don't include data field at all
+      if (data && data !== '0x' && data.length > 2 && data.trim() !== '0x') {
         action.data = data;
       }
+      // If data is explicitly provided but is '0x' or empty, don't include it
+      // This prevents SDK errors when handling empty transaction data
 
-      // Create payload - use the format that works with SDK v1.9.8
-      // IMPORTANT: Some SDK versions have issues with actions array
-      // We'll use a format that's more compatible
+      // Create payload - use ONLY the new format with actions array
+      // This is the correct format that prevents "Cannot read properties of undefined (reading 'map')" error
       const payload: any = {
-        // Use single transaction format (not actions array)
-        // This bypasses the map error in SDK
-        to: toAddress,
-        value: hexValue,
         network: network || 'worldchain',
+        actions: [action], // Always an array with at least one action
       };
       
-      // Add data if present
-      if (data && data !== '0x' && data.length > 2) {
-        payload.data = data;
+      // Validate payload structure before sending
+      if (!Array.isArray(payload.actions) || payload.actions.length === 0) {
+        throw new Error('Invalid payload: actions array must contain at least one action');
       }
+      
+      // Validate each action
+      payload.actions.forEach((act: any, index: number) => {
+        if (!act.to || typeof act.to !== 'string' || !act.to.startsWith('0x')) {
+          throw new Error(`Invalid action at index ${index}: 'to' must be a valid Ethereum address`);
+        }
+        if (act.value === undefined || act.value === null) {
+          throw new Error(`Invalid action at index ${index}: 'value' is required`);
+        }
+      });
 
-      console.log('🔍 MiniKit sendTransaction payload (new format) →', JSON.stringify(payload, null, 2));
+      console.log('🔍 MiniKit sendTransaction payload (receiving coins format) →', JSON.stringify(payload, null, 2));
       console.log('🔍 MiniKit environment check:', {
         isInstalled: MiniKit.isInstalled(),
         hasCommandsAsync: !!MiniKit.commandsAsync,
         hasSendTransaction: !!MiniKit.commandsAsync?.sendTransaction,
         network,
+        actionsCount: payload.actions?.length || 0,
+        actionHasData: !!payload.actions?.[0]?.data,
+        actionValue: payload.actions?.[0]?.value,
       });
 
       try {
@@ -326,6 +350,35 @@ export const useMiniKit = () => {
           (e as any).type = 'user_cancelled';
           (e as any).originalError = err;
           throw e;
+        }
+
+        // Check for map/array errors (SDK internal errors)
+        if (
+          msg.includes('cannot read properties') && msg.includes('map') ||
+          msg.includes('cannot read property') && msg.includes('map') ||
+          msg.includes('undefined') && msg.includes('map') ||
+          msg.includes('is not a function') && (msg.includes('map') || msg.includes('array'))
+        ) {
+          const mapError = new Error(
+            `SDK internal error: Payload format issue. This usually means the payload structure is incorrect.\n` +
+            `Payload sent: ${JSON.stringify(payload)}\n` +
+            `Original error: ${err?.message || 'Unknown error'}\n` +
+            `Please ensure payload has the format: { network: string, actions: [{ to: string, value: string, data?: string }] }`
+          );
+          (mapError as any).type = 'payload_format_error';
+          (mapError as any).originalError = err;
+          (mapError as any).payload = payload;
+          console.error('❌ Payload format error detected. Payload structure:', {
+            hasNetwork: !!payload?.network,
+            hasActions: Array.isArray(payload?.actions),
+            actionsLength: payload?.actions?.length || 0,
+            actionsStructure: payload?.actions?.map((a: any) => ({
+              hasTo: !!a?.to,
+              hasValue: !!a?.value,
+              hasData: !!a?.data,
+            })),
+          });
+          throw mapError;
         }
 
         // Check for configuration errors
