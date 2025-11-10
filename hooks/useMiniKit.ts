@@ -251,27 +251,36 @@ export const useMiniKit = () => {
         hexValue = '0x' + numValue.toString(16);
       }
 
-      // MiniKit SDK requires proper transaction format
-      // Build transaction object with all required fields
-      const transaction: any = {
+      // MiniKit SDK v1.9.8+ requires specific format
+      // Build action object (single transaction)
+      const action: any = {
         to: toAddress,
         value: hexValue,
       };
       
       // Only include data if it's provided and not empty
       if (data && data !== '0x' && data.length > 2) {
-        transaction.data = data;
+        action.data = data;
       }
 
-      // Create payload with transaction (not actions array)
-      // This prevents the map error in MiniKit SDK
+      // IMPORTANT: MiniKit SDK expects actions to be an array
+      // But we need to ensure it's properly initialized to prevent map error
+      const actions = [action];
+      
+      // Validate actions array before sending
+      if (!Array.isArray(actions) || actions.length === 0) {
+        throw new Error('Invalid actions array');
+      }
+
+      // Create payload with properly initialized actions array
       const payload: any = {
-        transaction: transaction,
+        actions: actions,
+        network: network || 'worldchain',
       };
       
-      // Include network if specified (defaults to worldchain)
-      if (network) {
-        payload.network = network;
+      // Double check payload structure
+      if (!payload.actions || !Array.isArray(payload.actions)) {
+        throw new Error('Payload actions must be an array');
       }
 
       console.log('🔍 MiniKit sendTransaction payload (new format) →', JSON.stringify(payload, null, 2));
