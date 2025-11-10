@@ -1,9 +1,9 @@
 'use client';
 
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Wallet, Loader2 } from 'lucide-react';
+import { Wallet, Loader2, Coins } from 'lucide-react';
 import { TOKEN_NAME, LOGO_URL, LANGUAGES } from '@/lib/utils/constants';
 
 interface AppHeaderProps {
@@ -31,6 +31,9 @@ const AppHeader = memo(({
   setLanguage,
   t,
 }: AppHeaderProps) => {
+  // State for logo error handling
+  const [logoError, setLogoError] = useState(false);
+  
   // Memoize computed values
   const activeLanguage = useMemo(() => 
     LANGUAGES.find(l => l.code === language) || LANGUAGES[0],
@@ -91,16 +94,28 @@ const AppHeader = memo(({
       <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-2">
-            <Image
-              src={LOGO_URL}
-              alt="LUX"
-              width={32}
-              height={32}
-              className="rounded-full ring-2 ring-purple-400/50"
-              loading="lazy"
-              priority={false}
-              unoptimized={process.env.NODE_ENV === 'development'}
-            />
+            {logoError ? (
+              <div 
+                className="w-8 h-8 rounded-full ring-2 ring-purple-400/50 bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center"
+                style={{
+                  boxShadow: '0 0 15px rgba(147, 51, 234, 0.4)'
+                }}
+              >
+                <Coins className="w-5 h-5 text-white" />
+              </div>
+            ) : (
+              <Image
+                src={LOGO_URL}
+                alt="LUX"
+                width={32}
+                height={32}
+                className="rounded-full ring-2 ring-purple-400/50"
+                loading="lazy"
+                priority={false}
+                unoptimized={true}
+                onError={() => setLogoError(true)}
+              />
+            )}
             <div>
               <h1 className="text-lg font-bold text-white">
                 Luminex Staking
