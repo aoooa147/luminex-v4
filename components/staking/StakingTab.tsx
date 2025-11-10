@@ -81,7 +81,6 @@ const StakingTab = memo(({
   const [faucetCooldown, setFaucetCooldown] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
   const [canClaimFaucet, setCanClaimFaucet] = useState(false);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
-  const { sendTransaction } = useMiniKit();
   
   // Default fallback pools
   const DEFAULT_POOLS = React.useMemo(() => [
@@ -167,41 +166,18 @@ const StakingTab = memo(({
 
       const reference = initData.reference;
       
-      // Step 2: Request user authorization to receive reward
-      // Use sendTransaction with empty data to show authorization popup
-      // Backend will distribute the actual reward via smart contract
-      let payload: any = null;
-      try {
-        // Empty transaction for authorization only
-        // User authorizes backend to send reward to their wallet
-        payload = await sendTransaction(
-          actualAddress as `0x${string}`, // Send to user's address (they receive)
-          '0x', // Empty data
-          '0', // 0 value (no ETH transfer)
-          STAKING_CONTRACT_NETWORK
-        );
-      } catch (e: any) {
-        if (e?.type === 'user_cancelled') {
-          setIsClaimingFaucet(false);
-          return;
-        }
-        throw e;
-      }
-
-      // Step 3: Confirm transaction with backend
-      if (!payload?.transaction_id) {
-        alert('Transaction was cancelled. Please try again.');
-        setIsClaimingFaucet(false);
-        return;
-      }
-
+      // Step 2: Confirm directly with backend (no user authorization needed)
+      // Backend will distribute reward via smart contract automatically
+      // Generate transaction_id for tracking
+      const transactionId = `faucet_${reference}_${Date.now()}`;
+      
       const confirmRes = await fetch('/api/faucet/confirm', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ 
           payload: {
             reference,
-            transaction_id: payload.transaction_id
+            transaction_id: transactionId
           }
         })
       });
