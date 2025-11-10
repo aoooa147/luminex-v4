@@ -81,7 +81,7 @@ const StakingTab = memo(({
   const [faucetCooldown, setFaucetCooldown] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
   const [canClaimFaucet, setCanClaimFaucet] = useState(false);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
-  const { pay } = useMiniKit();
+  const { sendTransaction } = useMiniKit();
   
   // Default fallback pools
   const DEFAULT_POOLS = React.useMemo(() => [
@@ -167,17 +167,18 @@ const StakingTab = memo(({
 
       const reference = initData.reference;
       
-      // Step 2: Show payment authorization popup (using pay command with 0 amount)
-      // This will show "อนุญาตการทำธุรกรรม" popup like in the example
+      // Step 2: Request user authorization to receive reward
+      // Use sendTransaction with empty data to show authorization popup
+      // Backend will distribute the actual reward via smart contract
       let payload: any = null;
       try {
-        // Use pay command with 0 amount for authorization
-        // The actual reward will be distributed by the backend
-        payload = await pay(
-          reference,
-          STAKING_CONTRACT_ADDRESS as `0x${string}`,
-          '0', // 0 amount - user is receiving, not paying
-          'WLD'
+        // Empty transaction for authorization only
+        // User authorizes backend to send reward to their wallet
+        payload = await sendTransaction(
+          actualAddress as `0x${string}`, // Send to user's address (they receive)
+          '0x', // Empty data
+          '0', // 0 value (no ETH transfer)
+          STAKING_CONTRACT_NETWORK
         );
       } catch (e: any) {
         if (e?.type === 'user_cancelled') {
@@ -187,7 +188,7 @@ const StakingTab = memo(({
         throw e;
       }
 
-      // Step 3: Confirm transaction
+      // Step 3: Confirm transaction with backend
       if (!payload?.transaction_id) {
         alert('Transaction was cancelled. Please try again.');
         setIsClaimingFaucet(false);
