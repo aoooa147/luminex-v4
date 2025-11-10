@@ -78,10 +78,13 @@ const StakingTab = memo(({
   isLoadingStakingData = false,
   t,
 }: StakingTabProps) => {
-  const [faucetCooldown, setFaucetCooldown] = useState({ hours: 0, minutes: 0 });
+  const [faucetCooldown, setFaucetCooldown] = useState<{ hours: number; minutes: number }>({ hours: 0, minutes: 0 });
   const [canClaimFaucet, setCanClaimFaucet] = useState(false);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
   const { sendTransaction } = useMiniKit();
+  
+  // Ensure POOLS is always an array
+  const safePools = Array.isArray(POOLS) ? POOLS : [];
 
   // Check faucet cooldown
   useEffect(() => {
@@ -268,7 +271,7 @@ const StakingTab = memo(({
 
       {/* Pool Selection */}
       <div className="grid grid-cols-5 gap-1.5">
-        {(POOLS || []).map((pool) => {
+        {safePools.map((pool) => {
           const Icon = POOL_ICONS[pool.id] || Unlock;
           const color = POOL_COLORS[pool.id] || "from-blue-400 to-cyan-400";
           return (
