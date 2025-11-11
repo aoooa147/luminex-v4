@@ -1,11 +1,5 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 
-/**
- * This route is used to initiate a payment
- * Updated to match official example format
- * TODO: Store the ID field in your database so you can verify the payment later
- */
 export async function POST() {
   const uuid = crypto.randomUUID().replace(/-/g, '');
 

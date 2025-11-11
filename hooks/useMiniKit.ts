@@ -22,21 +22,52 @@ export const useMiniKit = () => {
     }
   }, []);
 
-  const verify = useCallback(async (action: string) => {
+  const verify = useCallback(async (action: string, verificationLevel: VerificationLevel = VerificationLevel.Orb) => {
     if (!MiniKit.isInstalled()) throw new Error('MiniKit is not installed. Open inside World App.');
-    const { finalPayload } = await MiniKit.commandsAsync.verify({
+    const result = await MiniKit.commandsAsync.verify({
       action,
-      verification_level: VerificationLevel.Orb,
+      verification_level: verificationLevel,
     });
-    return finalPayload as ISuccessResult; // send to /api/verify
+    
+    // Check status like in the official example
+    if (result.finalPayload.status !== 'success') {
+      console.error('Verification failed:', result.finalPayload.error_code);
+      throw new Error(result.finalPayload.error_code || 'Verification failed');
+    }
+    
+    return result.finalPayload as ISuccessResult; // send to /api/verify-proof
   }, []);
 
-  const walletAuth = useCallback(async () => {
+  const walletAuth = useCallback(async (nonce?: string) => {
     if (!MiniKit.isInstalled()) throw new Error('MiniKit is not installed. Open inside World App.');
-    // Generate nonce for wallet auth
-    const nonce = crypto.randomUUID().replace(/-/g, '');
-    const { finalPayload } = await MiniKit.commandsAsync.walletAuth({ nonce });
-    return finalPayload as MiniAppWalletAuthSuccessPayload;
+    
+    // Generate nonce for wallet auth (or use provided one)
+    const finalNonce = nonce || crypto.randomUUID().replace(/-/g, '');
+    
+    // Use same format as official example
+    const result = await MiniKit.commandsAsync.walletAuth({
+      nonce: finalNonce,
+      expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      statement: `Authenticate (${crypto.randomUUID().replace(/-/g, '')}).`,
+    });
+    
+    console.log('Wallet auth result:', result);
+    
+    if (!result) {
+      throw new Error('No response from wallet auth');
+    }
+    
+    // Check status like in the official example
+    if (result.finalPayload.status !== 'success') {
+      console.error('Wallet authentication failed', result.finalPayload.error_code);
+      throw new Error(result.finalPayload.error_code || 'Wallet authentication failed');
+    }
+    
+    return {
+      finalPayload: result.finalPayload as MiniAppWalletAuthSuccessPayload,
+      nonce: finalNonce,
+    };
   }, []);
 
   type PayToken = 'WLD' | 'USDC';

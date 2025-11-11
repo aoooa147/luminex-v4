@@ -81,7 +81,27 @@ export function useWallet(verifiedAddress: string | null) {
 
       try {
         const nonce = crypto.randomUUID().replace(/-/g, '');
-        const result = await MiniKit.commandsAsync.walletAuth({ nonce });
+        
+        // Use same format as official example
+        const result = await MiniKit.commandsAsync.walletAuth({
+          nonce,
+          expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+          statement: `Authenticate (${crypto.randomUUID().replace(/-/g, '')}).`,
+        });
+        
+        console.log('Wallet auth result:', result);
+        
+        if (!result) {
+          throw new Error('No response from wallet auth');
+        }
+        
+        // Check status like in the official example
+        if (result.finalPayload.status !== 'success') {
+          console.error('Wallet authentication failed', result.finalPayload.error_code);
+          throw new Error(result.finalPayload.error_code || 'Wallet authentication failed');
+        }
+        
         const walletData = result.finalPayload;
         
         if (!walletData?.address) {
