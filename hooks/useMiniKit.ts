@@ -407,21 +407,23 @@ export const useMiniKit = () => {
 
   /**
    * Receive reward (for receiving tokens/rewards from games)
-   * Uses sendTransaction with pay command to show "Authorize Transaction" popup
-   * This will display authorization popup with token amount (like "รับ 7 SUSHI")
+   * Uses pay command to show "Allow Transaction" popup with token amount (like "รับ 7 SUSHI")
+   * This matches the example image (Free Sushi) which shows "Allow Transaction" with receive amount
    * 
-   * @param referenceId - Transaction reference ID from backend
+   * @param referenceId - Transaction reference ID from backend (for tracking)
    * @param toAddress - Contract address that will distribute the reward
-   * @param amount - Amount of tokens to receive (will be displayed in popup)
-   * @param token - Token symbol (default: 'WLD', but can use 'LUX' if supported)
-   * @returns {Promise<{transaction_id: string, reference: string, ...}>} Transaction result
+   * @param amount - Amount of tokens to receive (displayed in popup)
+   * @param token - Token symbol (WLD or USDC)
+   * @param network - Network name (default: 'worldchain', not used in pay command)
+   * @returns {Promise<{transaction_id: string, reference: string, ...}>} Transaction result with transaction_id
    */
   const receiveReward = useCallback(
     async (
       referenceId: string,
       toAddress: `0x${string}`,
       amount: string,
-      token: PayToken = 'WLD'
+      token: PayToken = 'WLD',
+      network: string = 'worldchain'
     ) => {
       if (!MiniKit.isInstalled()) {
         throw new Error('MiniKit is not installed. Open inside World App.');
@@ -442,103 +444,82 @@ export const useMiniKit = () => {
         throw new Error(`Invalid toAddress: must be a valid Ethereum address, got: ${toAddress}`);
       }
 
+      // Check for zero address
+      if (toAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Invalid toAddress: cannot use zero address. Please configure NEXT_PUBLIC_STAKING_CONTRACT correctly in .env.local');
+      }
+
       // Validate contract address format
       const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(toAddress);
       if (!isValidAddress) {
         throw new Error(`Invalid contract address format: ${toAddress}. Please check NEXT_PUBLIC_STAKING_CONTRACT configuration.`);
       }
 
-      const safeToken = (token || 'WLD') as PayToken;
       const safeAmount = String(amount);
+      const safeToken = (token || 'WLD') as PayToken;
 
-      // Validate amount
-      if (!safeAmount || isNaN(parseFloat(safeAmount)) || parseFloat(safeAmount) <= 0) {
-        throw new Error(`Invalid amount: must be a positive number, got: ${safeAmount}`);
+      // Validate amount - allow 0 for transaction confirmation (actual reward is handled by contract)
+      if (!safeAmount || isNaN(parseFloat(safeAmount)) || parseFloat(safeAmount) < 0) {
+        throw new Error(`Invalid amount: must be a non-negative number, got: ${safeAmount}`);
       }
 
-      // Convert amount to decimals for display
-      const tokenSymbol = safeToken === 'WLD' ? Tokens.WLD : Tokens.USDC;
-      const amountInDecimals = tokenToDecimals(parseFloat(safeAmount), tokenSymbol);
-      const tokenAmountStr = amountInDecimals.toString();
-
-      // Use pay command with reference to show authorization popup
-      // World App will display "Authorize Transaction" popup with token amount
-      // The popup will show "รับ X token" (Receive X token) based on the amount
-      // NOTE: pay command shows "Pay" popup by default, but World App may show it as "Authorize Transaction"
-      // when the transaction is for receiving rewards from a contract
-      const payload = {
-        reference: referenceId,
-        to: toAddress,
-        tokens: [{
-          symbol: tokenSymbol,
-          token_amount: tokenAmountStr
-        }],
-        description: `Claim ${safeAmount} ${safeToken} reward`, // Description shown in popup
-      };
-      
-      console.log('🎯 receiveReward: Preparing to show authorization popup', {
+      console.log('🎯 receiveReward: Using pay command to show "Allow Transaction" popup with token amount', {
         reference: referenceId,
         toAddress,
         amount: safeAmount,
         token: safeToken,
-        tokenAmountStr,
-        payload: JSON.stringify(payload, null, 2),
+        note: 'pay command will show "Allow Transaction" popup with receive amount (like "รับ 7 SUSHI")',
       });
 
-      console.log('🔍 MiniKit receiveReward (pay command) payload →', JSON.stringify(payload, null, 2));
-      console.log('🔍 MiniKit environment check:', {
-        isInstalled: MiniKit.isInstalled(),
-        hasCommandsAsync: !!MiniKit.commandsAsync,
-        hasPay: !!MiniKit.commandsAsync?.pay,
-        referenceId,
-        amount: safeAmount,
-        token: safeToken,
-        payloadStructure: {
-          hasReference: !!payload.reference,
-          hasTo: !!payload.to,
-          hasTokens: Array.isArray(payload.tokens) && payload.tokens.length > 0,
-          tokenSymbol: payload.tokens[0]?.symbol,
-          tokenAmount: payload.tokens[0]?.token_amount,
-        },
-      });
-
-      // Verify MiniKit is available before calling pay
-      if (!MiniKit.isInstalled()) {
-        const error = new Error('MiniKit is not installed. Please open this app in World App.');
-        console.error('❌ MiniKit not installed:', error);
-        throw error;
-      }
-      
-      if (!MiniKit.commandsAsync) {
-        const error = new Error('MiniKit commandsAsync is not available. Please refresh the page.');
-        console.error('❌ MiniKit commandsAsync not available:', error);
-        throw error;
-      }
-      
-      if (!MiniKit.commandsAsync.pay) {
-        const error = new Error('MiniKit pay command is not available. Please refresh the page.');
-        console.error('❌ MiniKit pay command not available:', error);
-        throw error;
-      }
-
+      // Use pay command to show "Allow Transaction" popup with token amount
+      // This matches the example image (Free Sushi) which shows:
+      // - "อนุญาตการทำธุรกรรม" (Allow Transaction)
+      // - "รับ" (Receive) with token amount
+      // The pay command will display the token amount in the popup correctly
       try {
-        // Use pay command - this should trigger authorization popup in World App
-        // World App will show "Authorize Transaction" popup with token amount
-        // IMPORTANT: This MUST be called in World App context for popup to appear
-        console.log('🚀 Calling MiniKit.commandsAsync.pay - popup should appear now!');
-        console.log('📱 Payload being sent:', JSON.stringify(payload, null, 2));
+        console.log('🚀 Calling pay command to show "Allow Transaction" popup with token amount...');
+        console.log('📱 This will show "Allow Transaction" popup with receive amount (like "รับ 7 SUSHI")');
         
-        // Call pay command - this should show authorization popup immediately
-        // The popup will display "Authorize Transaction" with token amount
-        const result = await MiniKit.commandsAsync.pay(payload as any);
+        // Convert amount to decimals using tokenToDecimals() as per MiniKit documentation
+        const tokenSymbol = safeToken === 'WLD' ? Tokens.WLD : Tokens.USDC;
+        const parsedAmount = parseFloat(safeAmount);
         
-        console.log('✅ MiniKit receiveReward (pay) succeeded!');
-        console.log('✅ Result:', result);
-        console.log('✅ finalPayload:', result.finalPayload);
+        // For 0 amount, use minimum amount for display (actual reward is handled by contract)
+        let displayAmount = parsedAmount;
+        if (parsedAmount === 0) {
+          displayAmount = 0.000001; // Minimum amount for MiniKit display
+          console.log('⚠️ Zero amount detected, using minimum amount for MiniKit display:', displayAmount);
+        }
         
-        // Return payload with transaction_id for confirmation
-        const finalPayload = result.finalPayload || result;
-        console.log('✅ Returning finalPayload:', finalPayload);
+        const amountInDecimals = tokenToDecimals(displayAmount, tokenSymbol);
+        const tokenAmountStr = amountInDecimals.toString();
+
+        // Build pay payload - this will show "Allow Transaction" popup with token amount
+        // MiniKit SDK will automatically show "Receive" when appropriate
+        // Note: MiniKit only supports WLD/USDC tokens, so we use WLD format for LUX rewards
+        // The description will appear as "To [description]" in the popup (like "To Free Sushi" in example)
+        const appName = process.env.NEXT_PUBLIC_BRAND_NAME || 'Luminex Staking';
+        const description = parsedAmount === 0 
+          ? `${appName}` // For zero amount, just show app name
+          : `${appName}`; // Description will show as "To [appName]" in popup (like "To Free Sushi")
+        
+        const payload = {
+          reference: referenceId,
+          to: toAddress,
+          tokens: [{
+            symbol: tokenSymbol, // Tokens.WLD or Tokens.USDC (enum, not string) - must use WLD format for LUX
+            token_amount: tokenAmountStr // Amount in decimals (e.g., "1000000000000000000" for 1 WLD)
+          }],
+          description, // Will show as "To Luminex Staking" in popup
+        };
+
+        console.log('🔍 MiniKit PAY payload (for receiving reward) →', JSON.stringify(payload, null, 2));
+        
+        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
+        console.log('✅ MiniKit pay succeeded for receiving reward!');
+        console.log('✅ Result:', finalPayload);
+        
+        // Return result with transaction_id and reference
         return finalPayload; // { transaction_id, reference, ... }
       } catch (err: any) {
         console.error('❌ MiniKit receiveReward (pay) error →', {
@@ -548,7 +529,6 @@ export const useMiniKit = () => {
           code: err?.code,
           stack: err?.stack,
           fullError: err,
-          payload,
         });
         
         // Detect user cancellation
@@ -593,7 +573,7 @@ export const useMiniKit = () => {
         throw err;
       }
     },
-    []
+    [] // No dependencies - pay is already defined in the same hook
   );
 
   return { ready, error, verify, walletAuth, pay, sendTransaction, receiveReward };
