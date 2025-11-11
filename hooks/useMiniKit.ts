@@ -406,15 +406,20 @@ export const useMiniKit = () => {
   );
 
   /**
-   * Receive reward (for receiving tokens/rewards from games)
-   * Uses pay command to show "Allow Transaction" popup with token amount (like "รับ 7 SUSHI")
-   * This matches the example image (Free Sushi) which shows "Allow Transaction" with receive amount
+   * Receive reward (for receiving tokens/rewards from games and faucet)
+   * Uses sendTransaction command to show "Allow Transaction" popup (like "รับ 7 SUSHI")
+   * This is the correct way to receive free tokens - sendTransaction shows authorization popup
+   * while pay command is for payments (deducts money from user)
+   * 
+   * According to official MiniKit documentation:
+   * - sendTransaction: For transactions that require user authorization (receiving rewards)
+   * - pay: For payments that deduct money from user's wallet
    * 
    * @param referenceId - Transaction reference ID from backend (for tracking)
    * @param toAddress - Contract address that will distribute the reward
-   * @param amount - Amount of tokens to receive (displayed in popup)
-   * @param token - Token symbol (WLD or USDC)
-   * @param network - Network name (default: 'worldchain', not used in pay command)
+   * @param amount - Amount of tokens to receive (for display only, actual reward handled by contract)
+   * @param token - Token symbol (WLD or USDC) - not used in sendTransaction, kept for compatibility
+   * @param network - Network name (default: 'worldchain')
    * @returns {Promise<{transaction_id: string, reference: string, ...}>} Transaction result with transaction_id
    */
   const receiveReward = useCallback(
@@ -463,66 +468,57 @@ export const useMiniKit = () => {
         throw new Error(`Invalid amount: must be a non-negative number, got: ${safeAmount}`);
       }
 
-      console.log('🎯 receiveReward: Using pay command to show "Allow Transaction" popup with token amount', {
+      console.log('🎯 receiveReward: Using sendTransaction to show "Allow Transaction" popup for receiving free tokens', {
         reference: referenceId,
         toAddress,
         amount: safeAmount,
         token: safeToken,
-        note: 'pay command will show "Allow Transaction" popup with receive amount (like "รับ 7 SUSHI")',
+        network,
+        note: 'sendTransaction is correct for receiving free tokens - shows "Allow Transaction" popup without deducting money',
       });
 
-      // Use pay command to show "Allow Transaction" popup with token amount
-      // This matches the example image (Free Sushi) which shows:
-      // - "อนุญาตการทำธุรกรรม" (Allow Transaction)
-      // - "รับ" (Receive) with token amount
-      // The pay command will display the token amount in the popup correctly
-      try {
-        console.log('🚀 Calling pay command to show "Allow Transaction" popup with token amount...');
-        console.log('📱 This will show "Allow Transaction" popup with receive amount (like "รับ 7 SUSHI")');
-        
-        // Convert amount to decimals using tokenToDecimals() as per MiniKit documentation
-        const tokenSymbol = safeToken === 'WLD' ? Tokens.WLD : Tokens.USDC;
-        const parsedAmount = parseFloat(safeAmount);
-        
-        // For 0 amount, use minimum amount for display (actual reward is handled by contract)
-        let displayAmount = parsedAmount;
-        if (parsedAmount === 0) {
-          displayAmount = 0.000001; // Minimum amount for MiniKit display
-          console.log('⚠️ Zero amount detected, using minimum amount for MiniKit display:', displayAmount);
-        }
-        
-        const amountInDecimals = tokenToDecimals(displayAmount, tokenSymbol);
-        const tokenAmountStr = amountInDecimals.toString();
-
-        // Build pay payload - this will show "Allow Transaction" popup with token amount
-        // MiniKit SDK will automatically show "Receive" when appropriate
-        // Note: MiniKit only supports WLD/USDC tokens, so we use WLD format for LUX rewards
-        // The description will appear as "To [description]" in the popup (like "To Free Sushi" in example)
-        const appName = process.env.NEXT_PUBLIC_BRAND_NAME || 'Luminex Staking';
-        const description = parsedAmount === 0 
-          ? `${appName}` // For zero amount, just show app name
-          : `${appName}`; // Description will show as "To [appName]" in popup (like "To Free Sushi")
-        
-        const payload = {
-          reference: referenceId,
+      // Use sendTransaction to show "Allow Transaction" popup
+      // This is the correct way to receive free tokens according to official MiniKit documentation
+      // sendTransaction shows authorization popup without deducting money from user
+      // This matches the example image (Free Sushi) which shows "Allow Transaction" with receive amount
+      
+      // For receiving free tokens, we use sendTransaction with value = 0
+      // The actual reward distribution is handled by the contract on the backend
+      // This transaction is just for authorization - user confirms they want to receive the reward
+      const hexValue = '0x0'; // Zero value - user is receiving, not paying
+      
+      // Build sendTransaction payload - this will show "Allow Transaction" popup
+      // MiniKit SDK will show "Receive" when value is 0
+      const payload: any = {
+        network: network || 'worldchain',
+        actions: [{
           to: toAddress,
-          tokens: [{
-            symbol: tokenSymbol, // Tokens.WLD or Tokens.USDC (enum, not string) - must use WLD format for LUX
-            token_amount: tokenAmountStr // Amount in decimals (e.g., "1000000000000000000" for 1 WLD)
-          }],
-          description, // Will show as "To Luminex Staking" in popup
-        };
+          value: hexValue, // Zero value = receiving tokens, not paying
+          // No data field needed - this is just an authorization transaction
+          // The actual reward distribution happens on backend via contract
+        }],
+      };
 
-        console.log('🔍 MiniKit PAY payload (for receiving reward) →', JSON.stringify(payload, null, 2));
+      try {
+        console.log('🚀 Calling sendTransaction to show "Allow Transaction" popup for receiving free tokens...');
+        console.log('📱 This will show "Allow Transaction" popup (like "รับ 7 SUSHI") without deducting money');
+        console.log('🔍 MiniKit sendTransaction payload (for receiving reward) →', JSON.stringify(payload, null, 2));
+        console.log('🔍 Note: This is an authorization transaction (value = 0) - user is receiving, not paying');
         
-        const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
-        console.log('✅ MiniKit pay succeeded for receiving reward!');
+        const { finalPayload } = await MiniKit.commandsAsync.sendTransaction(payload);
+        console.log('✅ MiniKit sendTransaction succeeded for receiving reward!');
         console.log('✅ Result:', finalPayload);
         
         // Return result with transaction_id and reference
-        return finalPayload; // { transaction_id, reference, ... }
+        // Note: We need to add reference to the result for backend tracking
+        const result = finalPayload as any;
+        if (result && !result.reference) {
+          result.reference = referenceId;
+        }
+        
+        return result; // { transaction_id, reference, ... }
       } catch (err: any) {
-        console.error('❌ MiniKit receiveReward (pay) error →', {
+        console.error('❌ MiniKit receiveReward (sendTransaction) error →', {
           message: err?.message,
           description: err?.description,
           error_code: err?.error_code,
@@ -552,6 +548,25 @@ export const useMiniKit = () => {
           throw e;
         }
 
+        // Check for map/array errors (SDK internal errors)
+        if (
+          msg.includes('cannot read properties') && msg.includes('map') ||
+          msg.includes('cannot read property') && msg.includes('map') ||
+          msg.includes('undefined') && msg.includes('map') ||
+          msg.includes('is not a function') && (msg.includes('map') || msg.includes('array'))
+        ) {
+          const mapError = new Error(
+            `SDK internal error: Payload format issue. This usually means the payload structure is incorrect.\n` +
+            `Payload sent: ${JSON.stringify(payload)}\n` +
+            `Original error: ${err?.message || 'Unknown error'}\n` +
+            `Please ensure payload has the format: { network: string, actions: [{ to: string, value: string }] }`
+          );
+          (mapError as any).type = 'payload_format_error';
+          (mapError as any).originalError = err;
+          (mapError as any).payload = payload;
+          throw mapError;
+        }
+
         // Check for configuration errors
         if (
           msg.includes('invalid') && (msg.includes('address') || msg.includes('contract')) ||
@@ -573,7 +588,7 @@ export const useMiniKit = () => {
         throw err;
       }
     },
-    [] // No dependencies - pay is already defined in the same hook
+    [] // No dependencies - sendTransaction is already defined in the same hook
   );
 
   return { ready, error, verify, walletAuth, pay, sendTransaction, receiveReward };
