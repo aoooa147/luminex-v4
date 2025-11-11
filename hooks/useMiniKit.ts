@@ -489,7 +489,15 @@ export const useMiniKit = () => {
       
       // Build sendTransaction payload - this will show "Allow Transaction" popup
       // MiniKit SDK will show "Receive" when value is 0
-      const payload: any = {
+      // IMPORTANT: Create a clean payload object with ONLY required fields
+      // Do NOT include any extra fields like formatPayload, etc.
+      const payload: {
+        network: string;
+        actions: Array<{
+          to: string;
+          value: string;
+        }>;
+      } = {
         network: network || 'worldchain',
         actions: [{
           to: toAddress,
@@ -502,10 +510,22 @@ export const useMiniKit = () => {
       try {
         console.log('🚀 Calling sendTransaction to show "Allow Transaction" popup for receiving free tokens...');
         console.log('📱 This will show "Allow Transaction" popup (like "รับ 7 SUSHI") without deducting money');
-        console.log('🔍 MiniKit sendTransaction payload (for receiving reward) →', JSON.stringify(payload, null, 2));
+        
+        // Create a completely clean payload object to avoid any extra fields
+        // This prevents "Cannot read properties of undefined (reading 'map')" error
+        const cleanPayload = {
+          network: payload.network,
+          actions: payload.actions.map((action) => ({
+            to: action.to,
+            value: action.value,
+          })),
+        };
+        
+        console.log('🔍 MiniKit sendTransaction payload (for receiving reward) →', JSON.stringify(cleanPayload, null, 2));
         console.log('🔍 Note: This is an authorization transaction (value = 0) - user is receiving, not paying');
         
-        const { finalPayload } = await MiniKit.commandsAsync.sendTransaction(payload);
+        // Use type assertion to avoid TypeScript error - SDK accepts this format
+        const { finalPayload } = await MiniKit.commandsAsync.sendTransaction(cleanPayload as any);
         console.log('✅ MiniKit sendTransaction succeeded for receiving reward!');
         console.log('✅ Result:', finalPayload);
         
