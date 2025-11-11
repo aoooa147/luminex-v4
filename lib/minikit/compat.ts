@@ -19,7 +19,9 @@ function normalizePayload(payload: any): any {
       value: toHexValue(a?.value ?? '0x0'),
       ...(a?.data && a?.data !== '0x' ? { data: a.data } : {}),
     }));
-    return { ...payload, network, actions };
+    // Return clean payload without any extra fields from original payload
+    // This prevents formatPayload or other unwanted fields from being included
+    return { network, actions };
   }
 
   // Legacy top-level { to, data, value }

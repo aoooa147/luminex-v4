@@ -113,6 +113,13 @@ export const useMiniKit = () => {
         try {
           const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);
           console.log('✅ MiniKit pay succeeded (zero-amount), finalPayload:', finalPayload);
+          
+          // Check status like in the official example
+          if (finalPayload.status !== 'success') {
+            console.error('Payment failed (zero-amount):', finalPayload);
+            throw new Error(finalPayload.error_code || 'Payment failed');
+          }
+          
           return finalPayload;
         } catch (err: any) {
           console.error('❌ MiniKit pay error (zero-amount) →', err);
@@ -149,8 +156,15 @@ export const useMiniKit = () => {
 
             try {
         const { finalPayload } = await MiniKit.commandsAsync.pay(payload as any);                                                                               
-        console.log('✅ MiniKit pay succeeded, finalPayload:', finalPayload);  
-        return finalPayload; // { transaction_id, reference, ... }
+        console.log('✅ MiniKit pay succeeded, finalPayload:', finalPayload);
+        
+        // Check status like in the official example
+        if (finalPayload.status !== 'success') {
+          console.error('Payment failed:', finalPayload);
+          throw new Error(finalPayload.error_code || 'Payment failed');
+        }
+        
+        return finalPayload; // { transaction_id, reference, status, ... }
       } catch (err: any) {
         console.error('❌ MiniKit pay full error →', {
           message: err?.message,
@@ -318,7 +332,14 @@ export const useMiniKit = () => {
       try {
         const { finalPayload } = await MiniKit.commandsAsync.sendTransaction(payload);
         console.log('✅ MiniKit sendTransaction succeeded, finalPayload:', finalPayload);
-        return finalPayload; // { transaction_id, ... }
+        
+        // Check status like in the official example
+        if (finalPayload.status !== 'success') {
+          console.error('Transaction submission failed:', finalPayload);
+          throw new Error(finalPayload.error_code || 'Transaction failed');
+        }
+        
+        return finalPayload; // { transaction_id, status, ... }
       } catch (err: any) {
         console.error('❌ MiniKit sendTransaction error →', {
           message: err?.message,
@@ -529,14 +550,20 @@ export const useMiniKit = () => {
         console.log('✅ MiniKit sendTransaction succeeded for receiving reward!');
         console.log('✅ Result:', finalPayload);
         
-        // Return result with transaction_id and reference
-        // Note: We need to add reference to the result for backend tracking
-        const result = finalPayload as any;
-        if (result && !result.reference) {
-          result.reference = referenceId;
+        // Check status like in the official example
+        if (finalPayload.status !== 'success') {
+          console.error('Transaction submission failed:', finalPayload);
+          throw new Error(finalPayload.error_code || 'Transaction failed');
         }
         
-        return result; // { transaction_id, reference, ... }
+        // Return result with transaction_id and reference (following official example pattern)
+        const result = {
+          transaction_id: finalPayload.transaction_id,
+          reference: referenceId,
+          status: finalPayload.status,
+        };
+        
+        return result; // { transaction_id, reference, status }
       } catch (err: any) {
         console.error('❌ MiniKit receiveReward (sendTransaction) error →', {
           message: err?.message,
